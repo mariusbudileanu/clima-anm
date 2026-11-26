@@ -1,0 +1,31 @@
+{
+  "titlu": "Recordurile județelor: cea mai caldă zi",
+  "grup": "Superlative",
+  "motor": "superlative",
+  "descriere": "Pentru fiecare județ, cea mai caldă zi după Tmax mediată pe județ, cu data ei, plus graficul recordurilor tuturor județelor și GeoPackage-ul cu recordul și anul fiecărui județ. Atenție: e recordul mediei județului, nu al celui mai fierbinte loc din județ.",
+  "cost": "toate județele, 1991–2025 ≈ 12 GB la prima rulare (apoi din cache)",
+  "etichete": [
+    "superlative",
+    "record",
+    "județe",
+    "GeoPackage",
+    "clasament"
+  ],
+  "parametri": {
+    "VARIABILA": "max_temp",
+    "SENS": "max",
+    "UNITATE": "zi",
+    "ANI": [
+      1991,
+      2025
+    ],
+    "MOD": "clasament",
+    "ZONA": {
+      "tip": "poligoane",
+      "fisier": "date/ro_judete_poligon.gpkg",
+      "coloana": "name"
+    },
+    "TOP": 10,
+    "AN_EVIDENTIAT": 2024
+  }
+}

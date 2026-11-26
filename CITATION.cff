@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+message: "Dacă folosiți acest program, vă rugăm să-l citați astfel. / If you use this software, please cite it as below."
+type: software
+title: "Clima ANM: analize climatice pe cubul Zarr anm-daily-grids (EOCube.ro)"
+abstract: >-
+  Clima ANM is a portable, local program with a browser interface for climate analyses on the daily
+  1 km gridded data of the Romanian National Meteorological Administration (ANM), 1961–present, served as the
+  Zarr data cube anm-daily-grids by EOCube.ro. It computes maps, anomalies, trends with significance tests,
+  ETCCDI and percentile-based indices, SPI/SPEI, record-breaking (superlative) analyses, zonal statistics and
+  data-integrity checks, and writes reproducible, documented outputs (COG GeoTIFF, PNG, GeoPackage, CSV, HTML
+  run sheets). Built for teaching (GIS and climatology master's courses) at the University of Bucharest.
+authors:
+  - family-names: Budileanu
+    given-names: Marius
+    orcid: "https://orcid.org/0000-0002-4840-5707"
+    affiliation: "University of Bucharest, Faculty of Geography"
+version: 1.0.0
+date-released: "2026-11-26"
+license: MIT
+repository-code: "https://github.com/mariusbudileanu/clima-anm"
+keywords:
+  - climate
+  - climatology
+  - Romania
+  - ANM
+  - Zarr
+  - data cube
+  - EOCube
+  - ETCCDI
+  - SPI
+  - SPEI
+  - GIS
+  - teaching
+references:
+  - type: data
+    title: "anm-daily-grids: daily gridded climate data for Romania (ANM / MeteoRomania), Zarr cube"
+    authors:
+      - name: "Administrația Națională de Meteorologie (ANM / MeteoRomania)"
+      - name: "West University of Timișoara – EOCube.Ro"
+    url: "https://eocube.ro"
+    license: CC-BY-4.0

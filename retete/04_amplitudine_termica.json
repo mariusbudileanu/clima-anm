@@ -1,0 +1,27 @@
+{
+  "titlu": "Amplitudinea termică",
+  "grup": "Temperatură",
+  "motor": "harta",
+  "descriere": "Amplitudinea diurnă medie (Tmax − Tmin) și media pe ani a amplitudinii extreme anuale, max(Tmax) − min(Tmin) din fiecare an: continentalism, inversiuni de iarnă (sezonul DJF). Pentru extremele absolute ale întregii perioade folosiți rețeta 17.",
+  "cost": "10 ani ≈ 4 GB (Tmax + Tmin), pentru toată țara",
+  "etichete": [
+    "temperatură",
+    "continentalism"
+  ],
+  "mod_indicatori": "blocat",
+  "parametri": {
+    "INDICATORI": [
+      {
+        "cod": "amplitudine_medie"
+      },
+      {
+        "cod": "amplitudine_absoluta"
+      }
+    ],
+    "ANI": [
+      2016,
+      2025
+    ],
+    "SEZON": "anual"
+  }
+}

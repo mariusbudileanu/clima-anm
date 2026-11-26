@@ -1,0 +1,34 @@
+{
+  "titlu": "Zile tropicale și caniculare",
+  "grup": "Temperatură",
+  "motor": "harta",
+  "descriere": "Numărul mediu anual de zile cu Tmax peste fiecare prag (ANM: 30 °C tropicale, 35 °C caniculare). Adăugați rânduri pentru alte praguri.",
+  "cost": "un an ≈ 0,25 GB (~25 s) · 10 ani ≈ 2,4 GB (~4 min), pentru toată țara",
+  "etichete": [
+    "extreme",
+    "căldură",
+    "praguri"
+  ],
+  "mod_indicatori": "acelasi",
+  "parametri": {
+    "INDICATORI": [
+      {
+        "cod": "zile_peste",
+        "var": "max_temp",
+        "prag": 30.0,
+        "strict": false
+      },
+      {
+        "cod": "zile_peste",
+        "var": "max_temp",
+        "prag": 35.0,
+        "strict": false
+      }
+    ],
+    "ANI": [
+      2016,
+      2025
+    ],
+    "SEZON": "anual"
+  }
+}

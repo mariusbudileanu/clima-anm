@@ -1,0 +1,20 @@
+{
+  "title": "Clima ANM: analize climatice pe cubul Zarr anm-daily-grids (EOCube.ro)",
+  "upload_type": "software",
+  "description": "<p><b>Clima ANM</b> is a portable, local program with a browser interface for climate analyses on the daily 1 km gridded data of the Romanian National Meteorological Administration (ANM), 1961–present, served as the Zarr data cube <i>anm-daily-grids</i> by EOCube.ro.</p><p>It computes maps, anomalies, trends with significance tests, ETCCDI and percentile-based indices, SPI/SPEI, record-breaking (superlative) analyses and zonal statistics, checks the integrity of the cube (missing or unwritten chunks are treated as missing data, not as zero), and writes reproducible, documented outputs: COG GeoTIFF (including per-year series for animation), PNG, GeoPackage, CSV and a visual HTML sheet for every run. The interface includes an interactive map with A|B comparison, hillshade relief, year animation with video export and a presentation mode.</p><p>It runs without administrator rights or a prior Python installation: a locked conda-forge environment (pixi) is installed inside the program folder. Interface and documentation in Romanian. Built for teaching GIS and climatology at the University of Bucharest.</p><p>Code: MIT. Documentation: CC BY 4.0. Data analysed (not included): ANM / MeteoRomania, processing UVT – EOCube.Ro, CC BY 4.0. Included relief: Copernicus DEM GLO-30 (© DLR e.V. 2010–2014 and © Airbus Defence and Space GmbH 2014–2018, provided under COPERNICUS by the European Union and ESA).</p>",
+  "creators": [
+    {
+      "name": "Budileanu, Marius",
+      "orcid": "0000-0002-4840-5707",
+      "affiliation": "University of Bucharest, Faculty of Geography"
+    }
+  ],
+  "license": "MIT",
+  "language": "ron",
+  "keywords": ["climate", "climatology", "Romania", "ANM", "Zarr", "data cube", "EOCube", "ETCCDI", "SPI", "SPEI", "GIS", "teaching"],
+  "version": "1.0.0",
+  "related_identifiers": [
+    {"identifier": "https://github.com/mariusbudileanu/clima-anm", "relation": "isSupplementTo", "scheme": "url"},
+    {"identifier": "https://eocube.ro", "relation": "references", "scheme": "url"}
+  ]
+}

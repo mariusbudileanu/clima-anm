@@ -1,0 +1,18 @@
+{
+  "titlu": "Zile de îngheț, de iarnă și geroase",
+  "grup": "Temperatură",
+  "motor": "harta",
+  "descriere": "Numărul mediu anual de zile reci: îngheț (Tmin < 0 °C, ETCCDI FD), zile de iarnă (Tmax < 0 °C, ETCCDI ID) și zile geroase (Tmin ≤ −10 °C). Relația (≥ > ≤ <) se alege lângă prag.",
+  "cost": "10 ani ≈ 4 GB (Tmax + Tmin), pentru toată țara",
+  "etichete": ["frig", "îngheț", "ger", "praguri"],
+  "mod_indicatori": "acelasi",
+  "parametri": {
+    "INDICATORI": [
+      {"cod": "zile_sub", "var": "min_temp", "prag": 0.0, "strict": true},
+      {"cod": "zile_sub", "var": "max_temp", "prag": 0.0, "strict": true},
+      {"cod": "zile_sub", "var": "min_temp", "prag": -10.0, "strict": false}
+    ],
+    "ANI": [2016, 2025],
+    "SEZON": "anual"
+  }
+}

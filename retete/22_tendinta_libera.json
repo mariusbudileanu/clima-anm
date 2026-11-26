@@ -1,0 +1,27 @@
+{
+  "titlu": "Tendință — orice indicator",
+  "grup": "Analize libere",
+  "motor": "trend",
+  "descriere": "Tendința pe ani a oricărui indicator (ex. zile tropicale pe deceniu, Rx1day pe deceniu), per pixel.",
+  "cost": "1961–2025 ≈ 6–13 GB pentru toată țara; mult mai puțin pentru un județ",
+  "etichete": [
+    "liber",
+    "tendință"
+  ],
+  "mod_indicatori": "liber",
+  "parametri": {
+    "INDICATORI": [
+      {
+        "cod": "zile_peste",
+        "var": "max_temp",
+        "prag": 30.0,
+        "strict": false
+      }
+    ],
+    "ANI": [
+      1961,
+      2025
+    ],
+    "SEZON": "anual"
+  }
+}

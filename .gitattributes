@@ -1,0 +1,7 @@
+# porneste.bat / .ps1 trebuie să rămână CRLF pe Windows; scripturile shell, LF
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+*.sh  text eol=lf
+*.tif binary
+pixi.lock text eol=lf linguist-generated=true
+clima/chart.umd.js linguist-vendored=true

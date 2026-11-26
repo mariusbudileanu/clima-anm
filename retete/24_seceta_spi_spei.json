@@ -1,0 +1,26 @@
+{
+  "titlu": "Seceta: SPI și SPEI",
+  "grup": "Precipitații și secetă",
+  "motor": "harta",
+  "descriere": "Cât de secetoasă a fost o perioadă față de normala 1991–2020: SPI din precipitații (distribuția gamma) și SPEI din bilanțul P − PET (log-logistică), plus bilanțul în mm. Sezonul dă scara: iunie–august = SPI-3 / SPEI-3 de vară, anual = SPI-12. Pentru un singur an alegeți anii X–X. Sub −1 secetă moderată, sub −1,5 severă, sub −2 extremă.",
+  "cost": "prima rulare: 30 de veri de bază ≈ 7 GB pentru toată țara (~12 min); apoi un an ≈ 0,25 GB",
+  "etichete": [
+    "secetă",
+    "SPI",
+    "SPEI",
+    "bilanț hidric",
+    "evapotranspirație",
+    "normala 1991–2020"
+  ],
+  "mod_indicatori": "liber",
+  "parametri": {
+    "INDICATORI": [
+      {"cod": "spi", "baza_de": 1991, "baza_pana": 2020},
+      {"cod": "spei", "baza_de": 1991, "baza_pana": 2020},
+      {"cod": "bilant"}
+    ],
+    "ANI": [2024, 2024],
+    "SEZON": "JJA",
+    "ZONA": {"tip": "tara"}
+  }
+}

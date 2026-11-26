@@ -1,0 +1,30 @@
+# Testele programului, la fiecare push și pull request:
+#   1. testele cu răspuns cunoscut (statistică, percentile, SPI/SPEI, superlative, integritatea datelor)
+#   2. toate rețetele pe un cub Zarr sintetic, construit local (fără internet, fără EOCube)
+name: teste
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  teste:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          locked: true
+          cache: true
+      - name: Testele cu răspuns cunoscut
+        run: pixi run --locked python instrumente/teste_cunoscute.py
+      - name: Toate rețetele, pe cubul sintetic
+        if: matrix.os == 'ubuntu-latest'
+        run: pixi run --locked python instrumente/testeaza_retete.py

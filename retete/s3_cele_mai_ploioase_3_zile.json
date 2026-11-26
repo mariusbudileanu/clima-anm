@@ -1,0 +1,33 @@
+{
+  "titlu": "Cele mai ploioase 3 zile consecutive",
+  "grup": "Superlative",
+  "motor": "superlative",
+  "descriere": "Episoadele cu cele mai mari cantități de precipitații căzute în 3 zile la rând (fiecare episod o singură dată: ferestrele suprapuse nu se repetă). Schimbați numărul de zile pentru episoade mai lungi.",
+  "cost": "un punct, toată seria ≈ 1,4 GB la prima rulare (apoi din cache)",
+  "etichete": [
+    "superlative",
+    "record",
+    "ploi torențiale",
+    "episoade",
+    "clasament"
+  ],
+  "parametri": {
+    "VARIABILA": "precipitation",
+    "SENS": "max",
+    "UNITATE": "fereastra",
+    "N_ZILE": 3,
+    "ANI": [
+      1961,
+      2025
+    ],
+    "MOD": "clasament",
+    "ZONA": {
+      "tip": "punct",
+      "lon": 26.1025,
+      "lat": 44.4268,
+      "nume": "București"
+    },
+    "TOP": 10,
+    "AN_EVIDENTIAT": 2024
+  }
+}

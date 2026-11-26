@@ -1,0 +1,33 @@
+{
+ "ns_pixel_zi": {
+  "amplitudine_absoluta": 3.46,
+  "amplitudine_medie": 7.51,
+  "bilant": 44.51,
+  "cdd": 7.32,
+  "csdi": 9.55,
+  "cwd": 7.11,
+  "de_martonne": 10.53,
+  "gdd": 9.52,
+  "medie": 4.22,
+  "pct_zile": 5.53,
+  "pet": 22.06,
+  "prcptot": 8.68,
+  "primul_inghet": 7.16,
+  "rnnp": 5.3,
+  "rnnptot": 9.01,
+  "rxnday": 8.71,
+  "sdii": 8.46,
+  "sezon_fara_inghet": 16.31,
+  "spei": 35.16,
+  "spi": 5.09,
+  "suma": 3.89,
+  "tmedie": 7.03,
+  "ultimul_inghet": 7.49,
+  "wsdi": 11.11,
+  "zile_peste": 3.04,
+  "zile_sub": 3.08
+ },
+ "masurat_pe": "2 nuclee",
+ "data": "2026-11-25",
+ "citire_s_per_gb": 11.95
+}

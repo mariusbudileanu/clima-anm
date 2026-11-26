@@ -1,0 +1,20 @@
+{
+  "titlu": "Județele în ultimele 30 de zile (tabel)",
+  "grup": "Analize rapide",
+  "rapida": true,
+  "motor": "zonal",
+  "descriere": "Valorile zilnice ale ultimelor 30 de zile, mediate pe fiecare județ (Tmax, Tmin, precipitații), cu sumarul pe perioadă: un CSV gata de deschis în Excel sau QGIS.",
+  "cost": "≈ 0,3 GB, sub un minut",
+  "etichete": [
+    "rapid",
+    "județe",
+    "CSV",
+    "ultimele zile"
+  ],
+  "parametri": {
+    "PERIOADA": [
+      "-30",
+      null
+    ]
+  }
+}

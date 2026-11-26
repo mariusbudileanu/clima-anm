@@ -1,0 +1,13 @@
+{
+  "titlu": "Statistici pe perioadă, per pixel (medie, minimă, maximă, sumă)",
+  "grup": "Zone și tabele",
+  "motor": "statistici",
+  "descriere": "Media, minima, maxima, suma și altele ale valorilor zilnice dintr-o perioadă, pixel cu pixel, ca GeoTIFF pentru QGIS.",
+  "cost": "20 de ani ≈ 5 GB pe variabilă, pentru toată țara",
+  "etichete": [
+    "statistici",
+    "GeoTIFF",
+    "per pixel"
+  ],
+  "parametri": {}
+}

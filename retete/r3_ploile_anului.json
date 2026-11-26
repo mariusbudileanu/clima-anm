@@ -1,0 +1,38 @@
+{
+  "titlu": "Ploile unui an: total, secetă, ploaia maximă",
+  "grup": "Analize rapide",
+  "rapida": true,
+  "motor": "harta",
+  "descriere": "Precipitațiile totale ale unui an, cel mai lung șir de zile fără ploaie (CDD) și cea mai mare cantitate căzută într-o zi (Rx1day), pe toată țara.",
+  "cost": "≈ 0,1 GB, sub un minut",
+  "etichete": [
+    "rapid",
+    "precipitații",
+    "secetă",
+    "ploi torențiale"
+  ],
+  "parametri": {
+    "INDICATORI": [
+      {
+        "cod": "suma",
+        "var": "precipitation"
+      },
+      {
+        "cod": "cdd",
+        "prag": 1.0
+      },
+      {
+        "cod": "rxnday",
+        "n": 1
+      }
+    ],
+    "ANI": [
+      2025,
+      2025
+    ],
+    "SEZON": "anual",
+    "ZONA": {
+      "tip": "tara"
+    }
+  }
+}

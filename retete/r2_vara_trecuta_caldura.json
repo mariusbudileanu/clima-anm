@@ -1,0 +1,45 @@
+{
+  "titlu": "Vara trecută: căldura pe țară",
+  "grup": "Analize rapide",
+  "rapida": true,
+  "motor": "harta",
+  "descriere": "Tmax medie a verii, zilele de vară (Tmax ≥ 25 °C), tropicale (≥ 30 °C) și caniculare (≥ 35 °C) într-o singură vară, pe toată țara. Schimbați anul pentru orice altă vară.",
+  "cost": "≈ 0,1 GB, sub un minut",
+  "etichete": [
+    "rapid",
+    "vară",
+    "căldură",
+    "zile tropicale"
+  ],
+  "parametri": {
+    "INDICATORI": [
+      {
+        "cod": "medie",
+        "var": "max_temp"
+      },
+      {
+        "cod": "zile_peste",
+        "var": "max_temp",
+        "prag": 25.0
+      },
+      {
+        "cod": "zile_peste",
+        "var": "max_temp",
+        "prag": 30.0
+      },
+      {
+        "cod": "zile_peste",
+        "var": "max_temp",
+        "prag": 35.0
+      }
+    ],
+    "ANI": [
+      2026,
+      2026
+    ],
+    "SEZON": "JJA",
+    "ZONA": {
+      "tip": "tara"
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "titlu": "Seceta meteorologică (CDD)",
+  "grup": "Precipitații și secetă",
+  "motor": "harta",
+  "descriere": "Cel mai lung șir de zile consecutive fără precipitații (< 1 mm). Pentru sezonul agricol: sezon aprilie–septembrie.",
+  "cost": "un an ≈ 0,1 GB, pentru toată țara",
+  "etichete": [
+    "secetă",
+    "precipitații"
+  ],
+  "mod_indicatori": "acelasi",
+  "parametri": {
+    "INDICATORI": [
+      {
+        "cod": "cdd",
+        "prag": 1.0
+      }
+    ],
+    "ANI": [
+      2025,
+      2025
+    ],
+    "SEZON": "anual"
+  },
+  "rapida": true
+}

@@ -1,0 +1,34 @@
+{
+  "titlu": "Anomalia pluviometrică (% din normală)",
+  "grup": "Precipitații și secetă",
+  "motor": "anomalie",
+  "descriere": "Precipitațiile unei perioade în procente din normala 1991–2020 (100 % = normal; sub 75 % = deficit marcat).",
+  "cost": "un sezon × 31 de ani de referință ≈ 1–3 GB, pentru toată țara",
+  "etichete": [
+    "anomalie",
+    "precipitații",
+    "secetă"
+  ],
+  "mod_indicatori": "blocat",
+  "parametri": {
+    "INDICATORI": [
+      {
+        "cod": "suma",
+        "var": "precipitation"
+      }
+    ],
+    "ANI_TINTA": [
+      2025,
+      2025
+    ],
+    "ANI_REFERINTA": [
+      1991,
+      2020
+    ],
+    "MOD": "procent",
+    "SEZON": [
+      4,
+      9
+    ]
+  }
+}

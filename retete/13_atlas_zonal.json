@@ -1,0 +1,49 @@
+{
+  "titlu": "Atlas climatic pe UAT-uri, județe sau bazine",
+  "grup": "Zone și tabele",
+  "motor": "atlas",
+  "descriere": "Pentru fiecare poligon: temperatura medie, precipitațiile anuale, zilele tropicale, nopțile tropicale… într-un tabel GPKG / CSV și câte o hartă.",
+  "cost": "10 ani ≈ 6 GB (toate variabilele), pentru toată țara",
+  "etichete": [
+    "atlas",
+    "UAT",
+    "județe",
+    "tabel"
+  ],
+  "mod_indicatori": "liber",
+  "parametri": {
+    "INDICATORI": [
+      {
+        "cod": "tmedie"
+      },
+      {
+        "cod": "suma",
+        "var": "precipitation"
+      },
+      {
+        "cod": "zile_peste",
+        "var": "max_temp",
+        "prag": 30.0,
+        "strict": false
+      },
+      {
+        "cod": "zile_peste",
+        "var": "min_temp",
+        "prag": 20.0,
+        "strict": true
+      }
+    ],
+    "ANI": [
+      2016,
+      2025
+    ],
+    "SEZON": "anual",
+    "IESIRI": {
+      "cog": true,
+      "png": true,
+      "grafic": true,
+      "gpkg": true,
+      "csv": true
+    }
+  }
+}

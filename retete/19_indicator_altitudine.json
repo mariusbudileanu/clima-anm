@@ -1,0 +1,37 @@
+{
+  "titlu": "Indicatorul față de altitudine",
+  "grup": "Relief și altitudine",
+  "motor": "altitudine",
+  "descriere": "Fiecare pixel contribuie cu altitudinea medie și valoarea indicatorului. Panta descrie asocierea spațială pe 100 m. Reziduul este valoarea observată minus cea prezisă de dreaptă. Inversiunile, influența mării și adăpostul orografic sunt ipoteze de verificat cu observații independente.",
+  "cost": "un deceniu, toată țara ≈ 4 GB (~6 min)",
+  "etichete": [
+    "relief",
+    "altitudine",
+    "gradient termic",
+    "DEM"
+  ],
+  "mod_indicatori": "liber",
+  "parametri": {
+    "INDICATORI": [
+      {
+        "cod": "tmedie"
+      }
+    ],
+    "ANI": [
+      2016,
+      2025
+    ],
+    "SEZON": "anual",
+    "ZONA": {
+      "tip": "tara"
+    },
+    "TREAPTA": 200,
+    "IESIRI": {
+      "grafic": true,
+      "csv": true,
+      "cog": true,
+      "png": true,
+      "csv_pixeli": false
+    }
+  }
+}

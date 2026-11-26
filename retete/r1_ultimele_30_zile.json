@@ -1,0 +1,24 @@
+{
+  "titlu": "Ultimele 30 de zile, zi cu zi",
+  "grup": "Analize rapide",
+  "rapida": true,
+  "motor": "episod_zilnic",
+  "descriere": "Hărțile zilnice ale ultimelor 30 de zile cu date (Tmax implicit), pe toată țara: animație GIF, NetCDF pentru QGIS și prima zi ca PNG. Perioada se actualizează singură după ultima zi din cub.",
+  "cost": "≈ 0,1 GB, sub un minut",
+  "etichete": [
+    "rapid",
+    "ultimele zile",
+    "animație",
+    "zi cu zi"
+  ],
+  "parametri": {
+    "VARIABILA": "max_temp",
+    "PERIOADA": [
+      "-30",
+      null
+    ],
+    "ZONA": {
+      "tip": "tara"
+    }
+  }
+}

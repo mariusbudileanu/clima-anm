@@ -1,0 +1,26 @@
+# mediul portabil și uneltele descărcate la prima pornire
+.pixi/
+instrumente/pixi
+instrumente/pixi.exe
+instrumente/pixi_home/
+
+# datele și rezultatele utilizatorului
+cache_date/
+rezultate/
+clima/rezultate/
+dem_jurnal.txt
+date/*.gpkg
+date/*.shp
+date/*.shx
+date/*.dbf
+date/*.prj
+date/*.cpg
+date/*.geojson
+date/test_*
+
+# Python / sistem
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+desktop.ini

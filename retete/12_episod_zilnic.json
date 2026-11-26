@@ -1,0 +1,21 @@
+{
+  "titlu": "Episod meteo zi cu zi (animație, QGIS Temporal Controller)",
+  "grup": "Episoade și extreme",
+  "motor": "episod_zilnic",
+  "descriere": "Hărțile zilnice ale unei perioade scurte (un val de căldură, o ploaie torențială): NetCDF pentru animație în QGIS, GIF, COG.",
+  "cost": "3 săptămâni ≈ 0,5 GB pentru toată țara (~1 min)",
+  "etichete": [
+    "episod",
+    "animație",
+    "QGIS",
+    "NetCDF"
+  ],
+  "parametri": {
+    "VARIABILA": "max_temp",
+    "PERIOADA": [
+      "2024-07-10",
+      "2024-07-31"
+    ]
+  },
+  "rapida": true
+}

@@ -1,0 +1,28 @@
+{
+  "titlu": "Grade-zile de creștere (GDD)",
+  "grup": "Agroclimatic",
+  "motor": "harta",
+  "descriere": "Suma gradelor-zile peste temperatura de bază, în sezonul de vegetație (aprilie–septembrie). Bază 10 °C: porumb, vița-de-vie; 5 °C: păioase.",
+  "cost": "10 ani ≈ 2 GB (Tmax + Tmin, 6 luni), pentru toată țara",
+  "etichete": [
+    "agricultură",
+    "vegetație"
+  ],
+  "mod_indicatori": "acelasi",
+  "parametri": {
+    "INDICATORI": [
+      {
+        "cod": "gdd",
+        "baza": 10.0
+      }
+    ],
+    "ANI": [
+      2016,
+      2025
+    ],
+    "SEZON": [
+      4,
+      9
+    ]
+  }
+}

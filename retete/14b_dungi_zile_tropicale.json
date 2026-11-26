@@ -1,0 +1,23 @@
+{
+  "titlu": "Dungile zilelor tropicale",
+  "grup": "Tendințe",
+  "motor": "dungi",
+  "descriere": "Câte o dungă pe an după numărul de zile cu Tmax ≥ 30 °C, față de 1971–2000: roșu = mai multe zile tropicale decât în perioada de referință. Merge cu orice indicator (zile de îngheț, CDD, GDD…).",
+  "cost": "un punct, 1961–2025 ≈ 1,6 GB (~3 min; apoi din cache)",
+  "etichete": [
+    "dungi",
+    "căldură",
+    "zile tropicale",
+    "warming stripes"
+  ],
+  "parametri": {
+    "INDICATORI": [
+      {
+        "cod": "zile_peste",
+        "var": "max_temp",
+        "prag": 30.0,
+        "strict": false
+      }
+    ]
+  }
+}

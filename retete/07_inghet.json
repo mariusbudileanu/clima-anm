@@ -1,0 +1,36 @@
+{
+  "titlu": "Înghețuri: ultimul, primul, sezonul fără îngheț",
+  "grup": "Agroclimatic",
+  "motor": "harta",
+  "descriere": "Data medie (ziua din an) a ultimului îngheț de primăvară și a primului de toamnă, plus durata sezonului fără îngheț. Sezonul trebuie să fie „anual”.",
+  "cost": "10 ani ≈ 2 GB (Tmin), pentru toată țara",
+  "etichete": [
+    "agricultură",
+    "îngheț"
+  ],
+  "mod_indicatori": "blocat",
+  "ascunse": [
+    "SEZON"
+  ],
+  "parametri": {
+    "INDICATORI": [
+      {
+        "cod": "ultimul_inghet",
+        "prag": 0.0
+      },
+      {
+        "cod": "primul_inghet",
+        "prag": 0.0
+      },
+      {
+        "cod": "sezon_fara_inghet",
+        "prag": 0.0
+      }
+    ],
+    "ANI": [
+      2016,
+      2025
+    ],
+    "SEZON": "anual"
+  }
+}

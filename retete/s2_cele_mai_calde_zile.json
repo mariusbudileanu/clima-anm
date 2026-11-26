@@ -1,0 +1,32 @@
+{
+  "titlu": "Cele mai calde zile din istorie",
+  "grup": "Superlative",
+  "motor": "superlative",
+  "descriere": "Cele mai mari valori zilnice ale Tmax dintr-un punct, din toată seria, cu data fiecăreia, și pe ce loc se află cea mai caldă zi a unui an ales.",
+  "cost": "un punct, toată seria ≈ 1,4 GB la prima rulare (apoi din cache)",
+  "etichete": [
+    "superlative",
+    "record",
+    "caniculă",
+    "zile toride",
+    "clasament"
+  ],
+  "parametri": {
+    "VARIABILA": "max_temp",
+    "SENS": "max",
+    "UNITATE": "zi",
+    "ANI": [
+      1961,
+      2025
+    ],
+    "MOD": "clasament",
+    "ZONA": {
+      "tip": "punct",
+      "lon": 26.1025,
+      "lat": 44.4268,
+      "nume": "București"
+    },
+    "TOP": 10,
+    "AN_EVIDENTIAT": 2024
+  }
+}

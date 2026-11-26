@@ -1,0 +1,25 @@
+{
+  "titlu": "Superlative: alegeți voi",
+  "grup": "Superlative",
+  "motor": "superlative",
+  "descriere": "Orice superlativ: variabila, maximul sau minimul, unitatea de timp (zi, N zile consecutive, o lună, oricare lună, sezon, an, interval fix), clasamentul pe zonă sau hărțile pe pixel.",
+  "cost": "depinde de zonă și de ani: un punct ≈ 1,4 GB pe variabilă pentru toată seria",
+  "etichete": [
+    "superlative",
+    "record",
+    "clasament",
+    "liber"
+  ],
+  "parametri": {
+    "ANI": [
+      1961,
+      2025
+    ],
+    "ZONA": {
+      "tip": "punct",
+      "lon": 26.1025,
+      "lat": 44.4268,
+      "nume": "București"
+    }
+  }
+}

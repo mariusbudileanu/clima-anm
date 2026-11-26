@@ -1,0 +1,14 @@
+{
+  "titlu": "Statistici zilnice pe județe / regiuni (CSV)",
+  "grup": "Zone și tabele",
+  "motor": "zonal",
+  "descriere": "Valorile zilnice mediate pe poligoane, pentru una sau mai multe zonări (județe, regiuni), plus agregări lunare și sezoniere.",
+  "cost": "6 ani × 3 variabile ≈ 4 GB, pentru toată țara",
+  "etichete": [
+    "statistici zonale",
+    "CSV",
+    "județe",
+    "regiuni"
+  ],
+  "parametri": {}
+}

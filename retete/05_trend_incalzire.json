@@ -1,0 +1,29 @@
+{
+  "titlu": "Viteza de încălzire (tendința per pixel)",
+  "grup": "Tendințe",
+  "motor": "trend",
+  "descriere": "Tendința temperaturii (°C / deceniu), pixel cu pixel; hașurat = nesemnificativ. Metoda se alege: regresie liniară (OLS) sau Theil–Sen cu testul Mann–Kendall, robustă la anii excepționali; comparați-le pe aceeași zonă. Funcționează pentru orice indicator.",
+  "cost": "1961–2025 ≈ 13 GB (~20–25 min), pentru toată țara",
+  "etichete": [
+    "tendință",
+    "încălzire"
+  ],
+  "mod_indicatori": "liber",
+  "grupuri_indicatori": [
+    "Medii și sume"
+  ],
+  "parametri": {
+    "INDICATORI": [
+      {
+        "cod": "medie",
+        "var": "max_temp"
+      }
+    ],
+    "ANI": [
+      1961,
+      2025
+    ],
+    "SEZON": "anual",
+    "ALFA": 0.05
+  }
+}

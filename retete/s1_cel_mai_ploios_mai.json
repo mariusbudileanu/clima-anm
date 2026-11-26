@@ -1,0 +1,33 @@
+{
+  "titlu": "Cel mai ploios mai",
+  "grup": "Superlative",
+  "motor": "superlative",
+  "descriere": "Clasamentul lunilor mai după precipitațiile totale, într-un punct (implicit București), din 1961 până azi: recordul, primele 10, media și locul unui an ales. Schimbați luna, variabila sau sensul pentru orice alt superlativ lunar.",
+  "cost": "un punct, toată seria ≈ 1,4 GB la prima rulare (apoi din cache, comun cu graficele de serii)",
+  "etichete": [
+    "superlative",
+    "record",
+    "precipitații",
+    "luna mai",
+    "clasament"
+  ],
+  "parametri": {
+    "VARIABILA": "precipitation",
+    "SENS": "max",
+    "UNITATE": "luna",
+    "LUNA": 5,
+    "ANI": [
+      1961,
+      2025
+    ],
+    "MOD": "clasament",
+    "ZONA": {
+      "tip": "punct",
+      "lon": 26.1025,
+      "lat": 44.4268,
+      "nume": "București"
+    },
+    "TOP": 10,
+    "AN_EVIDENTIAT": 2025
+  }
+}

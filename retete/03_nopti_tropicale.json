@@ -1,0 +1,41 @@
+{
+  "titlu": "Nopți tropicale: două perioade comparate",
+  "grup": "Temperatură",
+  "motor": "anomalie",
+  "descriere": "Nopți cu Tmin > 20 °C (ETCCDI TR): diferența dintre un deceniu recent și unul de comparație.",
+  "cost": "două decenii ≈ 4 GB (~6 min), pentru toată țara",
+  "etichete": [
+    "extreme",
+    "căldură",
+    "nopți"
+  ],
+  "mod_indicatori": "blocat",
+  "parametri": {
+    "INDICATORI": [
+      {
+        "cod": "zile_peste",
+        "var": "min_temp",
+        "prag": 20.0,
+        "strict": true
+      }
+    ],
+    "ANI_TINTA": [
+      2016,
+      2025
+    ],
+    "ANI_REFERINTA": [
+      1971,
+      1980
+    ],
+    "MOD": "diferenta",
+    "SEZON": "anual",
+    "IESIRI": {
+      "cog": true,
+      "png": true,
+      "grafic": true,
+      "gpkg": true,
+      "csv": false,
+      "png_perioade": true
+    }
+  }
+}

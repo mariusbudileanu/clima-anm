@@ -1,0 +1,19 @@
+{
+  "titlu": "Verifică datele cubului",
+  "grup": "Date",
+  "motor": "integritate",
+  "rapida": true,
+  "descriere": "Caută golurile din cubul anm-daily-grids: chunk-uri lipsă (pe tot istoricul, fără descărcare) și blocuri nescrise în zilele recente (valori exact 0 pe un bloc întreg de 161 × 324 pixeli). Spune până la ce zi sunt datele sigure pentru fiecare variabilă. Analizele tratează oricum automat golurile ca date lipsă; verificarea arată unde sunt.",
+  "cost": "≈ 0,35 GB (ultimele 150 de zile, toată țara) și ~1 minut de verificări scurte pe istoric",
+  "etichete": [
+    "date",
+    "integritate",
+    "verificare",
+    "chunk-uri lipsă",
+    "frontieră"
+  ],
+  "parametri": {
+    "ZILE_RECENTE": 150,
+    "ISTORIC": true
+  }
+}

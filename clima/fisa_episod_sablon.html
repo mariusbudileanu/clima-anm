@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLU__</title>
+<style>
+:root{
+  --fond:#f7f6f2; --card:#ffffff; --text:#1c1b19; --slab:#6b6a66; --linie:#e4e2db; --accent:#2a78d6; --rosu:#e34948; --verde:#1a8a4a;
+  --umbra:0 1px 2px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--fond);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:22px 20px 8px;max-width:1280px;margin:0 auto}
+header h1{font-size:22px;margin:0 0 2px;font-weight:650}
+header .sub{color:var(--slab);font-size:14px}
+main{max-width:1280px;margin:0 auto;padding:0 20px 40px}
+.avert{background:#fff6e0;border:1px solid #f0d58a;color:#6a4b00;border-radius:10px;padding:10px 14px;margin:12px 0;font-size:14px}
+.avert b{font-weight:650}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:14px 0 18px}
+.card{background:var(--card);border-radius:12px;padding:12px 14px;box-shadow:var(--umbra);border-top:3px solid var(--linie)}
+.card.sus{border-top-color:var(--rosu)} .card.jos{border-top-color:var(--accent)}
+.card .et{font-size:12px;color:var(--slab);text-transform:uppercase;letter-spacing:.04em}
+.card .val{font-size:24px;font-weight:650;margin:2px 0;font-variant-numeric:tabular-nums}
+.card .sub{font-size:12.5px;color:var(--slab)}
+nav.tabs{display:flex;gap:6px;border-bottom:1px solid var(--linie);margin-bottom:14px;flex-wrap:wrap}
+nav.tabs button{background:none;border:0;padding:9px 16px;font:inherit;font-weight:600;color:var(--slab);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
+nav.tabs button.on{color:var(--text);border-bottom-color:var(--accent)}
+nav.tabs button:hover{color:var(--text)}
+section.tab{display:none} section.tab.on{display:block}
+.panou{background:var(--card);border-radius:12px;box-shadow:var(--umbra);padding:14px}
+/* hartă */
+.harta{display:grid;grid-template-columns:250px minmax(0,1fr) 310px;gap:14px;align-items:start}
+.lista h4{margin:12px 0 6px;font-size:12px;color:var(--slab);text-transform:uppercase;letter-spacing:.05em}
+.lista h4:first-child{margin-top:0}
+.lista button{display:block;width:100%;text-align:left;background:#f3f2ed;border:1px solid transparent;border-radius:8px;padding:7px 10px;margin-bottom:5px;cursor:pointer;font:inherit;font-size:13.5px;color:var(--text)}
+.lista button:hover{background:#ebeae3}
+.lista button.on{background:#e6f0fb;border-color:var(--accent);font-weight:600}
+.mapwrap{position:relative;background:#eef1f4;border-radius:10px;overflow:hidden;height:560px}
+canvas#harta{width:100%;height:100%;display:block;cursor:crosshair;touch-action:none}
+.zoom{position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:4px}
+.zoom button{width:30px;height:30px;border-radius:7px;border:1px solid var(--linie);background:#fff;cursor:pointer;font-size:16px;line-height:1}
+.tip{position:absolute;pointer-events:none;background:rgba(20,20,20,.88);color:#fff;font-size:12px;padding:5px 8px;border-radius:6px;white-space:nowrap;display:none}
+.legenda{margin-top:10px}
+.legenda .titlu{font-size:13px;font-weight:600;margin-bottom:5px}
+.legenda .bara{height:12px;border-radius:6px;border:1px solid var(--linie)}
+.legenda .tickuri{display:flex;justify-content:space-between;font-size:12px;color:var(--slab);margin-top:2px;font-variant-numeric:tabular-nums}
+.legenda .clase{display:flex;flex-wrap:wrap;gap:4px}
+.legenda .clase span{font-size:12px;padding:2px 8px;border-radius:5px;border:1px solid var(--linie)}
+.descr{font-size:13px;color:var(--slab);margin:8px 0 0}
+.zi{display:none;margin-top:10px;align-items:center;gap:10px}
+.zi.on{display:flex}
+.zi button{border:1px solid var(--linie);background:#fff;border-radius:8px;width:36px;height:32px;cursor:pointer}
+.zi input[type=range]{flex:1}
+.zi .data{font-weight:600;min-width:104px;text-align:right;font-variant-numeric:tabular-nums}
+.ctrl{display:flex;gap:14px;align-items:center;margin-top:8px;font-size:13px;color:var(--slab);flex-wrap:wrap}
+.ctrl button{border:1px solid var(--linie);background:#fff;border-radius:7px;padding:4px 10px;cursor:pointer;font:inherit;font-size:12.5px}
+.insp h4{margin:0 0 6px;font-size:14px}
+.insp table{width:100%;border-collapse:collapse;font-size:13px}
+.insp td{padding:3px 0;border-bottom:1px solid var(--linie);vertical-align:top}
+.insp td:last-child{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap;padding-left:8px}
+.insp .gol{color:var(--slab);font-size:13px}
+.insp .mini{height:170px;margin-top:10px}
+/* grafice */
+.grafice{display:grid;grid-template-columns:260px minmax(0,1fr);gap:14px;align-items:start}
+.gdescr{font-size:13.5px;color:var(--slab);margin:0 0 10px}
+.gbox{height:420px;position:relative;margin-bottom:12px}
+.gbox.mic{height:300px}
+.gacts{display:flex;gap:8px;margin-top:6px}
+.gacts button{border:1px solid var(--linie);background:#fff;border-radius:7px;padding:4px 10px;cursor:pointer;font:inherit;font-size:12.5px}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th{text-align:left;padding:7px 8px;border-bottom:2px solid var(--linie);font-size:12px;color:var(--slab);text-transform:uppercase;letter-spacing:.04em;cursor:pointer;white-space:nowrap}
+table.t td{padding:6px 8px;border-bottom:1px solid var(--linie);font-variant-numeric:tabular-nums}
+table.t td.n,table.t th.n{text-align:right}
+table.t tr.sel td{background:#e6f0fb} table.t tbody tr{cursor:pointer} table.t tbody tr:hover td{background:#f3f2ed}
+table.t tr.tot td{font-weight:600;background:#f3f2ed}
+.zone{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:14px;align-items:start}
+.raport{max-width:820px} .raport h2{font-size:19px} .raport h3{font-size:16px;margin:18px 0 6px} .raport ul{padding-left:20px} .raport code{background:#f3f2ed;padding:1px 5px;border-radius:4px}
+.nota{font-size:12.5px;color:var(--slab);margin-top:14px}
+footer{max-width:1280px;margin:0 auto;padding:0 20px 30px;color:var(--slab);font-size:12.5px}
+@media (max-width:1050px){.harta{grid-template-columns:1fr}.mapwrap{height:430px}.grafice,.zone{grid-template-columns:1fr}.lista{display:flex;flex-wrap:wrap;gap:6px}.lista h4{width:100%}.lista button{width:auto}}
+@media print{nav.tabs,.zoom,.lista,.ctrl,.zi,.gacts{display:none!important}section.tab{display:block!important}.harta{grid-template-columns:1fr}.mapwrap{height:420px}body{background:#fff}.panou,.card{box-shadow:none;border:1px solid var(--linie)}.gbox{break-inside:avoid}}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="titlu"></h1>
+  <div class="sub" id="subtitlu"></div>
+</header>
+<main>
+  <div id="avert"></div>
+  <div class="cards" id="carduri"></div>
+  <nav class="tabs" id="tabs"></nav>
+
+  <section class="tab" id="tab-harta">
+    <div class="harta">
+      <div class="panou lista" id="lista"></div>
+      <div>
+        <div class="mapwrap" id="mapwrap">
+          <canvas id="harta"></canvas>
+          <div class="zoom"><button id="zp" title="Apropie">+</button><button id="zm" title="Depărtează">−</button><button id="zr" title="Reset" style="font-size:12px">⌂</button></div>
+          <div class="tip" id="tip"></div>
+        </div>
+        <div class="panou" style="margin-top:10px">
+          <div class="legenda" id="legenda"></div>
+          <div class="descr" id="descr"></div>
+          <div class="zi" id="zi"><button id="play" title="Redare">▶</button><input type="range" id="glisor" min="0" max="0" value="0"><span class="data" id="zidata"></span></div>
+          <div class="ctrl">
+            <label>Transparență <input type="range" id="opac" min="20" max="100" value="92"></label>
+            <button id="png">Descarcă harta (PNG)</button>
+            <span>Roata mouse-ului: zoom · tragere: deplasare · clic: valorile pixelului</span>
+          </div>
+        </div>
+      </div>
+      <div class="panou insp" id="insp"><h4>Pixel selectat</h4><div class="gol">Dați clic pe hartă ca să vedeți valorile tuturor straturilor în acel pixel și evoluția zilnică.</div></div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-grafice">
+    <div class="grafice">
+      <div class="panou lista" id="glista"></div>
+      <div class="panou"><div id="gdescr" class="gdescr"></div><div id="gcont"></div><div class="gacts"><button id="gpng">Descarcă PNG</button><button id="gcsv">Descarcă CSV</button></div><div id="gnota" class="nota"></div></div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-zone">
+    <div class="zone">
+      <div class="panou"><table class="t" id="tzone"></table></div>
+      <div class="panou"><h3 id="zsel" style="margin:0 0 8px;font-size:16px"></h3><div class="gbox mic"><canvas id="zc1"></canvas></div><div class="gbox mic"><canvas id="zc2"></canvas></div></div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-raport"><div class="panou raport" id="raport"></div></section>
+</main>
+<footer id="subsol"></footer>
+
+<script>/*__CHARTJS__*/</script>
+<script>/*__DATE__*/</script>
+<script>
+(async function(){
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+const el=(t,a={},...k)=>{const e=document.createElement(t);for(const x in a){if(x==='class')e.className=a[x];else if(x==='html')e.innerHTML=a[x];else e.setAttribute(x,a[x]);}k.forEach(c=>e.append(c));return e;};
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');  // numele din GPKG sunt date externe
+const fmt=(x,d=1)=>(x==null||!isFinite(x))?'–':x.toLocaleString('ro-RO',{minimumFractionDigits:d,maximumFractionDigits:d});
+const BLUE='#2a78d6',BLUEL='#9db8d9',RED='#e34948',GREEN='#008300',ORANGE='#eb6834',PURPLE='#6250d6',GREY='#8a8986',PINK='#e87ba4';
+const PAL=[BLUE,ORANGE,'#1baf7a',PURPLE,PINK,GREEN];
+const M=D.meta, U=M.unit;
+const hex2rgb=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+const LUT={};for(const k in D.luts)LUT[k]=D.luts[k].map(hex2rgb);
+
+/* ---------------------------------------------------------------- antet, carduri, avertismente */
+document.title=M.titlu_var+' · '+M.zona+' · '+M.perioada;
+$('#titlu').textContent=M.titlu_var+' · '+M.zona;
+$('#subtitlu').textContent=M.perioada+' · referința: '+M.referinta+' · climatologia '+M.clim[0]+'–'+M.clim[1]+' · date până la '+M.frontiera;
+if(D.avertismente&&D.avertismente.length){$('#avert').append(el('div',{class:'avert',html:'<b>Atenție.</b> '+D.avertismente.map(a=>a.replace(/&/g,'&amp;').replace(/</g,'&lt;')).join(' · ')}));}
+D.carduri.forEach(c=>$('#carduri').append(el('div',{class:'card '+(c.ton||'')},el('div',{class:'et'},c.et),el('div',{class:'val'},c.val),el('div',{class:'sub'},c.sub||''))));
+$('#subsol').textContent=M.atribuire+' · Valorile sunt medii pe pixeli de ~1 km, interpolate din observații; nu sunt măsurători de stație.';
+$('#raport').innerHTML=D.raport_html;
+
+/* ---------------------------------------------------------------- file */
+const taburi=[];
+if(D.harti)taburi.push(['harta','Hartă']);
+taburi.push(['grafice','Grafice']);
+if(D.zone)taburi.push(['zone','Pe zone']);
+taburi.push(['raport','Raport']);
+const trand={};
+function arata(id){
+  taburi.forEach(([k])=>{$('#tab-'+k).classList.toggle('on',k===id);});
+  [...$('#tabs').children].forEach((b,i)=>b.classList.toggle('on',taburi[i][0]===id));
+  if(id==='harta'&&H){resizeMap();render();}
+  if(id==='grafice'&&!trand.g){trand.g=1;aratag(GCUR);}
+  if(id==='zone'&&!trand.z){trand.z=1;aratazona(ZSEL);}
+  try{history.replaceState(null,'','#'+id);}catch(e){}
+}
+taburi.forEach(([k,t])=>$('#tabs').append(el('button',{},t)));
+[...$('#tabs').children].forEach((b,i)=>b.onclick=()=>arata(taburi[i][0]));
+
+/* ---------------------------------------------------------------- utilitare Chart.js */
+Chart.defaults.font.family='system-ui,-apple-system,"Segoe UI",Roboto,sans-serif';
+Chart.defaults.color='#52514e';
+Chart.defaults.animation=false;
+Chart.defaults.plugins.legend.labels.usePointStyle=true;
+Chart.defaults.plugins.legend.labels.boxWidth=8;
+Chart.defaults.plugins.legend.labels.__orig=Chart.defaults.plugins.legend.labels.generateLabels||Chart.registry.plugins.get('legend').defaults.labels.generateLabels;
+Chart.defaults.plugins.legend.labels.generateLabels=function(ch){
+  const it=Chart.defaults.plugins.legend.labels.__orig(ch);
+  it.forEach(x=>{const d=ch.data.datasets[x.datasetIndex];if(!d)return;const t=d.showLine?'line':(d.type||ch.config.type);
+    if(t==='line'&&!d.pointRadius){x.pointStyle='line';x.strokeStyle=d.borderColor;x.lineWidth=d.borderWidth||2;x.lineDash=d.borderDash||[];x.fillStyle='rgba(0,0,0,0)';}
+    else if(t==='line'){x.pointStyle='circle';x.fillStyle=d.pointBackgroundColor&&!Array.isArray(d.pointBackgroundColor)?d.pointBackgroundColor:(d.borderColor||x.fillStyle);}
+    else if(t==='bar'){x.pointStyle='rect';x.strokeStyle='rgba(0,0,0,0)';}});
+  return it;};
+const vline={id:'vline',afterDraw(ch,a,o){if(!o||o.index==null)return;const x=ch.scales.x.getPixelForValue(o.index);const {top,bottom}=ch.chartArea;const c=ch.ctx;c.save();c.strokeStyle=RED;c.setLineDash([4,4]);c.lineWidth=1.3;c.beginPath();c.moveTo(x,top);c.lineTo(x,bottom);c.stroke();if(o.label){const st=x>(ch.chartArea.left+ch.chartArea.right)/2;c.fillStyle=RED;c.font='12px system-ui';c.textAlign=st?'right':'left';c.fillText(st?o.label+' ':' '+o.label,x,top+11);}c.restore();}};
+Chart.register(vline);
+const gridc={color:'#e9e8e2'};
+const eY=t=>({title:{display:!!t,text:t},grid:gridc});
+const eX=t=>({title:{display:!!t,text:t},grid:{display:false}});
+const mk=(canvas,cfg)=>new Chart(canvas,cfg);
+const base=(extra={})=>Object.assign({responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false}},extra);
+const dm=(a)=>{const f=a.filter(x=>x!=null&&isFinite(x));return f.length?[Math.min(...f),Math.max(...f)]:[0,1];};
+
+/* ---------------------------------------------------------------- configurări de grafice */
+function cfgRang(R,tit){
+  const T=M.precip;
+  const col=R.ani.map(a=>a===R.an_ep?RED:BLUEL);
+  const data=T?R.val:R.val.map(v=>v==null?null:[R.normala,v]);
+  return {type:'bar',data:{labels:R.ani,datasets:[
+    {label:'Valoarea ferestrei',data,backgroundColor:col,order:2},
+    {type:'line',label:'Normala ferestrei ('+fmt(R.normala,1)+' '+U+')',data:R.ani.map(()=>R.normala),borderColor:GREEN,borderWidth:2,pointRadius:0,order:1}]},
+    options:base({plugins:{title:{display:!!tit,text:tit},tooltip:{callbacks:{label:c=>c.dataset.type==='line'?c.dataset.label:fmt(R.val[c.dataIndex],1)+' '+U}}},scales:{x:eX(),y:Object.assign(eY(U),{beginAtZero:T})}})};
+}
+function cfgOrizontal(items,culoare,unitate,dec){
+  return {type:'bar',data:{labels:items.map(i=>i.et),datasets:[{data:items.map(i=>i.v),backgroundColor:items.map(i=>i.ep?RED:culoare)}]},
+    options:base({indexAxis:'y',interaction:{mode:'nearest',intersect:true},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmt(c.parsed.x,dec)+' '+unitate}}},scales:{x:eY(unitate),y:{grid:{display:false},ticks:{font:{size:11}}}}})};
+}
+function cfgGumbel(G){
+  return {type:'scatter',data:{datasets:[
+    {label:'Maximele anuale ('+G.n+' ani)',data:G.puncte.map(p=>({x:p[0],y:p[1]})),backgroundColor:BLUE,pointRadius:4},
+    {label:'Gumbel (metoda momentelor)',data:G.dreapta.map(p=>({x:p[0],y:p[1]})),showLine:true,borderColor:'#0b0b0b',borderWidth:1.5,pointRadius:0},
+    {label:'Episodul: '+fmt(G.ep[1],M.precip?1:2)+' → '+(G.T>=2?'T ≈ '+fmt(G.T,0)+' ani':'T < 2 ani (obișnuit)'),data:[{x:G.ep[0],y:G.ep[1]}],backgroundColor:RED,pointStyle:'rectRot',borderColor:'#0b0b0b',borderWidth:1.5,pointRadius:10,pointHoverRadius:12}]},
+    options:base({interaction:{mode:'nearest',intersect:true},scales:{x:Object.assign(eY('variabila redusă Gumbel  −ln(−ln F)'),{}),y:eY(G.unit)},plugins:{tooltip:{callbacks:{label:c=>{const T=[2,5,10,25,50,100].find(t=>Math.abs(-Math.log(-Math.log(1-1/t))-c.parsed.x)<0.12);return fmt(c.parsed.y,2)+' '+G.unit+(T?'  (≈ '+T+' ani)':'');}}}}})};
+}
+function cfgZilnic(Z,tit){
+  const n=Z.zile.length,T=M.precip;
+  const ep=Z.zile.map((_,i)=>i>=Z.ant);
+  const ds=[];
+  const hz=(v,lab,c)=>({type:'line',label:lab,data:Z.zile.map(()=>v),borderColor:c,borderDash:[6,4],borderWidth:1.2,pointRadius:0,yAxisID:'y'});
+  const sc={x:Object.assign(eX(),{ticks:{maxTicksLimit:10}}),y:eY(M.unit_zi)};
+  if(T){
+    ds.push({type:'bar',label:'Precipitații zilnice',data:Z.val,backgroundColor:ep.map(e=>e?BLUE:BLUEL),yAxisID:'y',order:3});
+    ds.push({type:'line',label:'Media zilnică climatologică',data:Z.med,borderColor:GREEN,borderWidth:1.5,pointRadius:0,yAxisID:'y',order:2});
+    ds.push({type:'line',label:'Cumulat în episod (dreapta)',data:Z.cum,borderColor:'#0b0b0b',borderWidth:2.2,pointRadius:0,yAxisID:'y1',order:1});
+    ds.push({type:'line',label:'Cumulat normal (dreapta)',data:Z.cum_med,borderColor:GREEN,borderDash:[5,4],borderWidth:1.6,pointRadius:0,yAxisID:'y1',order:1});
+    sc.y1={position:'right',title:{display:true,text:'mm cumulați'},grid:{display:false}};
+  }else{
+    ds.push({type:'line',label:'p10',data:Z.p10,borderWidth:0,pointRadius:0,backgroundColor:'rgba(42,120,214,.13)',fill:false,yAxisID:'y',order:5});
+    ds.push({type:'line',label:'Plajă climatologică p10–p90',data:Z.p90,borderWidth:0,pointRadius:0,backgroundColor:'rgba(42,120,214,.13)',fill:'-1',yAxisID:'y',order:5});
+    ds.push({type:'line',label:'Media climatologică',data:Z.med,borderColor:BLUE,borderDash:[5,4],borderWidth:1.3,pointRadius:0,yAxisID:'y',order:3});
+    ds.push({type:'line',label:'Valoarea zilnică',data:Z.val,borderColor:'#0b0b0b',borderWidth:1.8,pointRadius:3,pointBackgroundColor:ep.map(e=>e?RED:GREY),yAxisID:'y',order:1});
+  }
+  if(Z.p95!=null)ds.push(hz(Z.p95,(M.mare?'p95: ':'p5: ')+fmt(Z.p95,1)+' '+M.unit_zi,ORANGE));
+  if(Z.p99!=null)ds.push(hz(Z.p99,(M.mare?'p99: ':'p1: ')+fmt(Z.p99,1)+' '+M.unit_zi,RED));
+  return {data:{labels:Z.zile.map(z=>z.slice(8)+'.'+z.slice(5,7)),datasets:ds},
+    options:base({plugins:{title:{display:!!tit,text:tit},legend:{labels:{filter:i=>i.text!=='p10'}},vline:Z.ant>0?{index:Z.ant,label:'începutul episodului'}:{}},scales:sc})};
+}
+function cfgAntecedent(A){
+  const lab=A.zile.map(z=>z.slice(8)+'.'+z.slice(5,7));
+  if(A.precip){
+    return {type:'line',data:{labels:lab,datasets:[
+      {label:'p10',data:A.p10,borderWidth:0,pointRadius:0,backgroundColor:'rgba(42,120,214,.13)',fill:false},
+      {label:'Plajă climatologică p10–p90',data:A.p90,borderWidth:0,pointRadius:0,backgroundColor:'rgba(42,120,214,.13)',fill:'-1'},
+      {label:'Media climatologică',data:A.med,borderColor:BLUE,borderDash:[5,4],borderWidth:1.5,pointRadius:0},
+      {label:'Cumulat observat',data:A.obs,borderColor:'#0b0b0b',borderWidth:2.2,pointRadius:0}]},
+      options:base({plugins:{legend:{labels:{filter:i=>i.text!=='p10'}},vline:{index:A.idx_ep,label:'începutul episodului'}},scales:{x:Object.assign(eX(),{ticks:{maxTicksLimit:12}}),y:eY('mm cumulați')}})};
+  }
+  return {type:'bar',data:{labels:lab,datasets:[{label:'Anomalie zilnică',data:A.anom,backgroundColor:A.anom.map(v=>v>=0?RED:BLUE)}]},
+    options:base({plugins:{legend:{display:false},vline:{index:A.idx_ep,label:'începutul episodului'}},scales:{x:Object.assign(eX(),{ticks:{maxTicksLimit:12}}),y:eY('anomalie zilnică (°C)')}})};
+}
+function cfgComparatii(C){
+  const n=Math.max(...C.curbe.map(c=>c.v.length));
+  return {type:'line',data:{labels:Array.from({length:n},(_,i)=>i+1),datasets:C.curbe.map((c,i)=>({label:c.et,data:c.v,borderColor:c.curent?RED:PAL[i%PAL.length],borderWidth:c.curent?3.4:1.8,pointRadius:c.curent?3.5:2,pointBackgroundColor:c.curent?RED:PAL[i%PAL.length],order:c.curent?0:1}))},
+    options:base({plugins:{legend:{position:'bottom'}},scales:{x:eX('ziua episodului'),y:eY(C.precip?'mm cumulați':'anomalie zilnică (°C)')}})};
+}
+function cfgFrecventa(F,cheie,decheie,et,tend,culoare){
+  return {type:'bar',data:{labels:F.ani,datasets:[
+    {label:et,data:F[cheie],backgroundColor:culoare,order:2},
+    {type:'line',label:'Media deceniului',data:F[decheie],borderColor:'#0b0b0b',borderWidth:2.4,pointRadius:0,stepped:true,order:1}]},
+    options:base({plugins:{title:{display:true,text:et+' · tendință '+(tend[0]>=0?'+':'−')+fmt(Math.abs(tend[0]),2)+' pe deceniu (p = '+fmt(tend[1],3)+')'}},scales:{x:eX(),y:Object.assign(eY('nr. pe an'),{ticks:{precision:0},beginAtZero:true})}})};
+}
+
+/* ---------------------------------------------------------------- fila „Grafice” */
+const GR=[];
+const gp=(id,titlu,descr,build,extra={})=>GR.push(Object.assign({id,titlu,descr,build},extra));
+gp('rang','(1) Rangul pe aceeași fereastră','Valoarea aceleiași ferestre calendaristice în fiecare an; episodul în roșu, normala în verde.',
+   ()=>[cfgRang(D.rang,'')]);
+gp('zilnic','(5) Zilele episodului','Valorile zilnice față de climatologie și pragurile cozii analizate (p95 / p99 la maxime, p5 / p1 la minime). Fereastra este de ±15 zile în calendar, ±30 la precipitații.',
+   ()=>[cfgZilnic(D.zilnic,'')]);
+if(D.antecedent)gp('antecedent','(7) Contextul anterior','Ultimele zile dinainte de episod (' + (D.antecedent.zile.length-M.N) + ' zile) și episodul: ' + (D.antecedent.precip?'cumulul față de plaja climatologică.':'anomaliile zilnice.'),
+   ()=>[cfgAntecedent(D.antecedent)],{nota:()=>antTabel()});
+gp('top','(2) Cele mai mari episoade','Episoade de aceeași lungime din același sezon (încheiate la ±30 de zile în calendar de episod), fără suprapuneri; episodul curent este în roșu.',
+   ()=>[cfgOrizontal(D.top.items,BLUE,D.top.unit,M.precip?1:2)]);
+if(D.gumbel)gp('gumbel','(3) Perioada de revenire','Câte un maxim pe an, numai din același sezon (±30 de zile în calendar), pe ferestre de aceeași lungime, cu dreapta Gumbel (metoda momentelor). Orientativ: cu ~65 de ani de date, valorile peste 100–150 de ani sunt foarte nesigure.',
+   ()=>[cfgGumbel(D.gumbel)],{nota:()=>gumbelTabel()});
+gp('siruri','(4) Șiruri de zile excepționale','Cele mai lungi șiruri: '+D.siruri.definitie+'.',
+   ()=>[cfgOrizontal(D.siruri.items,PURPLE,'zile',0)]);
+if(D.comparatii&&D.comparatii.curbe.length>1)gp('comp','(13) Comparație cu alte episoade','Episodul (roșu) față de cele mai mari 3 episoade istorice și de cele alese de dumneavoastră, aliniate pe zilele episodului.',
+   ()=>[cfgComparatii(D.comparatii)]);
+if(D.frecventa)gp('frecv','(14) Cât de des apar','Numărul anual de episoade similare și de șiruri lungi, cu media pe decenii și tendința.',
+   ()=>[cfgFrecventa(D.frecventa,'ev','dec_ev',D.frecventa.et_ev,D.frecventa.tend_ev,BLUE),cfgFrecventa(D.frecventa,'sir','dec_sir',D.frecventa.et_sir,D.frecventa.tend_sir,PURPLE)],{mic:true});
+if(D.extindere)gp('ext','(9) Extinderea spațială','Ce fracție din teritoriul hărții a depășit pragurile și unde episodul este record sau în primele 3 locuri istorice.',
+   ()=>[cfgOrizontal(D.extindere.et.map((e,i)=>({et:e,v:D.extindere.v[i],ep:i>=D.extindere.v.length-2})),BLUE,'% din teritoriu',1)]);
+if(D.context)gp('context','(10) Celelalte variabile','Episodul față de normala ferestrei pentru celelalte variabile.',null,{tabel:true});
+gp('calendar','(11) Calendarul zilelor','Fiecare zi din istoric (rânduri = ani, coloane = zile din an). Chenarul roșu este episodul; banda roșie, aceeași fereastră în toți anii.',null,{calendar:true});
+let GCUR=GR[0].id, gcharts=[];
+GR.forEach(g=>$('#glista').append(el('button',{'data-id':g.id},g.titlu)));
+[...$('#glista').children].forEach(b=>b.onclick=()=>aratag(b.dataset.id));
+function antTabel(){const t=D.antecedent.tabel||[];if(!t.length)return null;
+  return '<table class="t"><thead><tr><th>Perioadă dinainte</th><th class="n">Valoare</th><th class="n">Normală</th><th class="n">'+(M.precip?'% din normală':'Anomalie')+'</th><th class="n">Rang</th></tr></thead><tbody>'+
+   t.map(r=>'<tr><td>'+r.zile+' zile ('+r.de_la+' → '+r.pana_la+')</td><td class="n">'+fmt(r.valoare,1)+' '+U+'</td><td class="n">'+fmt(r.normala,1)+'</td><td class="n">'+(M.precip?fmt(r.procent,0)+' %':fmt(r.anomalie,2)+' °C')+'</td><td class="n">'+r.rang+' / '+r.din_ani+'</td></tr>').join('')+'</tbody></table>';}
+function gumbelTabel(){const n=D.gumbel.niveluri;
+  return '<b>Niveluri de revenire (Gumbel):</b> '+Object.keys(n).map(T=>T+' ani → '+fmt(n[T],M.precip?1:2)+' '+D.gumbel.unit).join(' · ');}
+function contextTabel(){
+  return '<table class="t"><thead><tr><th>Variabila</th><th class="n">Episod</th><th class="n">Normala ferestrei</th><th class="n">Anomalie</th></tr></thead><tbody>'+
+   D.context.map(r=>{const a=r.ep-r.norm;return '<tr><td>'+esc(r.nume)+'</td><td class="n">'+fmt(r.ep,1)+' '+r.unit+'</td><td class="n">'+fmt(r.norm,1)+' '+r.unit+'</td><td class="n" style="color:'+(a>0?RED:a<0?BLUE:'inherit')+'">'+(a>0?'+':a<0?'−':'')+fmt(Math.abs(a),1)+' '+r.unit+'</td></tr>';}).join('')+'</tbody></table>';}
+function aratag(id){
+  GCUR=id;const g=GR.find(x=>x.id===id)||GR[0];
+  [...$('#glista').children].forEach(b=>b.classList.toggle('on',b.dataset.id===g.id));
+  gcharts.forEach(c=>c.destroy());gcharts=[];
+  $('#gdescr').textContent=g.descr;const cont=$('#gcont');cont.innerHTML='';$('#gnota').innerHTML='';
+  $('#gpng').style.display=$('#gcsv').style.display='';
+  if(g.tabel){cont.innerHTML=contextTabel();$('#gpng').style.display=$('#gcsv').style.display='none';return;}
+  if(g.calendar){desenCalendar(cont);$('#gcsv').style.display='none';return;}
+  g.build().forEach(cfg=>{const b=el('div',{class:'gbox'+(g.mic?' mic':'')});const c=el('canvas');b.append(c);cont.append(b);gcharts.push(mk(c,cfg));});
+  if(g.nota){const n=g.nota();if(n)$('#gnota').innerHTML=n;}
+}
+$('#gpng').onclick=()=>{gcharts.forEach((c,i)=>{const a=el('a',{href:c.toBase64Image(),download:'grafic_'+GCUR+(i?'_'+(i+1):'')+'.png'});a.click();});};
+$('#gcsv').onclick=()=>{
+  const rows=[];gcharts.forEach(c=>{const d=c.data;if(d.labels){rows.push(['eticheta',...d.datasets.map(s=>s.label)]);d.labels.forEach((l,i)=>rows.push([l,...d.datasets.map(s=>{const v=s.data[i];return Array.isArray(v)?v[1]:(v&&typeof v==='object'?v.y:v);})]));}else{d.datasets.forEach(s=>{rows.push([s.label,'x','y']);s.data.forEach(p=>rows.push(['',p.x,p.y]));});}rows.push([]);});
+  const t=rows.map(r=>r.map(v=>v==null?'':String(v).replace('.',',').replace(/;/g,',')).join(';')).join('\n');
+  const a=el('a',{href:URL.createObjectURL(new Blob(['﻿'+t],{type:'text/csv'})),download:'grafic_'+GCUR+'.csv'});a.click();};
+
+/* calendar (canvas propriu, cu cursor) */
+function desenCalendar(cont){
+  const C=D.calendar,nA=C.ani.length;const L=LUT[C.lut];
+  const w=cont.clientWidth||900,mg={l:44,r:12,t:10,b:26},ch=Math.max(260,nA*7+mg.t+mg.b);
+  const box=el('div',{style:'position:relative'});const cv=el('canvas');cv.width=w;cv.height=ch;cv.style.width='100%';box.append(cv);
+  const tip=el('div',{class:'tip'});box.append(tip);cont.append(box);
+  const x=cv.getContext('2d'),pw=(w-mg.l-mg.r)/366,ph=(ch-mg.t-mg.b)/nA;
+  const col=v=>{if(v==null)return null;let t;if(C.log){if(v<C.lo)return null;t=(Math.log(v)-Math.log(C.lo))/(Math.log(C.hi)-Math.log(C.lo));}else{t=(v-C.lo)/(C.hi-C.lo);}return L[Math.round(Math.max(0,Math.min(1,t))*255)];};
+  nA&&C.M.forEach((r,i)=>r.forEach((v,j)=>{const c=col(v);if(c){x.fillStyle='rgb('+c+')';x.fillRect(mg.l+j*pw,mg.t+i*ph,Math.ceil(pw),Math.ceil(ph));}}));
+  const a0=C.d0,a1=C.d1;
+  x.fillStyle='rgba(227,73,72,.07)';x.fillRect(mg.l+a0*pw,mg.t,((C.y0===C.y1?a1:365)-a0+1)*pw,nA*ph);
+  x.strokeStyle=RED;x.lineWidth=2;
+  const yi=C.ani.indexOf(C.y0),yj=C.ani.indexOf(C.y1);
+  if(C.y0===C.y1)x.strokeRect(mg.l+a0*pw,mg.t+yi*ph,(a1-a0+1)*pw,ph);else{x.strokeRect(mg.l+a0*pw,mg.t+yi*ph,(366-a0)*pw,ph);x.strokeRect(mg.l,mg.t+yj*ph,(a1+1)*pw,ph);}
+  x.fillStyle='#52514e';x.font='11px system-ui';x.textAlign='center';
+  ['ian','feb','mar','apr','mai','iun','iul','aug','sep','oct','noi','dec'].forEach((m,i)=>x.fillText(m,mg.l+([0,31,60,91,121,152,182,213,244,274,305,335][i]+15)*pw,ch-8));
+  x.textAlign='right';for(let i=0;i<nA;i+=5)x.fillText(C.ani[i],mg.l-6,mg.t+i*ph+ph*0.8);
+  const luni=[31,29,31,30,31,30,31,31,30,31,30,31];
+  cv.onmousemove=e=>{const r=cv.getBoundingClientRect(),sx=cv.width/r.width;const px=(e.clientX-r.left)*sx,py=(e.clientY-r.top)*sx;const j=Math.floor((px-mg.l)/pw),i=Math.floor((py-mg.t)/ph);
+    if(j<0||j>365||i<0||i>=nA){tip.style.display='none';return;}let m=0,d=j;while(d>=luni[m]){d-=luni[m];m++;}
+    const v=C.M[i][j];tip.style.display='block';tip.textContent=(d+1)+'.'+String(m+1).padStart(2,'0')+'.'+C.ani[i]+' · '+(v==null?'–':fmt(v,M.precip?1:2)+' '+C.unit);
+    tip.style.left=(e.clientX-r.left+12)+'px';tip.style.top=(e.clientY-r.top+12)+'px';};
+  cv.onmouseleave=()=>tip.style.display='none';
+}
+
+/* ---------------------------------------------------------------- fila „Pe zone” */
+let ZSEL=0,zch=[],zsort={k:'rang',d:1};
+function zonePoly(){return D.zone?D.zone.filter(z=>!z.total):[];}
+function aratazona(i){
+  if(!D.zone)return;ZSEL=i;
+  const Z=D.zone,t=$('#tzone');
+  const cols=[['nume','Zona',0],['ep','Episod',1],['norm','Normală',1],['anom','Anomalie',1]].concat(M.precip?[['proc','% din normală',1]]:[]).concat([['rang','Rang',1]]);
+  const ord=Z.map((z,k)=>k).sort((a,b)=>{const A=Z[a],B=Z[b];if(A.total!==B.total)return A.total?1:-1;const x=A[zsort.k],y=B[zsort.k];return (typeof x==='string'?x.localeCompare(y,'ro'):(x==null?1e9:x)-(y==null?1e9:y))*zsort.d;});
+  t.innerHTML='<thead><tr>'+cols.map(c=>'<th class="'+(c[2]?'n':'')+'" data-k="'+c[0]+'">'+c[1]+(zsort.k===c[0]?(zsort.d>0?' ▲':' ▼'):'')+'</th>').join('')+'</tr></thead><tbody>'+
+   ord.map(k=>{const z=Z[k];return '<tr data-i="'+k+'" class="'+(k===ZSEL?'sel ':'')+(z.total?'tot':'')+'"><td>'+esc(z.nume)+'</td><td class="n">'+fmt(z.ep,1)+'</td><td class="n">'+fmt(z.norm,1)+'</td><td class="n">'+(z.anom>0?'+':'')+fmt(z.anom,1)+'</td>'+(M.precip?'<td class="n">'+fmt(z.proc,0)+' %</td>':'')+'<td class="n">'+z.rang+' / '+z.din+'</td></tr>';}).join('')+'</tbody>';
+  [...t.querySelectorAll('th')].forEach(th=>th.onclick=()=>{zsort=(zsort.k===th.dataset.k)?{k:zsort.k,d:-zsort.d}:{k:th.dataset.k,d:1};aratazona(ZSEL);});
+  [...t.querySelectorAll('tbody tr')].forEach(tr=>tr.onclick=()=>{aratazona(+tr.dataset.i);if(typeof render==='function'&&H)render();});
+  const z=Z[ZSEL];$('#zsel').textContent=z.nume+' — episod '+fmt(z.ep,1)+' '+U+', rang '+z.rang+' din '+z.din;
+  zch.forEach(c=>c.destroy());zch=[];
+  zch.push(mk($('#zc1'),cfgRang({ani:z.ani,val:z.vals,normala:z.norm,an_ep:+M.d0.slice(0,4),ep_val:z.ep},'Aceeași fereastră, în fiecare an')));
+  const zl=Array.from({length:z.zi.length},(_,i)=>{const d=new Date(M.d0+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+i);return d.toISOString().slice(8,10)+'.'+d.toISOString().slice(5,7);});
+  zch.push(mk($('#zc2'),{type:'bar',data:{labels:zl,datasets:[{label:'Valoarea zilnică',data:z.zi,backgroundColor:M.precip?BLUE:RED}]},options:base({plugins:{legend:{display:false},title:{display:true,text:'Valorile zilnice ale episodului'}},scales:{x:eX(),y:Object.assign(eY(M.unit_zi),{beginAtZero:M.precip})}})}));
+}
+
+/* ---------------------------------------------------------------- harta */
+const H=D.harti;let render=()=>{},resizeMap=()=>{};
+if(H){
+  const cv=$('#harta'),ctx=cv.getContext('2d'),wrap=$('#mapwrap'),tip=$('#tip');
+  const W=H.extent[0],E=H.extent[1],S=H.extent[2],N=H.extent[3];
+  const kx=Math.cos((S+N)/2*Math.PI/180),ww=(E-W)*kx,hh=N-S;
+  let cw=0,chh=0,dpr=1,v={s:1,tx:0,ty:0},cur=null,sel=null,zi=0,anim=null,opac=.92,imgCache={key:'',off:null};
+  const w2x=lon=>((lon-W)*kx)*v.s+v.tx, w2y=lat=>(N-lat)*v.s+v.ty;
+  const x2lon=x=>W+((x-v.tx)/v.s)/kx, y2lat=y=>N-((y-v.ty)/v.s);
+  function fit(){v.s=Math.min(cw/ww,chh/hh)*0.97;v.tx=(cw-ww*v.s)/2;v.ty=(chh-hh*v.s)/2;}
+  resizeMap=function(){const r=wrap.getBoundingClientRect();if(!r.width)return;dpr=window.devicePixelRatio||1;const f=(!cw);cw=r.width;chh=r.height;cv.width=Math.round(cw*dpr);cv.height=Math.round(chh*dpr);if(f)fit();};
+  /* decodare */
+  async function inflate(b64,n){
+    const bin=atob(b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+    const st=new Blob([u]).stream().pipeThrough(new DecompressionStream('deflate'));
+    const b=new Uint8Array(await new Response(st).arrayBuffer());const q=new Uint16Array(n);for(let i=0;i<n;i++)q[i]=b[i]|(b[n+i]<<8);return q;}
+  const deq=(q,lo,hi)=>i=>{const x=q[i];return x===65535?NaN:lo+x*(hi-lo)/65534;};
+  for(const s of H.straturi){s.q=await inflate(s.blob,s.nx*s.ny);s.get=deq(s.q,s.lo,s.hi);s.pas=H.pas*H.factor;}
+  const CUB=H.cub;
+  if(CUB){CUB.q=await inflate(CUB.blob,CUB.zile.length*CUB.nx*CUB.ny);CUB.np=CUB.nx*CUB.ny;CUB.pas=H.pas*CUB.factor;
+    CUB.day=(t,i)=>{const x=CUB.q[t*CUB.np+i];return x===65535?NaN:CUB.lo+x*(CUB.hi-CUB.lo)/65534;};
+    CUB.cs=new Float32Array(CUB.np);CUB.cn=new Uint16Array(CUB.np);CUB.out=new Float32Array(CUB.np);CUB.last=-1;
+    CUB.cum=t=>{if(t<CUB.last){CUB.cs.fill(0);CUB.cn.fill(0);CUB.last=-1;}
+      for(let d=CUB.last+1;d<=t;d++){for(let i=0;i<CUB.np;i++){const x=CUB.q[d*CUB.np+i];if(x!==65535){CUB.cs[i]+=CUB.lo+x*(CUB.hi-CUB.lo)/65534;CUB.cn[i]++;}}}CUB.last=t;
+      for(let i=0;i<CUB.np;i++)CUB.out[i]=CUB.cn[i]?(CUB.pozitiv?CUB.cs[i]:CUB.cs[i]/CUB.cn[i]):NaN;return CUB.out;};}
+  /* culoare */
+  function mkCol(sp){
+    const L=LUT[sp.lut];
+    if(sp.clase){const cols=sp.culori.map(hex2rgb),B=sp.clase;return x=>{if(x!==x)return null;let k=0;for(let i=0;i<cols.length;i++)if(x>=B[i])k=i;return cols[k];};}
+    const lo=sp.vmin,hi=sp.vmax,c=sp.centru;
+    if(c!=null)return x=>{if(x!==x)return null;let t=x<c?0.5*(x-lo)/((c-lo)||1):0.5+0.5*(x-c)/((hi-c)||1);return L[Math.round(Math.max(0,Math.min(1,t))*255)];};
+    return x=>{if(x!==x)return null;const t=(x-lo)/((hi-lo)||1);return L[Math.round(Math.max(0,Math.min(1,t))*255)];};}
+  function imagine(nx,ny,get,col){const off=document.createElement('canvas');off.width=nx;off.height=ny;const c=off.getContext('2d'),im=c.createImageData(nx,ny),d=im.data;
+    for(let i=0;i<nx*ny;i++){const r=col(get(i));if(r){d[4*i]=r[0];d[4*i+1]=r[1];d[4*i+2]=r[2];d[4*i+3]=255;}}c.putImageData(im,0,0);return off;}
+  /* straturi disponibile */
+  const OPT=[];
+  H.straturi.filter(s=>s.id!=='rang').forEach(s=>OPT.push({k:'strat',g:'Statistici ale episodului',id:s.id,s}));
+  H.straturi.filter(s=>s.id==='rang').forEach(s=>OPT.push({k:'strat',g:'Rang istoric',id:s.id,s}));
+  if(CUB){OPT.push({k:'zi',g:'Zi cu zi',id:'zi',titlu:CUB.titlu_zi});OPT.push({k:'cum',g:'Zi cu zi',id:'cum',titlu:CUB.titlu_cum});}
+  if(D.zone_straturi&&H.poligoane)D.zone_straturi.forEach(s=>OPT.push({k:'zona',g:'Pe zone (poligoane)',id:s.id,s}));
+  let gcur='';OPT.forEach(o=>{if(o.g!==gcur){$('#lista').append(el('h4',{},o.g));gcur=o.g;}const b=el('button',{},o.s?o.s.titlu:o.titlu);b.onclick=()=>alege(o);o.btn=b;$('#lista').append(b);});
+  const colSp=o=>o.k==='zi'?{lut:CUB.lut_zi,vmin:CUB.vmin_zi,vmax:CUB.vmax_zi,centru:null}:o.k==='cum'?{lut:CUB.lut_cum,vmin:CUB.vmin_cum,vmax:CUB.vmax_cum,centru:null}:o.s;
+  function layerDims(o){return o.k==='strat'?{nx:o.s.nx,ny:o.s.ny,pas:o.s.pas}:{nx:CUB.nx,ny:CUB.ny,pas:CUB.pas};}
+  function valueAt(o,lon,lat){
+    if(o.k==='zona'){const k=zonaLa(lon,lat);return k<0?NaN:o.s.vals[k];}
+    const d=layerDims(o),c=Math.floor((lon-W)/d.pas),r=Math.floor((N-lat)/d.pas);if(c<0||r<0||c>=d.nx||r>=d.ny)return NaN;const i=r*d.nx+c;
+    if(o.k==='strat')return o.s.get(i);if(o.k==='zi')return CUB.day(zi,i);return cumCache()[i];}
+  let cc={t:-1,a:null};const cumCache=()=>{if(cc.t!==zi||!cc.a){cc.a=CUB.cum(zi);cc.t=zi;}return cc.a;};
+  /* poligoane */
+  function pip(ring,x,y){let ins=false;for(let i=0,j=ring.length-2;i<ring.length;i+=2){const xi=ring[i],yi=ring[i+1],xj=ring[j],yj=ring[j+1];if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))ins=!ins;j=i;}return ins;}
+  function zonaLa(lon,lat){if(!H.poligoane)return -1;for(let k=0;k<H.poligoane.length;k++){let ins=false;for(const r of H.poligoane[k].linii)if(pip(r,lon,lat))ins=!ins;if(ins)return k;}return -1;}
+  /* alegere strat */
+  function alege(o){cur=o;OPT.forEach(x=>x.btn.classList.toggle('on',x===o));
+    $('#zi').classList.toggle('on',o.k==='zi'||o.k==='cum');if(o.k!=='zi'&&o.k!=='cum')oprire();
+    $('#descr').textContent=o.s?(o.s.descr||''):(o.k==='zi'?'Valoarea fiecărei zile din episod. Folosiți glisorul sau ▶.':'Cumulul (precipitații) sau media (temperaturi) de la începutul episodului până în ziua aleasă.');
+    legenda(o);imgCache.key='';render();}
+  function legenda(o){const sp=colSp(o),L=$('#legenda');L.innerHTML='';
+    const un=o.k==='strat'||o.k==='zona'?o.s.unit:(o.k==='cum'?M.unit:CUB.unit);const tit=o.s?o.s.titlu:o.titlu;L.append(el('div',{class:'titlu'},tit+' ('+un+')'));
+    if(sp.clase){const c=el('div',{class:'clase'});sp.etichete.forEach((e,i)=>c.append(el('span',{style:'background:'+sp.culori[i]+';color:'+(i<3?'#fff':'#222')},e)));L.append(c);return;}
+    const l=LUT[sp.lut],st=[];for(let i=0;i<=12;i++){const r=l[Math.round(i/12*255)];st.push('rgb('+r+')');}
+    L.append(el('div',{class:'bara',style:'background:linear-gradient(90deg,'+st.join(',')+')'}));
+    const tk=el('div',{class:'tickuri'});const d=(sp.vmax-sp.vmin)<8?1:0;tk.append(el('span',{},fmt(sp.vmin,d)));if(sp.centru!=null)tk.append(el('span',{},fmt(sp.centru,d)));tk.append(el('span',{},fmt(sp.vmax,d)));L.append(tk);}
+  /* desen */
+  render=function(){
+    if(!cw||!cur)return;
+    ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,cw,chh);ctx.fillStyle='#eef1f4';ctx.fillRect(0,0,cw,chh);
+    if(cur.k==='zona'){
+      const col=mkCol(cur.s);ctx.globalAlpha=opac;
+      H.poligoane.forEach((p,k)=>{const c=col(cur.s.vals[k]);if(!c)return;ctx.fillStyle='rgb('+c+')';ctx.beginPath();for(const r of p.linii){for(let i=0;i<r.length;i+=2){const X=w2x(r[i]),Y=w2y(r[i+1]);i?ctx.lineTo(X,Y):ctx.moveTo(X,Y);}ctx.closePath();}ctx.fill('evenodd');});
+      ctx.globalAlpha=1;
+    }else{
+      const key=cur.id+'|'+((cur.k==='zi'||cur.k==='cum')?zi:0);
+      if(imgCache.key!==key){const d=layerDims(cur),col=mkCol(colSp(cur));
+        const get=cur.k==='strat'?cur.s.get:cur.k==='zi'?(i=>CUB.day(zi,i)):(()=>{const a=cumCache();return i=>a[i];})();
+        imgCache={key,off:imagine(d.nx,d.ny,get,col)};}
+      const d=layerDims(cur);ctx.imageSmoothingEnabled=false;ctx.globalAlpha=opac;
+      ctx.drawImage(imgCache.off,w2x(W),w2y(N),d.nx*d.pas*kx*v.s,d.ny*d.pas*v.s);ctx.globalAlpha=1;
+    }
+    ctx.lineJoin='round';
+    const linii=(arr,st,lw)=>{ctx.strokeStyle=st;ctx.lineWidth=lw;ctx.beginPath();for(const r of arr){for(let i=0;i<r.length;i+=2){const X=w2x(r[i]),Y=w2y(r[i+1]);i?ctx.lineTo(X,Y):ctx.moveTo(X,Y);}}ctx.stroke();};
+    if(H.contur&&H.contur.length)linii(H.contur,'rgba(20,20,20,.75)',0.9);
+    if(H.poligoane){linii(H.poligoane.flatMap(p=>p.linii),'rgba(20,20,20,.55)',1.1);
+      if(D.zone&&ZSEL<H.poligoane.length&&D.zone_selectat!==false)linii(H.poligoane[ZSEL].linii,RED,2.4);}
+    if(H.punct){star(w2x(H.punct[0]),w2y(H.punct[1]),H.punct[2]);}
+    if(sel){ctx.strokeStyle='#000';ctx.lineWidth=1.6;const p=w2x(sel.lon),q=w2y(sel.lat);ctx.beginPath();ctx.arc(p,q,6,0,7);ctx.stroke();ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.beginPath();ctx.arc(p,q,7.5,0,7);ctx.stroke();}
+  };
+  function star(x,y,et){ctx.save();ctx.translate(x,y);ctx.beginPath();for(let i=0;i<10;i++){const r=i%2?5:12,a=-Math.PI/2+i*Math.PI/5;ctx.lineTo(r*Math.cos(a),r*Math.sin(a));}ctx.closePath();ctx.fillStyle='#ffd400';ctx.fill();ctx.strokeStyle='#0b0b0b';ctx.lineWidth=1;ctx.stroke();
+    if(et){ctx.font='bold 12px system-ui';ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.9)';ctx.strokeText(et,10,-8);ctx.fillStyle='#111';ctx.fillText(et,10,-8);}ctx.restore();}
+  /* interacțiuni */
+  let drag=null;
+  cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);drag={x:e.clientX,y:e.clientY,tx:v.tx,ty:v.ty,m:false};});
+  cv.addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect(),px=e.clientX-r.left,py=e.clientY-r.top;
+    if(drag){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>3)drag.m=true;if(drag.m){v.tx=drag.tx+dx;v.ty=drag.ty+dy;render();tip.style.display='none';return;}}
+    if(!cur)return;const lon=x2lon(px),lat=y2lat(py);let x=valueAt(cur,lon,lat);
+    if(x!==x){tip.style.display='none';return;}
+    const un=cur.s?cur.s.unit:(cur.k==='cum'?M.unit:CUB.unit);let tx=fmt(x,Math.abs(x)<10?2:1)+' '+un;if(cur.k==='zona'){const k=zonaLa(lon,lat);tx=H.poligoane[k].nume+': '+tx;}
+    tip.textContent=tx;tip.style.display='block';tip.style.left=Math.min(px+14,cw-150)+'px';tip.style.top=(py+14)+'px';});
+  cv.addEventListener('pointerleave',()=>tip.style.display='none');
+  cv.addEventListener('pointerup',e=>{const was=drag;drag=null;if(!was||was.m)return;const r=cv.getBoundingClientRect();clic(x2lon(e.clientX-r.left),y2lat(e.clientY-r.top));});
+  cv.addEventListener('wheel',e=>{e.preventDefault();const r=cv.getBoundingClientRect(),px=e.clientX-r.left,py=e.clientY-r.top;const f=e.deltaY<0?1.2:1/1.2;zoom(f,px,py);},{passive:false});
+  function zoom(f,px,py){const s0=v.s;v.s=Math.max(0.3*Math.min(cw/ww,chh/hh),Math.min(60*Math.min(cw/ww,chh/hh),v.s*f));const k=v.s/s0;v.tx=px-(px-v.tx)*k;v.ty=py-(py-v.ty)*k;render();}
+  $('#zp').onclick=()=>zoom(1.5,cw/2,chh/2);$('#zm').onclick=()=>zoom(1/1.5,cw/2,chh/2);$('#zr').onclick=()=>{fit();render();};
+  cv.addEventListener('dblclick',()=>{fit();render();});
+  $('#opac').oninput=e=>{opac=e.target.value/100;render();};
+  $('#png').onclick=()=>{cv.toBlob(b=>{const a=el('a',{href:URL.createObjectURL(b),download:'harta_'+(cur.id)+'.png'});a.click();});};
+  window.addEventListener('resize',()=>{const f=cw;cw=0;resizeMap();if(!f)fit();render();});
+  /* zile */
+  const gl=$('#glisor');if(CUB){gl.max=CUB.zile.length-1;
+    const eti=()=>{const z=CUB.zile[zi];$('#zidata').textContent=z.slice(8)+'.'+z.slice(5,7)+'.'+z.slice(0,4)+'  ('+(zi+1)+'/'+CUB.zile.length+')';};
+    gl.oninput=()=>{zi=+gl.value;eti();imgCache.key='';render();if(sel)inspector();};eti();
+    $('#play').onclick=()=>{if(anim){oprire();return;}$('#play').textContent='❚❚';anim=setInterval(()=>{zi=(zi+1)%CUB.zile.length;gl.value=zi;eti();imgCache.key='';render();},650);};}
+  function oprire(){if(anim){clearInterval(anim);anim=null;$('#play').textContent='▶';}}
+  /* inspector */
+  let mini=null;
+  function clic(lon,lat){
+    const k=zonaLa(lon,lat);
+    if(k>=0&&D.zone){ZSEL=k;if(trand.z)aratazona(k);}
+    const ok=H.straturi.some(s=>{const c=Math.floor((lon-W)/s.pas),r=Math.floor((N-lat)/s.pas);return c>=0&&r>=0&&c<s.nx&&r<s.ny&&s.get(r*s.nx+c)===s.get(r*s.nx+c);});
+    sel=ok?{lon,lat,zona:k}:null;inspector();render();}
+  function inspector(){
+    const P=$('#insp');if(mini){mini.destroy();mini=null;}
+    if(!sel){P.innerHTML='<h4>Pixel selectat</h4><div class="gol">În afara zonei cu date. Alegeți alt punct.</div>';return;}
+    let h='<h4>Pixel selectat</h4><div class="gol" style="margin-bottom:6px">'+fmt(sel.lon,3)+'° E, '+fmt(sel.lat,3)+'° N'+(sel.zona>=0?' · '+esc(H.poligoane[sel.zona].nume):'')+'</div><table>';
+    H.straturi.forEach(s=>{const c=Math.floor((sel.lon-W)/s.pas),r=Math.floor((N-sel.lat)/s.pas);const x=s.get(r*s.nx+c);h+='<tr><td>'+s.titlu.replace(/ · .*$/,'')+'</td><td>'+(s.id==='rang'?(x==null||x!==x?'–':'locul '+fmt(x,0)):fmt(x,Math.abs(x)<10?2:1)+' '+s.unit)+'</td></tr>';});
+    h+='</table>';if(CUB)h+='<div class="mini"><canvas id="minic"></canvas></div>';
+    P.innerHTML=h;
+    if(CUB){const c=Math.floor((sel.lon-W)/CUB.pas),r=Math.floor((N-sel.lat)/CUB.pas),i=r*CUB.nx+c,n=CUB.zile.length;
+      const vals=[],cum=[];let sm=0,cn=0;for(let t=0;t<n;t++){const x=CUB.day(t,i);vals.push(x);if(x===x){sm+=x;cn++;}cum.push(CUB.pozitiv?sm:(cn?sm/cn:null));}
+      const ds=[{type:'bar',label:'Valoare zilnică',data:vals,backgroundColor:CUB.pozitiv?BLUE:RED,yAxisID:'y'},
+        {type:'line',label:CUB.pozitiv?'Cumulat':'Media de la început',data:cum,borderColor:'#0b0b0b',borderWidth:2,pointRadius:0,yAxisID:CUB.pozitiv?'y1':'y'}];
+      const sc={x:{ticks:{maxTicksLimit:6,font:{size:10}},grid:{display:false}},y:{ticks:{font:{size:10}},grid:gridc}};if(CUB.pozitiv)sc.y1={position:'right',ticks:{font:{size:10}},grid:{display:false}};
+      mini=mk($('#minic'),{data:{labels:CUB.zile.map(z=>z.slice(8)+'.'+z.slice(5,7)),datasets:ds},options:base({plugins:{legend:{display:false},title:{display:true,text:'Evoluția zilnică în pixel',font:{size:12}}},scales:sc})});}
+  }
+  alege(OPT.find(o=>o.id==='statistica')||OPT[0]);
+}else{
+  render=()=>{};
+}
+
+/* ---------------------------------------------------------------- pornire */
+const hashTab=(location.hash||'').slice(1);
+arata(taburi.some(t=>t[0]===hashTab)?hashTab:taburi[0][0]);
+window.__gata=true;
+})();
+</script>
+</body>
+</html>

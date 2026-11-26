@@ -1,0 +1,33 @@
+{
+  "titlu": "Anomalia termică față de normală",
+  "grup": "Temperatură",
+  "motor": "anomalie",
+  "descriere": "Cât de caldă / rece a fost o perioadă față de normala climatologică 1991–2020, per pixel.",
+  "cost": "o vară × 31 de ani de referință ≈ 3 GB (~5 min), pentru toată țara",
+  "etichete": [
+    "anomalie",
+    "temperatură"
+  ],
+  "mod_indicatori": "liber",
+  "grupuri_indicatori": [
+    "Medii și sume"
+  ],
+  "parametri": {
+    "INDICATORI": [
+      {
+        "cod": "medie",
+        "var": "max_temp"
+      }
+    ],
+    "ANI_TINTA": [
+      2025,
+      2025
+    ],
+    "ANI_REFERINTA": [
+      1991,
+      2020
+    ],
+    "MOD": "diferenta",
+    "SEZON": "JJA"
+  }
+}

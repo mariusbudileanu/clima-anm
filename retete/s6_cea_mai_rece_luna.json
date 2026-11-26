@@ -1,0 +1,31 @@
+{
+  "titlu": "Cea mai rece lună din toată seria",
+  "grup": "Superlative",
+  "motor": "superlative",
+  "descriere": "Toate lunile din 1961 încoace, comparate între ele după temperatura medie: cele mai reci 10 luni dintr-un punct.",
+  "cost": "un punct, toată seria ≈ 2,8 GB la prima rulare (Tmax + Tmin; apoi din cache)",
+  "etichete": [
+    "superlative",
+    "record",
+    "ger",
+    "iarnă",
+    "clasament"
+  ],
+  "parametri": {
+    "VARIABILA": "tmedie",
+    "SENS": "min",
+    "UNITATE": "luni",
+    "ANI": [
+      1961,
+      2025
+    ],
+    "MOD": "clasament",
+    "ZONA": {
+      "tip": "punct",
+      "lon": 26.1025,
+      "lat": 44.4268,
+      "nume": "București"
+    },
+    "TOP": 10
+  }
+}

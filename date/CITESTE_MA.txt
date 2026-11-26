@@ -1,0 +1,6 @@
+Copiați aici fișierele vectoriale folosite de analize (GPKG, SHP, GeoJSON), de exemplu:
+  ro_frontiera_poligon.gpkg   (conturul de pe hărți)
+  ro_judete_poligon.gpkg      (județele, coloana name — numele coloanei nu ține cont de majuscule)
+Interfața le afișează automat în listele de fișiere. Căile relative (date/…) funcționează pe orice calculator.
+
+dem_grila_zarr.tif — Copernicus DEM GLO-30 pe grila cubului Zarr (inclus; se regenerează cu instrumente/pregateste_dem.bat).

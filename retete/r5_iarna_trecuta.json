@@ -1,0 +1,44 @@
+{
+  "titlu": "Iarna trecută: îngheț și ger",
+  "grup": "Analize rapide",
+  "rapida": true,
+  "motor": "harta",
+  "descriere": "Zilele de îngheț (Tmin < 0 °C), de iarnă (Tmax < 0 °C) și geroase (Tmin ≤ −10 °C) într-o singură iarnă (decembrie–februarie), pe toată țara. Anul ales este al lunilor ianuarie–februarie.",
+  "cost": "≈ 0,2 GB, sub un minut",
+  "etichete": [
+    "rapid",
+    "iarnă",
+    "îngheț",
+    "ger"
+  ],
+  "parametri": {
+    "INDICATORI": [
+      {
+        "cod": "zile_sub",
+        "var": "min_temp",
+        "prag": 0.0,
+        "strict": true
+      },
+      {
+        "cod": "zile_sub",
+        "var": "max_temp",
+        "prag": 0.0,
+        "strict": true
+      },
+      {
+        "cod": "zile_sub",
+        "var": "min_temp",
+        "prag": -10.0,
+        "strict": false
+      }
+    ],
+    "ANI": [
+      2026,
+      2026
+    ],
+    "SEZON": "DJF",
+    "ZONA": {
+      "tip": "tara"
+    }
+  }
+}

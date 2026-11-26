@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clima ANM — analize pe cubul Zarr</title>
+<style>
+/* Clima ANM — aspect „atlas”: hârtie rece, cerneală de ardezie, accent petrol (Dunărea), cifre de instrument.
+   Elementul care se ține minte: banda de dungi climatice de sub antet. Restul rămâne liniștit. */
+:root{
+  --bg:#eef2f4; --panou:#fff; --linie:#d6dee4; --linie2:#e8edf0; --text:#172634; --slab:#5e6e7c;
+  --accent:#0f6b8c; --accent-inchis:#0a5470; --accent2:#e3f0f4;
+  --ok:#2e7d4f; --atentie:#b4540a; --eroare:#b42318;
+  --cod:#0f1b26; --codtext:#d3dde6; --antet:#172634;
+  --raza:10px; --raza-mica:6px;
+  --titluri:"Bahnschrift","DIN Alternate","DIN 2014","Barlow Semi Condensed","Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
+  --corp:"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Roboto,sans-serif;
+  --mono:"Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Consolas,monospace;
+  --dungi:linear-gradient(90deg,#63a5cd 0.00% 1.54%,#a2cae1 1.54% 3.08%,#65a7ce 3.08% 4.62%,#62a4cd 4.62% 6.15%,#4b8ec1 6.15% 7.69%,#69aad0 7.69% 9.23%,#dbeaf2 9.23% 10.77%,#a6cce2 10.77% 12.31%,#dae9f2 12.31% 13.85%,#9cc7e0 13.85% 15.38%,#add0e5 15.38% 16.92%,#9ec8e0 16.92% 18.46%,#3a7db8 18.46% 20.00%,#dceaf2 20.00% 21.54%,#c6dfed 21.54% 23.08%,#c9e1ee 23.08% 24.62%,#4084bc 24.62% 26.15%,#4084bc 26.15% 27.69%,#63a5cd 27.69% 29.23%,#88bcd9 29.23% 30.77%,#d1e5f0 30.77% 32.31%,#b8d7e8 32.31% 33.85%,#e6eff4 33.85% 35.38%,#8fbfdb 35.38% 36.92%,#e1edf3 36.92% 38.46%,#ebf1f5 38.46% 40.00%,#9fc9e0 40.00% 41.54%,#fac8af 41.54% 43.08%,#f8f1ed 43.08% 44.62%,#fddbc8 44.62% 46.15%,#bcd9ea 46.15% 47.69%,#b9d7e8 47.69% 49.23%,#ddebf2 49.23% 50.77%,#f1f4f6 50.77% 52.31%,#fce1d1 52.31% 53.85%,#faeae0 53.85% 55.38%,#ecf2f5 55.38% 56.92%,#d1e5f0 56.92% 58.46%,#f2f5f6 58.46% 60.00%,#f5ae8f 60.00% 61.54%,#ebf1f5 61.54% 63.08%,#fdd8c4 63.08% 64.62%,#facab2 64.62% 66.15%,#d2e5f0 66.15% 67.69%,#fcd4be 67.69% 69.23%,#ef8b64 69.23% 70.77%,#bedaea 70.77% 72.31%,#fcd8c3 72.31% 73.85%,#fac7ae 73.85% 75.38%,#fbe2d3 75.38% 76.92%,#f29b78 76.92% 78.46%,#f6b496 78.46% 80.00%,#f9ece5 80.00% 81.54%,#e27256 81.54% 83.08%,#e47558 83.08% 84.62%,#d4584a 84.62% 86.15%,#bc2b34 86.15% 87.69%,#e37357 87.69% 89.23%,#e87d5c 89.23% 90.77%,#f9c7ae 90.77% 92.31%,#cb4641 92.31% 93.85%,#f19570 93.85% 95.38%,#ec8560 95.38% 96.92%,#f5ac8c 96.92% 98.46%,#f19570 98.46% 100.00%);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font:14px/1.5 var(--corp);color:var(--text);background:var(--bg);display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---- antetul: bara de ardezie + dungile de încălzire */
+header{display:flex;align-items:center;gap:18px;padding:0 18px;min-height:58px;background:var(--antet);color:#e9eff3;position:relative;flex:none}
+header::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:6px;background:var(--dungi)}
+header h1{font:600 21px/1 var(--titluri);margin:0;letter-spacing:.01em;color:#fff}
+header .sub{color:#9fb1bf;font-size:12.5px;margin-top:3px}
+header .sub code{color:#c9d6df;font-family:var(--mono);font-size:12px}
+header .dreapta{margin-left:auto;display:flex;gap:8px;align-items:center}
+header .pastila{background:rgba(255,255,255,.08);color:#c9d6df;border:1px solid rgba(255,255,255,.12)}
+header .pastila.ok{background:rgba(46,125,79,.22);color:#a6e3bd;border-color:rgba(166,227,189,.25)}
+header .pastila.rau{background:rgba(180,35,24,.25);color:#ffb3aa;border-color:rgba(255,179,170,.3)}
+header .pastila.atentie{background:rgba(180,84,10,.25);color:#ffcf9e;border-color:rgba(255,207,158,.3)}
+header button.b{background:transparent;color:#e9eff3;border-color:rgba(255,255,255,.28)}
+header button.b:hover{background:rgba(255,255,255,.08)}
+.vederi{display:flex;align-self:stretch;margin-left:10px;gap:2px}
+.vederi button{border:0;background:none;font:500 15px/1 var(--titluri);padding:0 12px;white-space:nowrap;cursor:pointer;color:#9fb1bf;position:relative;letter-spacing:.01em}
+.vederi button:hover{color:#fff}
+.vederi button.activ{color:#fff}
+.vederi button.activ::after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:#7cc4dc}
+
+.pastila{font-size:12px;padding:2px 9px;border-radius:99px;background:#e9eef1;color:var(--slab);white-space:nowrap;font-variant-numeric:tabular-nums}
+.pastila.ok{background:#e4f2ea;color:var(--ok)} .pastila.rau{background:#fbe9e7;color:var(--eroare)}
+.pastila.atentie{background:#fdf0e3;color:var(--atentie)}
+
+/* ---- grila vederilor */
+main{display:grid;grid-template-columns:260px minmax(380px,1fr) minmax(360px,1fr);gap:16px;padding:22px 16px 16px;flex:1;min-height:0}
+@media (max-width:1100px){main{grid-template-columns:1fr;flex:none}}
+.panou{background:var(--panou);border:1px solid var(--linie);border-radius:var(--raza);overflow:auto;min-height:0}
+
+/* ---- meniul analizelor și al documentației */
+nav.panou{padding:10px 8px}
+nav h3,.doc-meniu h3{font:600 13px/1.2 var(--titluri);letter-spacing:.02em;color:var(--slab);margin:16px 10px 6px}
+nav button.an,.doc-meniu button.an{display:block;width:100%;text-align:left;border:0;background:none;padding:7px 10px;border-radius:var(--raza-mica);cursor:pointer;font:inherit;color:inherit;position:relative}
+nav button.an:hover,.doc-meniu button.an:hover{background:#f1f5f7}
+nav button.an.activ,.doc-meniu button.an.activ{background:var(--accent2);color:var(--accent-inchis);font-weight:600}
+nav button.an.activ::before,.doc-meniu button.an.activ::before{content:"";position:absolute;left:0;top:6px;bottom:6px;width:3px;border-radius:2px;background:var(--accent)}
+nav button.an .nr,.doc-meniu button.an .nr{display:inline-block;min-width:31px;color:var(--slab);font:500 13px var(--titluri);font-variant-numeric:tabular-nums}
+nav button.an.activ .nr{color:var(--accent)}
+nav button.an .stea{color:#c98a05;margin-left:4px}
+nav button.an .motor{display:block;font-size:11.5px;color:var(--slab);margin-left:31px;font-weight:400}
+nav .ist{font-size:12.5px;padding:6px 10px;border-radius:var(--raza-mica);cursor:pointer;display:flex;gap:7px;align-items:center}
+nav .ist:hover{background:#f1f5f7}
+nav .ist .t{color:var(--slab);font-variant-numeric:tabular-nums}
+.punct{width:8px;height:8px;border-radius:50%;flex:none;background:#b8c3cc}
+.punct.gata{background:var(--ok)} .punct.eroare{background:var(--eroare)} .punct.oprit{background:var(--atentie)} .punct.ruleaza{background:var(--accent);box-shadow:0 0 0 3px rgba(15,107,140,.18)}
+.cauta{width:100%;margin:2px 0 6px;padding:8px 10px}
+.filtre{display:flex;flex-wrap:wrap;gap:5px;margin:2px 2px 8px}
+.filtre button{font:inherit;font-size:12px;border:1px solid var(--linie);background:#fff;border-radius:99px;padding:2px 10px;cursor:pointer;color:var(--slab)}
+.filtre button:hover{border-color:#b9c6cf;color:var(--text)}
+.filtre button.activ{background:var(--text);border-color:var(--text);color:#fff}
+.pastila.verif{cursor:pointer;background:transparent;border:1px dashed #6c8193;color:#cfd9e2;font:inherit;font-size:12px}
+.pastila.verif:hover{border-style:solid;color:#fff}
+.pastila.verif.ok{border-style:solid;border-color:#2f9e6e;color:#9fe0c0}
+.pastila.verif.atentie{border-style:solid;border-color:#f59f00;color:#ffd58a;background:rgba(245,159,0,.12)}
+.filtre button.rapide{border-color:#e2b65c;color:#8a5a00;background:#fff8e8;font-weight:600}
+.filtre button.rapide.activ{background:#8a5a00;border-color:#8a5a00;color:#fff}
+.an .fulger{margin-left:6px;font-size:11px;color:#c98a00}
+.cost.calculat.rau{background:#fbe9e7;border-color:#f0b8ae;color:var(--eroare)}
+
+/* ---- formularul */
+section.formular{padding:20px 24px}
+section.formular h2{margin:0 0 6px;font:600 24px/1.15 var(--titluri);letter-spacing:.005em}
+.descriere{color:var(--slab);margin:0 0 10px;max-width:68ch}
+.eticheta-motor{display:inline-block;font:500 12px/1.6 var(--titluri);background:var(--accent2);color:var(--accent-inchis);border-radius:4px;padding:0 7px;margin-left:10px;vertical-align:4px}
+.cost{display:inline-block;font-size:12.5px;background:#fdf3e7;color:#8a4508;border:1px solid #f2d6b5;border-radius:var(--raza-mica);padding:3px 9px;margin-bottom:12px;font-variant-numeric:tabular-nums}
+.cost.calculat{background:var(--accent2);border-color:#b9dbe6;color:var(--accent-inchis)}
+.camp{margin:16px 0}
+.camp>label.et{display:block;font-weight:600;margin-bottom:5px}
+.ajutor{color:var(--slab);font-size:12.5px;margin-top:4px}
+input[type=text],input[type=number],input[type=date],input[type=month],select,textarea{font:inherit;padding:7px 9px;border:1px solid #c9d4dc;border-radius:var(--raza-mica);background:#fff;color:inherit;min-width:0;transition:border-color .12s,box-shadow .12s}
+input:hover,select:hover,textarea:hover{border-color:#a9b8c3}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(15,107,140,.16)}
+input[type=number]{width:110px;font-variant-numeric:tabular-nums} textarea{width:100%;min-height:60px}
+input[type=checkbox],input[type=radio]{accent-color:var(--accent);width:15px;height:15px}
+.rand{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.rand>span{color:var(--slab)}
+.bife{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:4px 14px}
+.bife label{display:flex;gap:7px;align-items:center;cursor:pointer}
+.mic{font-size:12px}
+a.leg{color:var(--accent);cursor:pointer;text-decoration:none;margin-right:12px;font-weight:500}
+a.leg:hover{text-decoration:underline;text-underline-offset:3px}
+.taburi{display:inline-flex;background:#e9eef1;border-radius:8px;padding:3px;margin-bottom:10px;gap:2px}
+.taburi button{border:0;background:none;padding:5px 12px;font:inherit;cursor:pointer;border-radius:6px;color:var(--slab)}
+.taburi button:hover{color:var(--text)}
+.taburi button.activ{background:#fff;color:var(--text);font-weight:600;box-shadow:0 1px 2px rgba(23,38,52,.12)}
+.cutie{border:1px solid var(--linie2);border-radius:8px;padding:12px;background:#f7f9fa}
+.cutie input[type=number]{width:88px}
+.alt-filtru{margin-top:10px;padding-top:9px;border-top:1px dashed var(--linie)}
+.alt-filtru .alt-et{font-weight:600;margin-right:6px}
+.alt-filtru input[type=number]{width:84px;margin:0 4px}
+.lista-valori{max-height:170px;overflow:auto;border:1px solid var(--linie);border-radius:var(--raza-mica);padding:4px 9px;background:#fff;margin-top:6px}
+.lista-valori label{display:flex;gap:7px;align-items:center;padding:2px 0}
+details.avansat{margin-top:20px;border-top:1px solid var(--linie2);padding-top:10px}
+details.avansat summary{cursor:pointer;color:var(--slab);font-weight:600}
+details.avansat summary:hover{color:var(--text)}
+.butoane{position:sticky;bottom:-20px;margin-bottom:-20px;background:linear-gradient(rgba(255,255,255,0),#fff 30%);padding:18px 0 20px;display:flex;gap:8px;flex-wrap:wrap}
+button.b{font:inherit;font-weight:600;border-radius:7px;padding:8px 15px;cursor:pointer;border:1px solid #c9d4dc;background:#fff;color:var(--text);transition:background .12s,border-color .12s}
+button.b:hover{border-color:#a9b8c3;background:#f6f8f9}
+button.b.prim{background:var(--accent);border-color:var(--accent);color:#fff}
+button.b.prim:hover{background:var(--accent-inchis);border-color:var(--accent-inchis)}
+button.b.rosu{color:var(--eroare);border-color:#f0c2bd}
+button.b.rosu:hover{background:#fdf1ef}
+button.b:disabled{opacity:.45;cursor:default}
+
+/* ---- indicatorii din formular */
+.ind-rand{border:1px solid var(--linie2);border-left:3px solid var(--accent);border-radius:8px;padding:9px 12px;margin-bottom:8px;background:#f7f9fa}
+.ind-rand .sus{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ind-rand .titlu-ind{font-weight:600;flex:1;min-width:160px}
+.ind-rand .param{display:flex;gap:5px;align-items:center;font-size:13px;color:var(--slab)}
+.ind-rand .param input[type=number]{width:80px}
+.ind-rand .x{margin-left:auto;border:0;background:none;color:var(--slab);cursor:pointer;font-size:17px;padding:0 4px;border-radius:4px}
+.ind-rand .x:hover{color:var(--eroare);background:#fbe9e7}
+.ind-rand .propozitie{font:500 14px/1.4 var(--titluri);margin-top:6px;color:var(--accent-inchis)}
+.ind-rand .avert-mic{color:var(--atentie);font-weight:500;margin-top:2px}
+.ind-rand select.relatie{font:600 16px var(--titluri);padding:3px 6px}
+.ind-rand .desc{font-size:12px;color:var(--slab);margin-top:4px}
+
+/* ---- ieșirea: starea, progresul, jurnalul, rezultatele */
+section.iesire{display:flex;flex-direction:column}
+.stare{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--linie2)}
+.stare b{font:600 15px var(--titluri)} .stare .t{margin-left:auto;color:var(--slab);font:500 14px var(--titluri);font-variant-numeric:tabular-nums}
+.progres{padding:10px 16px 12px;border-bottom:1px solid var(--linie2);display:none}
+.progres .bara{height:6px;background:#e3e9ed;border-radius:99px;overflow:hidden}
+.progres .bara div{height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .4s}
+.progres .text{display:flex;justify-content:space-between;font-size:12px;color:var(--slab);margin-top:6px;font-variant-numeric:tabular-nums}
+pre#jurnal{margin:0;background:var(--cod);color:var(--codtext);font:12px/1.55 var(--mono);padding:12px 14px;white-space:pre-wrap;word-break:break-word;flex:1 1 300px;min-height:220px;overflow:auto}
+pre#jurnal .w{color:#f5b061} pre#jurnal .e{color:#ff8a80} pre#jurnal .s{color:#86d9a4} pre#jurnal .c{color:#7d8d9b}
+.rezultate{padding:14px 16px;flex:0 1 auto;overflow:auto;max-height:48%}
+.rezultate h4{margin:0 0 8px;font:600 14px var(--titluri)}
+.galerie{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:12px}
+.galerie a{display:block;border:1px solid var(--linie);border-radius:8px;overflow:hidden;background:#fff;text-decoration:none;color:inherit;transition:border-color .12s}
+.galerie a:hover{border-color:var(--accent)}
+.galerie img{display:block;width:100%;height:105px;object-fit:contain;background:#f4f7f8}
+.galerie span{display:block;font-size:11px;padding:4px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--slab)}
+.fis{display:flex;gap:8px;align-items:center;font-size:12.5px;padding:4px 0;border-bottom:1px solid var(--linie2)}
+.fis .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fis .m{color:var(--slab);font-variant-numeric:tabular-nums}
+.fis.fisa{background:var(--accent2);border-radius:8px;padding:7px 10px;border:0;margin-bottom:8px}
+.gol{color:var(--slab);font-size:13px;padding:24px;text-align:center}
+
+/* ---- ferestrele modale și mesajele */
+.fundal{position:fixed;inset:0;background:rgba(15,27,38,.5);display:none;align-items:center;justify-content:center;z-index:20}
+.fundal.vizibil{display:flex}
+.fereastra{background:#fff;border-radius:12px;max-width:880px;width:92%;max-height:86vh;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(15,27,38,.35)}
+.fereastra h3{margin:0;padding:16px 20px;border-bottom:1px solid var(--linie2);font:600 18px var(--titluri)}
+.fereastra .corp{padding:16px 20px;overflow:auto}
+.fereastra pre{margin:0;background:var(--cod);color:var(--codtext);font:12px/1.55 var(--mono);padding:12px;border-radius:8px;white-space:pre;overflow:auto}
+.fereastra .jos{padding:12px 20px;border-top:1px solid var(--linie2);display:flex;gap:8px;justify-content:flex-end}
+.fereastra label.et{display:block;font-weight:600;margin:12px 0 4px}
+.mesaj{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(6px);background:var(--antet);color:#fff;padding:9px 16px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none}
+.mesaj.vizibil{opacity:.96;transform:translateX(-50%)}
+
+/* ---- tabul Hartă */
+main.harta{grid-template-columns:270px minmax(400px,1fr) 300px}
+.h-explorator,.h-control{padding:12px}
+.h-cap{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.h-cap b,.h-cap h3{font:600 15px var(--titluri)}
+.h-grup{border-bottom:1px solid var(--linie);padding:2px 0}
+.h-grup-cap{display:flex;align-items:center;gap:6px;padding:7px 4px;cursor:pointer;border-radius:6px}
+.h-grup-cap:hover{background:#f2f5f8}
+.h-sageata{width:12px;color:var(--slab);font-size:11px}
+.h-grup-titlu{flex:1;min-width:0;font-weight:600;font-size:13px;line-height:1.3}
+.h-grup-titlu .h-meta{display:block;font-weight:400}
+.h-grup.recent .h-grup-titlu::before{content:"nou";font-size:10px;font-weight:700;color:#fff;background:var(--accent);border-radius:4px;padding:0 5px;margin-right:6px;vertical-align:1px}
+.h-actiuni{display:flex;gap:2px;opacity:.35;transition:opacity .15s}
+.h-grup-cap:hover .h-actiuni{opacity:1}
+.h-act{font-size:12px;padding:2px 5px;border-radius:4px;cursor:pointer;text-decoration:none;color:var(--accent-inchis)}
+.h-act:hover{background:#e6eef3}
+.h-grup .h-item{margin-left:18px}
+.h-jos{display:flex;flex-direction:column;gap:6px;padding:10px 4px}
+.h-item{display:flex;gap:6px;align-items:stretch;border-radius:var(--raza-mica);margin-bottom:2px}
+.h-item:hover{background:#f1f5f7}
+.h-item.activ{background:var(--accent2)} .h-item.activB{background:#fdf0e3}
+.h-nume{flex:1;padding:6px 8px;cursor:pointer;font-size:13px;word-break:break-all}
+.h-meta{display:block;font-size:11px;color:var(--slab);margin-top:1px}
+.h-b{border:1px solid var(--linie);background:#fff;border-radius:5px;font:600 12px var(--titluri);color:var(--atentie);cursor:pointer;margin:6px 4px 6px 0;padding:0 8px}
+.h-b:hover{border-color:var(--atentie)}
+.h-scena{display:flex;flex-direction:column;overflow:hidden}
+.h-titlu{padding:12px 16px;font:600 16px var(--titluri);border-bottom:1px solid var(--linie2)}
+.h-canvas{position:relative;flex:1;min-height:300px;background:#f7f9fa}
+.h-canvas canvas{position:absolute;inset:0;display:block}
+.h-unelte{position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:4px}
+.h-unelte button{width:32px;height:32px;border:1px solid var(--linie);background:#fff;border-radius:7px;font-size:16px;cursor:pointer;box-shadow:0 1px 2px rgba(23,38,52,.08)}
+.h-unelte button:hover{border-color:var(--accent);color:var(--accent)}
+.h-unelte .h-sep{height:6px}
+.h-unelte button.text{font:700 11px var(--titluri);letter-spacing:-.02em}
+.h-unelte button.activ{background:var(--accent);border-color:var(--accent);color:#fff}
+.h-player{position:absolute;top:10px;left:10px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.94);
+  border:1px solid var(--linie);border-radius:999px;padding:4px 12px 4px 4px;box-shadow:0 2px 10px rgba(23,38,52,.12);backdrop-filter:blur(4px)}
+.h-play{width:34px;height:34px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:13px;cursor:pointer;flex:none}
+.h-play:hover{background:var(--accent-inchis)}
+.h-an{font:700 17px var(--titluri);font-variant-numeric:tabular-nums;min-width:54px;color:var(--text)}
+.h-player:not(.serie) .h-an{font-size:13px;font-weight:600;min-width:72px}
+.h-player input[type=range]{width:clamp(90px,18vw,240px);accent-color:var(--accent)}
+.h-player select{border:0;background:transparent;font-size:12px;color:var(--slab);cursor:pointer}
+.h-video{border:1px solid var(--linie);background:#fff;border-radius:999px;font-size:12px;padding:4px 10px;cursor:pointer;color:var(--accent-inchis);white-space:nowrap}
+.h-video:hover{border-color:var(--accent)} .h-video:disabled{color:var(--eroare);cursor:progress}
+.h-legflot,.h-ajprez{display:none}
+.h-scena:fullscreen{background:#fff}
+.h-scena:fullscreen .h-titlu{font-size:clamp(20px,2.2vw,34px);padding:18px 28px;border:0}
+/* pagina de start */
+main.start{display:block;overflow:auto;padding:0 0 40px}
+.s-cap{display:grid;grid-template-columns:minmax(280px,1.1fr) 2fr;gap:28px;align-items:end;max-width:1320px;margin:0 auto;padding:34px 32px 26px}
+.s-intro h1{font:600 clamp(24px,2.6vw,34px)/1.15 var(--titluri);margin:0 0 10px;letter-spacing:-.01em;text-wrap:balance}
+.s-intro p{margin:0;color:var(--slab);max-width:52ch}
+.s-actiuni{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.s-act{display:flex;flex-direction:column;gap:4px;text-align:left;background:var(--panou);border:1px solid var(--linie);border-radius:var(--raza);
+  padding:16px 18px 18px;cursor:pointer;font:inherit;color:var(--text);transition:border-color .15s,transform .15s}
+.s-act:hover{border-color:var(--accent);transform:translateY(-1px)}
+.s-act-t{font:600 17px var(--titluri)}
+.s-act-d{font-size:12.5px;color:var(--slab);line-height:1.35}
+.s-act.rapid{background:var(--antet);border-color:var(--antet);color:#fff;position:relative;overflow:hidden}
+.s-act.rapid::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;background:var(--dungi)}
+.s-act.rapid .s-act-d{color:#b9c7d3}
+.s-act.rapid:hover{border-color:var(--accent)}
+.s-rez{max-width:1320px;margin:0 auto;padding:0 32px}
+.s-rez-cap{display:flex;align-items:baseline;justify-content:space-between;border-top:1px solid var(--linie);padding-top:20px;margin-bottom:14px}
+.s-rez-cap h2{font:600 19px var(--titluri);margin:0}
+.s-grila{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.s-carte{background:var(--panou);border:1px solid var(--linie);border-radius:var(--raza);overflow:hidden;display:flex;flex-direction:column}
+.s-carte.eroare{border-color:#f0c6c0}
+.s-img{position:relative;aspect-ratio:16/10;background:#fff;border-bottom:1px solid var(--linie2);cursor:pointer;display:grid;place-items:center}
+.s-img img{width:100%;height:100%;object-fit:contain;padding:6px}
+.s-fara{font:600 12px var(--titluri);color:var(--slab)}
+.s-eticheta{position:absolute;left:8px;top:8px;font:600 11px var(--titluri);background:var(--accent);color:#fff;border-radius:4px;padding:2px 7px}
+.s-eticheta.rau{background:var(--eroare);left:auto;right:8px}
+.s-corp{padding:12px 14px 14px;display:flex;flex-direction:column;gap:4px;flex:1}
+.s-corp h3{font:600 14.5px/1.3 var(--titluri);margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.s-meta{font-size:12px;color:var(--slab);font-variant-numeric:tabular-nums}
+.s-butoane{display:flex;gap:6px;margin-top:auto;padding-top:10px;flex-wrap:wrap}
+.s-b{font:500 12.5px var(--corp);border:1px solid var(--linie);background:#fff;color:var(--accent-inchis);border-radius:6px;padding:4px 10px;cursor:pointer;text-decoration:none}
+.s-b:hover{border-color:var(--accent)}
+.s-b.prim{background:var(--accent);border-color:var(--accent);color:#fff}
+.s-b.prim:hover{background:var(--accent-inchis)}
+.s-b.slab{color:var(--slab);margin-left:auto}
+.s-gol{background:var(--panou);border:1px dashed var(--linie);border-radius:var(--raza);padding:28px;text-align:center;color:var(--slab)}
+@media (max-width:980px){.s-cap{grid-template-columns:1fr}.s-actiuni{grid-template-columns:1fr}}
+@media (prefers-reduced-motion: reduce){.s-act{transition:none}.s-act:hover{transform:none}}
+.h-anim{display:inline-block;margin-left:6px;font:600 10.5px var(--titluri);color:var(--accent-inchis);background:var(--accent2);border-radius:4px;padding:0 5px;vertical-align:1px}
+.h-scena:fullscreen .h-stare{display:none}
+.h-scena:fullscreen .h-canvas{background:#fff}
+.h-scena:fullscreen .h-legflot{display:block;position:absolute;left:24px;top:16px;width:320px;background:rgba(255,255,255,.92);
+  border-radius:10px;padding:8px 14px 10px;box-shadow:0 2px 12px rgba(23,38,52,.12)}
+.h-scena:fullscreen .h-legflot .h-ticks{font-size:13px}
+.h-legflot canvas{position:static;inset:auto}
+.h-legB{font-size:12px;color:var(--slab);margin-top:6px}
+.h-scena:fullscreen .h-ajprez{display:block;position:absolute;left:50%;transform:translateX(-50%);bottom:78px;font-size:12px;color:var(--slab);
+  background:rgba(255,255,255,.85);border-radius:999px;padding:3px 12px;animation:stinge 6s forwards}
+.h-scena:fullscreen .h-player{top:auto;bottom:20px;left:50%;transform:translateX(-50%)}
+@keyframes stinge{0%,70%{opacity:1}100%{opacity:0}}
+.h-faraB{background:linear-gradient(180deg,#fffaf3,#fff);border:1px dashed #e8b98a;border-radius:var(--raza-mica);padding:10px 10px 12px}
+select.clipeste{animation:clipeste .4s 3;outline:2px solid var(--atentie)}
+@keyframes clipeste{50%{outline-color:transparent}}
+@media (prefers-reduced-motion: reduce){.h-scena:fullscreen .h-ajprez,select.clipeste{animation:none}}
+.h-stare{padding:8px 16px;border-top:1px solid var(--linie2);font-size:12.5px;color:var(--slab);font-variant-numeric:tabular-nums;min-height:34px}
+.h-bloc{border-bottom:1px solid var(--linie2);padding:4px 0 14px;margin-bottom:10px}
+.h-bloc select{width:100%} .h-bloc input[type=number]{width:95px}
+.h-bloc label.et{display:block;font-weight:600;margin:10px 0 4px;font-size:13px}
+.h-fis{font-size:11.5px;color:var(--slab);word-break:break-all}
+.h-check{display:flex;gap:6px;align-items:center;font-size:12.5px;margin-top:6px;flex-wrap:wrap}
+.h-leg{display:block;margin-top:10px;border-radius:3px;width:100%;height:14px}
+.h-ticks{display:flex;justify-content:space-between;font-size:11.5px;color:var(--slab);font-variant-numeric:tabular-nums}
+
+/* ---- documentația (Indicatori, Zarr info) */
+main.doc{grid-template-columns:270px minmax(0,1fr)}
+.doc-meniu{padding:10px 8px}
+.doc-pagina{padding:28px 40px 40px;line-height:1.62}
+.doc-pagina h2{margin:6px 0 8px;font:600 30px/1.12 var(--titluri);letter-spacing:.003em}
+.doc-pagina h3{font-family:var(--titluri)}
+.doc-pagina p,.doc-pagina li{max-width:76ch}
+.ind-cap{display:flex;gap:10px;align-items:center}
+.ind-cap code{font:12px var(--mono);color:var(--slab)}
+.ind-sect{margin-top:28px}
+.ind-sect h3{font:600 17px/1.3 var(--titluri);margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid var(--linie)}
+.formula{font:21px/1.5 "Cambria Math","STIX Two Math","Latin Modern Math","Times New Roman",serif;background:#f4f8f9;border:1px solid var(--linie2);border-left:4px solid var(--accent);border-radius:8px;padding:14px 20px;margin:14px 0;max-width:880px;overflow-x:auto}
+.simboluri{border-collapse:collapse;margin:8px 0;font-size:13.5px}
+.simboluri td{padding:5px 14px 5px 0;vertical-align:top;border-bottom:1px solid var(--linie2)}
+.simboluri td:first-child{white-space:nowrap;font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:15px}
+.intrebare{background:#fdf3e7;border:1px solid #f2d6b5;border-radius:8px;padding:10px 14px}
+.pasi-mari>li{margin-bottom:14px} .pasi-mari>li>b{display:block;font:600 15px var(--titluri)}
+.pasi-mici{margin:4px 0;padding-left:20px;font-size:13.5px}
+.cod-sursa{margin-top:28px} .cod-sursa summary{cursor:pointer;font-weight:600;color:var(--accent)}
+.cod-sursa pre,pre.cod{background:var(--cod);color:var(--codtext);font:12.5px/1.55 var(--mono);padding:14px 16px;border-radius:8px;overflow:auto;max-width:900px}
+.calc{border:1px solid var(--linie);border-radius:10px;padding:12px 14px;background:#f7f9fa;max-width:100%}
+.calc-param{margin:8px 0}
+.calc-tabel{overflow-x:auto}
+.calc-tabel table{border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+.calc-tabel th{font-weight:600;color:var(--slab);padding:4px;text-align:center;white-space:nowrap}
+.calc-tabel th.marcat{color:var(--accent)}
+.calc-tabel td{padding:1px}
+.calc-tabel input{width:48px;text-align:right;font:inherit;padding:4px 5px;border:1px solid var(--linie);border-radius:5px}
+.calc-tabel input.marcat{background:#ffe7cf;border-color:#eea562;font-weight:700}
+.calc-tabel input.lipsa{background:repeating-linear-gradient(135deg,#f4f6f8 0 4px,#e7ecef 4px 8px);border-style:dashed}
+.calc-tabel input.lipsa::placeholder{color:#8a99a6;font-size:10.5px}
+.calc-tabel tr.estompat input{opacity:.45}
+.calc-tabel tr.detaliu td{text-align:right;padding:3px 5px;color:var(--accent)}
+.calc-rez{margin-top:10px}
+.calc-valoare{font:500 18px var(--titluri)}
+.calc-valoare b{font-weight:600;color:var(--accent-inchis)}
+.calc-avert{margin-top:8px;font-size:12.5px;border-radius:6px;padding:6px 10px;background:var(--accent2);color:var(--accent-inchis)}
+.calc-avert.rau{background:#fbe9e7;color:var(--eroare)}
+.calc-svg{width:100%;max-width:640px;height:auto;display:block;margin:10px 0 2px}
+.calc-legenda{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--slab);margin-bottom:6px}
+.calc-legenda i{display:inline-block;width:22px;height:3px;vertical-align:middle;margin-right:6px;border-radius:2px}
+.calc-legenda i.punct-leg{width:10px;height:10px;border-radius:50%}
+.calc-tabel td.calc-nr{font-weight:600;text-align:center;padding:0 8px;color:var(--accent-inchis)}
+.calc-tabel tr.detaliu td.marcat-text{font-weight:700;color:#b45a17}
+code.cheie{font:17px var(--mono);background:var(--accent2);padding:2px 9px;border-radius:5px;color:var(--accent-inchis)}
+.doc-tabel{border-collapse:collapse;margin:10px 0;font-size:13.5px;max-width:960px}
+.doc-tabel th,.doc-tabel td{border-bottom:1px solid var(--linie);padding:6px 12px 6px 0;text-align:left;vertical-align:top}
+.doc-tabel th{font:600 13.5px var(--titluri);color:var(--slab);border-bottom:2px solid var(--linie)}
+.avert{background:#fbe9e7;color:var(--eroare);border-radius:8px;padding:9px 13px}
+iframe.simulator{width:100%;height:78vh;min-height:560px;border:1px solid var(--linie);border-radius:10px;background:#fff}
+</style>
+</head>
+<body>
+<header>
+  <div title="Dungile de sub antet ilustrează ideea de „warming stripes” (rețeta 14), nu sunt date reale.">
+    <h1>Clima ANM</h1>
+    <div class="sub">analize climatice pe cubul Zarr <code>anm-daily-grids</code> (EOCube.ro)</div>
+  </div>
+  <nav class="vederi"><button data-v="start" class="activ" onclick="arataVedere('start')">Start</button><button data-v="analize" onclick="arataVedere('analize')">Analize</button><button data-v="harta" onclick="arataVedere('harta')">Hartă</button><button data-v="indicatori" onclick="arataVedere('indicatori')">Indicatori</button><button data-v="zarr" onclick="arataVedere('zarr')">Zarr info</button></nav>
+  <div class="dreapta">
+    <span class="pastila" id="p-date" title="">date: …</span>
+    <button class="pastila verif" id="b-verif" title="Verifică datele cubului: chunk-uri lipsă și blocuri nescrise (valori exact 0)">verifică datele</button>
+    <span class="pastila" id="p-gdal">GDAL …</span>
+    <span class="pastila" id="p-python" title="">Python</span>
+    <button class="b" id="b-folder" title="Deschide folderul rezultatelor" style="white-space:nowrap">📂 Rezultate</button>
+  </div>
+</header>
+
+<main id="v-start" class="start"></main>
+<main id="v-analize" style="display:none">
+  <nav class="panou" id="nav"></nav>
+
+  <section class="panou formular" id="formular"><div class="gol">Se încarcă lista analizelor…</div></section>
+
+  <section class="panou iesire">
+    <div class="stare"><span class="punct" id="s-punct"></span><b id="s-text">Nicio analiză pornită</b><span class="t" id="s-timp"></span></div>
+    <div class="progres" id="progres"><div class="bara"><div id="pr-bara"></div></div><div class="text"><span id="pr-faza"></span><span id="pr-eta"></span></div></div>
+    <pre id="jurnal"><span class="c">Jurnalul analizei apare aici.</span></pre>
+    <div class="rezultate" id="rezultate"></div>
+  </section>
+</main>
+<main id="v-harta" class="harta" style="display:none"></main>
+<main id="v-indicatori" class="doc" style="display:none"></main>
+<main id="v-zarr" class="doc" style="display:none"></main>
+<div class="mesaj" id="mesaj"></div>
+<div class="fundal" id="fundal"><div class="fereastra"><h3 id="f-titlu"></h3><div class="corp" id="f-corp"></div><div class="jos" id="f-jos"></div></div></div>
+
+<script>
+"use strict";
+var JETON = "__JETON__";
+const SEZOANE = [["anual","anual"],["DJF","iarna (DJF)"],["MAM","primăvara (MAM)"],["JJA","vara (JJA)"],["SON","toamna (SON)"],
+                 ["vara_agricola","sezonul agricol (apr.–sep.)"],["iarna_extinsa","iarna extinsă (nov.–mar.)"]];
+const LUNI = ["ian.","feb.","mar.","apr.","mai","iun.","iul.","aug.","sep.","oct.","noi.","dec."];
+const FORME = {tara:"Toată țara", dreptunghi:"Dreptunghi", punct:"Punct", poligoane:"Poligoane"};
+let CAT = null, ACTIV = null, CAMPURI = [], NLINII = 0, URMARIRE = null, TSTART = 0, CAUTARE = "", FILTRU = null;
+
+// ------------------------------------------------------------------ utilitare
+const $ = (s, r=document) => r.querySelector(s);
+function el(tag, atr={}, ...copii){
+  const e = document.createElement(tag);
+  for (const [k,v] of Object.entries(atr)){
+    if (k === "class") e.className = v; else if (k === "text") e.textContent = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v); else if (v !== null && v !== undefined) e.setAttribute(k, v);
+  }
+  for (const c of copii.flat()) if (c !== null && c !== undefined) e.append(c.nodeType ? c : document.createTextNode(c));
+  return e;
+}
+async function api(cale, corp){
+  const r = await fetch(cale, corp === undefined ? {headers:{"X-Jeton":JETON}} :
+    {method:"POST", headers:{"X-Jeton":JETON,"Content-Type":"application/json"}, body:JSON.stringify(corp)});
+  return r.json();
+}
+function mesaj(t){ const m=$("#mesaj"); m.textContent=t; m.classList.add("vizibil"); clearTimeout(m._t); m._t=setTimeout(()=>m.classList.remove("vizibil"),2600); }
+const num = s => { s = String(s ?? "").trim().replace(",", "."); return s === "" ? null : Number(s); };
+const fmtMB = b => b > 1e6 ? (b/1e6).toFixed(1).replace(".",",")+" MB" : Math.max(1, Math.round(b/1e3))+" KB";
+const fmtT = s => s < 60 ? `${s.toFixed(0)} s` : `${Math.floor(s/60)} min ${String(Math.round(s%60)).padStart(2,"0")} s`;
+const pastreaza = (k,v) => { try { localStorage.setItem("clima:"+k, JSON.stringify(v)); } catch(e){} };
+const citeste = k => { try { return JSON.parse(localStorage.getItem("clima:"+k)); } catch(e){ return null; } };
+
+// ------------------------------------------------------------------ câmpurile formularului
+// Fiecare constructor întoarce {el, get, set}
+const W = {
+  numar(c){ const i = el("input",{type:"number",step:c.pas ?? "any",min:c.min,max:c.max});
+    return {el:i, get:()=>num(i.value), set:v=>i.value = v ?? ""}; },
+  text(c){ const i = el("input",{type:"text",style:"width:100%"});
+    return {el:i, get:()=> (i.value.trim()==="" && c.gol_none) ? null : i.value.trim(), set:v=>i.value = v ?? ""}; },
+  lista_numere(){ const i = el("input",{type:"text",placeholder:"ex. 30; 35"});
+    return {el:i, get:()=>i.value.split(/[;\s]+/).map(num).filter(v=>v!==null && !isNaN(v)),
+            set:v=>i.value = (v||[]).join("; ")}; },
+  interval_ani(){ const a = el("input",{type:"number",min:1961,max:2100}), b = el("input",{type:"number",min:1961,max:2100});
+    return {el:el("div",{class:"rand"},a,el("span",{text:"–"}),b), get:()=>[num(a.value),num(b.value)],
+            set:v=>{a.value=v?.[0]??""; b.value=v?.[1]??"";}}; },
+  perioada(){ const a = el("input",{type:"date"}), b = el("input",{type:"date"});
+    // „-30” în rețetă = ultimele 30 de zile până la frontiera datelor (calculat aici sau de ruleaza.py)
+    return {el:el("div",{class:"rand"},a,el("span",{text:"→"}),b), get:()=>[a.value||a.dataset.rel||null, b.value||null],
+            set:v=>{ const r = /^-\d+$/.test(String(v?.[0]??"")); a.dataset.rel = r ? v[0] : "";
+                     a.value = r ? (FRONT ? adunaZile(FRONT, 1 - Number(String(v[0]).slice(1))) : "") : (v?.[0]??"");
+                     if (r && !FRONT) a.placeholder = `ultimele ${String(v[0]).slice(1)} zile`; b.value=v?.[1]??"";}}; },
+  alegere(c){ const s = el("select",{}, c.optiuni.map((o,i)=>el("option",{value:i,text:o[1]})));
+    return {el:s, get:()=>c.optiuni[s.value][0], set:v=>{const i=c.optiuni.findIndex(o=>o[0]===v); if(i>=0) s.value=i;}}; },
+  bifa(c){ const i = el("input",{type:"checkbox"});
+    return {el:el("label",{},i," ",c.text||""), get:()=>i.checked, set:v=>i.checked=!!v}; },
+  bife(c){
+    const cut = {}; const g = el("div",{class:"bife"});
+    for (const [k,et] of Object.entries(c.optiuni)){ cut[k]=el("input",{type:"checkbox"}); g.append(el("label",{},cut[k],et)); }
+    const toate = v => Object.values(cut).forEach(x=>x.checked=v);
+    const leg = el("div",{class:"mic"},el("a",{class:"leg",text:"toate",onclick:()=>toate(true)}),el("a",{class:"leg",text:"niciuna",onclick:()=>toate(false)}));
+    return {el:el("div",{},g,Object.keys(cut).length>4?leg:null),
+            get:()=>Object.fromEntries(Object.entries(cut).map(([k,x])=>[k,x.checked])),
+            set:v=>Object.entries(cut).forEach(([k,x])=>x.checked = !!(v||{})[k])}; },
+  sezon(){
+    const tip = el("select",{}, SEZOANE.map(o=>el("option",{value:o[0],text:o[1]})), el("option",{value:"_luni",text:"luni alese…"}), el("option",{value:"_zile",text:"interval de zile…"}));
+    const l1 = el("select",{},LUNI.map((l,i)=>el("option",{value:i+1,text:l}))), l2 = l1.cloneNode(true);
+    const z1 = el("input",{type:"text",placeholder:"LL-ZZ",size:6}), z2 = el("input",{type:"text",placeholder:"LL-ZZ",size:6});
+    const pl = el("span",{class:"rand"},l1,"–",l2), pz = el("span",{class:"rand"},z1,"–",z2);
+    const arata = () => { pl.style.display = tip.value==="_luni"?"":"none"; pz.style.display = tip.value==="_zile"?"":"none"; };
+    tip.onchange = arata;
+    return {el:el("div",{class:"rand"},tip,pl,pz),
+      get:()=> tip.value==="_luni" ? [Number(l1.value),Number(l2.value)] : tip.value==="_zile" ? [z1.value.trim(),z2.value.trim()] : tip.value,
+      set:v=>{ if (Array.isArray(v) && typeof v[0]==="number"){tip.value="_luni"; l1.value=v[0]; l2.value=v[1];}
+               else if (Array.isArray(v)){tip.value="_zile"; z1.value=v[0]; z2.value=v[1];} else tip.value = v||"anual"; arata(); }}; },
+  referinta(){
+    const tip = el("select",{}, [["climatologie","climatologie (media mai multor ani)"],["an","un an anume"],["luna","o lună"],["perioada","o perioadă oarecare"]].map(o=>el("option",{value:o[0],text:o[1]})));
+    const a1 = el("input",{type:"number",min:1961}), a2 = el("input",{type:"number",min:1961}), an = el("input",{type:"number",min:1961});
+    const lu = el("input",{type:"month"}), d1 = el("input",{type:"date"}), d2 = el("input",{type:"date"});
+    const p = {climatologie:el("span",{class:"rand"},a1,"–",a2), an:el("span",{class:"rand"},an), luna:el("span",{class:"rand"},lu), perioada:el("span",{class:"rand"},d1,"→",d2)};
+    const arata = () => Object.entries(p).forEach(([k,e])=>e.style.display = k===tip.value?"":"none");
+    tip.onchange = arata;
+    return {el:el("div",{class:"rand"},tip,...Object.values(p)),
+      get:()=>({climatologie:["climatologie",num(a1.value),num(a2.value)], an:["an",num(an.value)], luna:["luna",lu.value], perioada:["perioada",d1.value,d2.value]})[tip.value],
+      set:v=>{ v = v||["climatologie",1991,2020]; tip.value=v[0];
+        if(v[0]==="climatologie"){a1.value=v[1];a2.value=v[2];} if(v[0]==="an") an.value=v[1]; if(v[0]==="luna") lu.value=v[1];
+        if(v[0]==="perioada"){d1.value=v[1];d2.value=v[2];} arata(); }}; },
+  lista_episoade(){ const t = el("textarea",{placeholder:"Inundațiile din 2005; 2005-08-20"});
+    return {el:t, get:()=>t.value.split("\n").map(r=>r.split(";").map(x=>x.trim())).filter(r=>r.length===2&&r[0]&&r[1]),
+            set:v=>t.value=(v||[]).map(r=>r.join("; ")).join("\n")}; },
+  vector_optional(c){ return selectorVector(true); },
+  indicatori(c){ return widgetIndicatori(c); },
+  lista_text(){ const i = el("input",{type:"text",style:"width:100%",placeholder:"ex. Iași; Constanța; Cluj"});
+    return {el:i, get:()=>i.value.split(";").map(x=>x.trim()).filter(Boolean), set:v=>i.value=(v||[]).join("; ")}; },
+  vector(){ return selectorVector(false); },
+  zonari(){
+    const cutie = el("div"); let randuri = [];
+    const rand = v => { const f = k => el("input",{type:"text",value:v[k]||"",placeholder:k,style:"width:96px"});
+      const r = {prefix:f("prefix"), eticheta:f("eticheta"), coloana:f("coloana"),
+                 valori:el("input",{type:"text",value:(v.valori||[]).join("; "),placeholder:"valori (gol = toate)",style:"flex:1;min-width:160px"})};
+      r.altMin = el("input", {type:"number", value:v.altitudine?.[0] ?? "", placeholder:"min m", title:"Altitudine minimă (m)"});
+      r.altMax = el("input", {type:"number", value:v.altitudine?.[1] ?? "", placeholder:"max m", title:"Altitudine maximă (m)"});
+      r.el = el("div",{class:"ind-rand"}, el("div",{class:"sus"}, r.prefix, r.eticheta, r.coloana, r.valori,
+        r.altMin, r.altMax,
+        el("button",{class:"x",type:"button",text:"✕",title:"scoate zonarea",onclick:()=>{ randuri.splice(randuri.indexOf(r),1); desen(); }})));
+      return r; };
+    const desen = () => { cutie.innerHTML=""; randuri.forEach(r=>cutie.append(r.el)); };
+    const adauga = el("a",{class:"leg mic",text:"+ adaugă o zonare",onclick:()=>{ randuri.push(rand({})); desen(); }});
+    return {el:el("div",{},el("div",{class:"ajutor",text:"prefix · etichetă · coloană · valori · altitudinea minimă / maximă (opțional, m)"}),cutie,adauga),
+      get:()=>randuri.map(r=>({prefix:r.prefix.value.trim(), eticheta:r.eticheta.value.trim(), coloana:r.coloana.value.trim(),
+                               ...(r.altMin.value || r.altMax.value ? {altitudine:[num(r.altMin.value),num(r.altMax.value)]} : {}),
+                               valori:r.valori.value.split(";").map(x=>x.trim()).filter(Boolean)})).filter(z=>z.coloana),
+      set:v=>{ randuri=(v||[]).map(rand); desen(); }}; },
+  zona(c){ return widgetZona(c); },
+};
+
+// Indicatorii: rânduri {cod, parametri}. Modul rețetei: liber (orice indicator, adăugare liberă),
+// acelasi (același indicator, rânduri cu alți parametri), blocat (indicatorii rețetei; se pot doar scoate).
+function widgetIndicatori(c){
+  const mod = c.mod || "liber", maxim = c.maxim || 12, cutie = el("div"), jos = el("div",{class:"mic"});
+  const permisi = Object.values(CAT.indicatori).filter(d => !c.grupuri || c.grupuri.includes(d.grup));
+  let randuri = [];
+  function rand(v){
+    const def = CAT.indicatori[v.cod]; const r = {cod:v.cod, campuri:{}};
+    const div = el("div",{class:"ind-rand"}), sus = el("div",{class:"sus"});
+    if (mod === "liber"){
+      const grupuri = {}; permisi.forEach(d => (grupuri[d.grup] ??= []).push(d));
+      const s = el("select",{}, Object.entries(grupuri).map(([g,l]) => el("optgroup",{label:g}, l.map(d => el("option",{value:d.cod,text:d.titlu})))));
+      s.value = v.cod; s.onchange = () => { const i = randuri.indexOf(r); randuri[i] = rand({cod:s.value}); deseneaza(); };
+      sus.append(s);
+    } else sus.append(el("span",{class:"titlu-ind",text: PRAG_COD.includes(v.cod) ? "Zile față de un prag" : (def ? def.titlu : v.cod)}));
+    if (PRAG_COD.includes(v.cod)){                       // zile_peste / zile_sub: relația se alege explicit
+      const p = randPrag(v, r, () => { if (mod === "liber"){ const sel = sus.querySelector("select"); if (sel) sel.value = r.cod; } });
+      sus.append(...p.elemente); div.append(sus, p.propozitie);
+      if (def?.descriere) div.append(el("div",{class:"desc",text:def.descriere}));
+      r.el = div; r.get = p.get;
+      if (randuri.length > 0 || mod !== "liber") sus.append(butonScoate(r));
+      return r;
+    }
+    for (const pc of (def?.parametri || [])){
+      const w = W[pc.tip](Object.assign({}, pc, {text: pc.tip==="bifa" ? pc.eticheta : ""}));
+      w.set(pc.nume in v ? v[pc.nume] : pc.implicit);
+      r.campuri[pc.nume] = w;
+      sus.append(pc.tip==="bifa" ? el("span",{class:"param"},w.el) : el("span",{class:"param"},pc.eticheta,w.el));
+    }
+    if (randuri.length > 0 || mod !== "liber") sus.append(butonScoate(r));
+    div.append(sus); if (def?.descriere) div.append(el("div",{class:"desc",text:def.descriere}));
+    r.el = div; r.get = () => Object.assign({cod:r.cod}, Object.fromEntries(Object.entries(r.campuri).map(([k,w])=>[k,w.get()])));
+    return r;
+  }
+  function butonScoate(r){
+    return el("button",{class:"x",type:"button",title:"scoate indicatorul",text:"✕",
+      onclick:()=>{ if (randuri.length<=1){ mesaj("Rămâne cel puțin un indicator."); return; } randuri.splice(randuri.indexOf(r),1); deseneaza(); }});
+  }
+  function deseneaza(){
+    cutie.innerHTML=""; randuri.forEach(r=>cutie.append(r.el)); jos.innerHTML="";
+    if (mod !== "blocat" && randuri.length < maxim)
+      jos.append(el("a",{class:"leg",text: mod==="acelasi" ? "+ încă un rând (alți parametri)" : "+ adaugă un indicator",
+        onclick:()=>{ const v = mod==="acelasi" && randuri.length ? randuri[randuri.length-1].get() : {cod:permisi[0].cod};
+                      randuri.push(rand(v)); deseneaza(); }}));
+    if (randuri.length > 1 && mod !== "blocat") jos.append(el("span",{text:" fiecare rând dă propria hartă"}));
+  }
+  return {el:el("div",{},cutie,jos), get:()=>randuri.map(r=>r.get()),
+          set:v=>{ randuri=[]; (v||[]).forEach(x=>randuri.push(rand(x))); if(!randuri.length && permisi.length) randuri.push(rand({cod:permisi[0].cod})); deseneaza(); }};
+}
+
+// Indicatorii de prag: variabila, RELAȚIA (≥ > ≤ <) și pragul, cu propoziția a ceea ce se numără și avertismente.
+// Relația decide codul: ≥ / > → zile_peste, ≤ / < → zile_sub (capcana din audit: „≥ −10 °C” în loc de „≤ −10 °C”).
+const PRAG_COD = ["zile_peste", "zile_sub"];
+const VAR_SCURT = {max_temp:"Tmax", min_temp:"Tmin", precipitation:"P"}, VAR_U = {max_temp:"°C", min_temp:"°C", precipitation:"mm"};
+function randPrag(v, r, laSchimbare){
+  const peste = v.cod === "zile_peste", strict = v.strict ?? (!peste);
+  const vs = el("select",{}, Object.entries({max_temp:"Tmax", min_temp:"Tmin", precipitation:"P (precipitații)"}).map(([k,t])=>el("option",{value:k,text:t})));
+  vs.value = v.var || "max_temp";
+  const rel = el("select",{class:"relatie",title:"relația față de prag"}, [["ge","≥"],["gt",">"],["le","≤"],["lt","<"]].map(([k,t])=>el("option",{value:k,text:t})));
+  rel.value = peste ? (strict ? "gt" : "ge") : (strict ? "lt" : "le");
+  const pr = el("input",{type:"number",step:"0.1",value:v.prag ?? (peste ? 30 : 0),style:"width:80px"});
+  const prop = el("div",{class:"propozitie"});
+  const val = () => {
+    const x = num(pr.value), vv = vs.value, sus = ["ge","gt"].includes(rel.value);
+    r.cod = sus ? "zile_peste" : "zile_sub";
+    const semn = {ge:"≥", gt:">", le:"≤", lt:"<"}[rel.value];
+    let txt = `Se numără zilele cu ${VAR_SCURT[vv]} ${semn} ${x == null ? "?" : String(x).replace(".", ",")} ${VAR_U[vv]}`, av = "";
+    if (x != null){
+      if (vv !== "precipitation" && sus && x <= 0) av = `Atenție: „${VAR_SCURT[vv]} ${semn} ${String(x).replace(".", ",")}” numără aproape toate zilele anului. Pentru zile reci / geroase alegeți „≤” sau „<”.`;
+      if (vv !== "precipitation" && !sus && x >= 20) av = `Atenție: „${VAR_SCURT[vv]} ${semn} ${String(x).replace(".", ",")}” numără aproape toate zilele. Pentru zile calde alegeți „≥” sau „>”.`;
+      if (vv === "precipitation" && sus && x <= 0) av = "Atenție: P ≥ 0 numără toate zilele. Zilele ploioase: P ≥ 1 mm (ETCCDI), ploi abundente: P ≥ 10 mm.";
+      if (vv === "precipitation" && !sus && x > 50) av = "Atenție: aproape toate zilele au P sub acest prag.";
+    }
+    prop.innerHTML = ""; prop.append(el("span",{text:txt})); if (av) prop.append(el("div",{class:"avert-mic",text:av}));
+    laSchimbare();
+  };
+  [vs, rel, pr].forEach(x => { x.addEventListener("change", val); x.addEventListener("input", val); });
+  val();
+  return {elemente:[el("span",{class:"param"},"Variabila",vs), el("span",{class:"param"},rel, pr)], propozitie:prop,
+          get:()=>({cod: ["ge","gt"].includes(rel.value) ? "zile_peste" : "zile_sub", var: vs.value, prag: num(pr.value),
+                    strict: ["gt","lt"].includes(rel.value)})};
+}
+
+function selectorVector(optional){
+  const s = el("select",{}, optional ? el("option",{value:"",text:"— fără —"}) : null,
+               CAT.vectori.map(v=>el("option",{value:v,text:v})), el("option",{value:"_alta",text:"altă cale…"}));
+  const t = el("input",{type:"text",placeholder:"C:\\date\\fisier.gpkg",style:"flex:1;min-width:220px;display:none"});
+  const onchange = []; const anunta = () => onchange.forEach(f=>f());
+  s.onchange = () => { t.style.display = s.value==="_alta"?"":"none"; anunta(); };
+  t.onchange = anunta;
+  const get = () => s.value==="_alta" ? (t.value.trim()||null) : (s.value||null);
+  return {el:el("div",{class:"rand"},s,t), get, onchange,
+    set:v=>{ if(!v){ s.value = optional ? "" : (CAT.vectori[0]||"_alta"); }
+             else if (CAT.vectori.includes(v)) s.value = v; else { s.value="_alta"; t.value=v; }
+             t.style.display = s.value==="_alta"?"":"none"; }};
+}
+
+function widgetZona(c){
+  const forme = c.forme || ["tara","dreptunghi","punct","poligoane"];
+  let tip = forme[0];
+  const tab = el("div",{class:"taburi"}), cut = el("div",{class:"cutie"});
+  const nume = el("input",{type:"text",placeholder:"(opțional) numele afișat",style:"width:100%"});
+  // dreptunghi / punct
+  const n = () => el("input",{type:"number",step:"any"});
+  const dr = {lon_min:n(),lat_min:n(),lon_max:n(),lat_max:n()}, pc = {lon:n(),lat:n()};
+  const peHarta = (t, campuri) => el("button",{class:"b mic",type:"button",text:"🗺 alege pe hartă",onclick:async()=>{
+    const init = Object.fromEntries(Object.entries(campuri).map(([k,i])=>[k, num(i.value)]));
+    const v = await Alegator.alege(t, init);
+    if (v) Object.entries(campuri).forEach(([k,i])=>{ i.value = v[k]; });
+  }});
+  const pDr = el("div",{class:"rand"},"lon",dr.lon_min,"–",dr.lon_max,"lat",dr.lat_min,"–",dr.lat_max, peHarta("dreptunghi", dr));
+  const pPc = el("div",{class:"rand"},"lon",pc.lon,"lat",pc.lat, peHarta("punct", pc), el("span",{class:"mic",text:"grade zecimale, WGS 84"}));
+  // poligoane
+  const fis = selectorVector(false), strat = el("select",{}), col = el("select",{});
+  const colT = el("input",{type:"text",placeholder:"coloana (ex. NAME)"}), valT = el("input",{type:"text",placeholder:"valori, separate prin ;",style:"width:100%"});
+  const filtru = el("input",{type:"text",placeholder:"caută…",style:"width:100%"}), lista = el("div",{class:"lista-valori"});
+  const unite = el("input",{type:"checkbox"}), info = el("div",{class:"ajutor"});
+  let alese = new Set(), valori = [], cuGdal = !!CAT.gdal;
+  // filtrul de altitudine (DEM coregistrat pe grila cubului): se aplică oricărei forme de zonă, mai puțin punctului
+  const altMin = el("input",{type:"number",step:"50",placeholder:"min"}), altMax = el("input",{type:"number",step:"50",placeholder:"max"});
+  const pAlt = CAT.dem
+    ? el("div",{class:"alt-filtru"}, el("span",{class:"alt-et",text:"Doar pixelii cu altitudinea între"}), altMin, "și", altMax, "m",
+         el("div",{class:"ajutor",text:"Opțional. Altitudinea medie a pixelului de ~1 km (Copernicus DEM pe grila Zarr). Lăsați un câmp gol pentru „peste” / „sub”."}))
+    : el("div",{class:"ajutor alt-filtru",text:"Filtrul de altitudine apare după ce se generează DEM-ul coregistrat (instrumente/pregateste_dem.bat)."});
+  const deseneaza = () => { lista.innerHTML=""; const f = filtru.value.toLowerCase();
+    for (const v of valori){ if (f && !v.toLowerCase().includes(f)) continue;
+      const x = el("input",{type:"checkbox"}); x.checked = alese.has(v); x.onchange=()=>{x.checked?alese.add(v):alese.delete(v); info2();};
+      lista.append(el("label",{},x,v)); } };
+  const info2 = () => { info.textContent = alese.size ? `${alese.size} selectate` + (unite.checked?" → o singură zonă":" → câte o zonă fiecare") : "nicio selecție = toate entitățile"; };
+  filtru.oninput = deseneaza; unite.onchange = info2;
+  async function incarcaVector(pastreaza_sel){
+    const cale = fis.get(); if (!cale || !cuGdal) return;
+    const r = await api(`/api/vector?cale=${encodeURIComponent(cale)}&strat=${encodeURIComponent(strat.value||"")}&coloana=${encodeURIComponent(col.value||"")}`);
+    if (r.eroare){ info.textContent = r.eroare; return; }
+    if (!pastreaza_sel?.strat_ok){ strat.innerHTML=""; r.straturi.forEach(s=>strat.append(el("option",{value:s,text:s}))); strat.value=r.strat; }
+    if (!pastreaza_sel?.col_ok){ const v = col.value; col.innerHTML=""; col.append(el("option",{value:"",text:"— alegeți coloana —"}));
+      r.coloane.forEach(s=>col.append(el("option",{value:s,text:s})));
+      const gasit = r.coloane.find(c => c.toLowerCase() === (v||"").toLowerCase());   // „NAME” = „name”
+      if (gasit) col.value = gasit; }
+    valori = r.valori || []; if (!pastreaza_sel) alese = new Set([...alese].filter(v=>valori.includes(v)));
+    deseneaza(); info2();
+    if (!r.valori && col.value) await incarcaVector({strat_ok:true,col_ok:true});
+  }
+  fis.onchange.push(()=>{ strat.value=""; incarcaVector(); });
+  strat.onchange = () => incarcaVector({strat_ok:true});
+  col.onchange = () => { alese.clear(); incarcaVector({strat_ok:true,col_ok:true}); };
+  const pPol = el("div",{},
+    el("div",{class:"rand"},"fișier",fis.el),
+    cuGdal ? el("div",{class:"rand",style:"margin-top:6px"},"strat",strat,"coloana",col)
+           : el("div",{class:"rand",style:"margin-top:6px"},"coloana",colT),
+    cuGdal ? el("div",{},filtru,lista) : el("div",{style:"margin-top:6px"},valT),
+    el("label",{style:"display:flex;gap:6px;margin-top:6px"},unite,"zonele selectate devin una singură"), info);
+  const panouri = {tara:el("div",{class:"ajutor",text:"Toată grila (România)."}), dreptunghi:pDr, punct:pPc, poligoane:pPol};
+  const arata = () => { [...tab.children].forEach(b=>b.classList.toggle("activ", b.dataset.t===tip));
+    cut.innerHTML=""; cut.append(panouri[tip], el("div",{style:"margin-top:8px"},nume)); if (tip !== "punct") cut.append(pAlt); };
+  forme.forEach(f=>tab.append(el("button",{type:"button","data-t":f,text:FORME[f],onclick:()=>{tip=f; arata(); if(f==="poligoane") incarcaVector(true);}})));
+  arata();
+  return {el:el("div",{},tab,cut),
+    get:()=>{ const z = {tip, nume:nume.value.trim()||null};
+      if (tip==="dreptunghi") Object.entries(dr).forEach(([k,i])=>z[k]=num(i.value));
+      if (tip==="punct") Object.entries(pc).forEach(([k,i])=>z[k]=num(i.value));
+      if (tip==="poligoane"){ z.fisier=fis.get(); z.unite=unite.checked;
+        if (cuGdal){ z.strat=strat.value||null; z.coloana=col.value||null; z.valori=alese.size?[...alese]:null; }
+        else { z.coloana=colT.value.trim()||null; const v=valT.value.split(";").map(x=>x.trim()).filter(Boolean); z.valori=v.length?v:null; } }
+      if (tip !== "punct" && CAT.dem && (altMin.value !== "" || altMax.value !== "")) z.altitudine = [num(altMin.value), num(altMax.value)];
+      return z; },
+    set:v=>{ v = v || {tip:forme[0]}; tip = forme.includes(v.tip) ? v.tip : forme[0]; nume.value = v.nume||"";
+      Object.entries(dr).forEach(([k,i])=>i.value=v[k]??""); Object.entries(pc).forEach(([k,i])=>i.value=v[k]??"");
+      altMin.value = v.altitudine?.[0] ?? ""; altMax.value = v.altitudine?.[1] ?? "";
+      if (v.tip==="poligoane"){ fis.set(v.fisier); unite.checked=!!v.unite; alese=new Set(v.valori||[]);
+        colT.value=v.coloana||""; valT.value=(v.valori||[]).join("; ");
+        if (cuGdal){ col.innerHTML=""; if(v.coloana) col.append(el("option",{value:v.coloana,text:v.coloana})); col.value=v.coloana||"";
+          strat.innerHTML=""; if(v.strat) strat.append(el("option",{value:v.strat,text:v.strat})); }
+      } else fis.set(null);
+      arata(); if (tip==="poligoane") incarcaVector(true); }};
+}
+
+// ------------------------------------------------------------------ navigația și formularul
+const fara_diacritice = t => (t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+function deseneazaNav(){
+  const nav = $("#nav"); const focus = document.activeElement?.id === "cauta"; nav.innerHTML="";
+  const cauta = el("input",{type:"text",id:"cauta",class:"cauta",placeholder:"Caută (ex. îngheț, secetă, tendință)…",value:CAUTARE});
+  cauta.oninput = () => { CAUTARE = cauta.value; deseneazaNav(); };
+  nav.append(cauta);
+  const toateGrupurile = [...new Set(CAT.analize.map(a=>a.grup||"Altele"))].filter(g => g !== "Analize rapide");   // are chip-ul ⚡
+  const RAPIDE = "⚡ Analize rapide";
+  nav.append(el("div",{class:"filtre"},
+    CAT.analize.some(a=>a.rapida) ? el("button",{class:"rapide"+(FILTRU===RAPIDE?" activ":""),text:RAPIDE,title:"sub ~1 GB de descărcat și ~1 minut de calcul, cu valorile implicite",
+                                                 onclick:()=>{FILTRU = FILTRU===RAPIDE?null:RAPIDE; deseneazaNav();}}) : null,
+    toateGrupurile.map(g=>el("button",{class:FILTRU===g?"activ":"",text:g,onclick:()=>{FILTRU = FILTRU===g?null:g; deseneazaNav();}}))));
+  const q = fara_diacritice(CAUTARE).split(/\s+/).filter(Boolean);
+  const potriveste = a => q.every(t => fara_diacritice([a.titlu,a.descriere,a.grup,a.motor_titlu,(a.etichete||[]).join(" "),a.id].join(" ")).includes(t));
+  const grupuri = CAT.analize.some(a => a.grup === "Analize rapide") && !FILTRU ? {"Analize rapide": []} : {};   // primele în listă
+  if (FILTRU === "⚡ Analize rapide")
+    CAT.analize.filter(a => a.rapida && potriveste(a)).forEach(a => (grupuri["Analize rapide (sub un minut)"] ??= []).push(a));
+  else
+    CAT.analize.filter(a => (!FILTRU || (a.grup||"Altele")===FILTRU) && potriveste(a)).forEach(a => (grupuri[a.grup||"Altele"] ??= []).push(a));
+  for (const g in grupuri) if (!grupuri[g].length) delete grupuri[g];
+  if (!Object.keys(grupuri).length) nav.append(el("div",{class:"ajutor",style:"padding:8px",text:"Nicio analiză nu se potrivește căutării."}));
+  for (const [g,lista] of Object.entries(grupuri)){
+    nav.append(el("h3",{text:g}));
+    lista.forEach(a=>nav.append(el("button",{class:"an"+(ACTIV?.id===a.id?" activ":""),onclick:()=>alege(a.id),title:a.descriere||""},
+      el("span",{class:"nr",text:a.utilizator?"★":a.id.split("_")[0]}),a.titlu, a.rapida ? el("span",{class:"fulger",text:"⚡",title:"analiză rapidă"}) : null,
+      a.tip==="script" ? el("span",{class:"motor",text:"script"}) : null)));
+  }
+  if (focus){ const c=$("#cauta"); c.focus(); c.setSelectionRange(c.value.length,c.value.length); }
+  if (CAT.erori.length) nav.append(el("div",{class:"ajutor",style:"color:var(--eroare);padding:8px"},"Scripturi cu FORMULAR greșit: "+CAT.erori.join("; ")));
+  nav.append(el("h3",{text:"Istoric"}), el("div",{id:"istoric"}));
+  deseneazaIstoric();
+}
+
+async function deseneazaIstoric(){
+  const ist = await api("/api/istoric"), d = $("#istoric"); if (!d) return; d.innerHTML="";
+  if (!ist.length){ d.append(el("div",{class:"ajutor",style:"padding:0 9px",text:"încă nicio rulare"})); return; }
+  ist.slice(0,15).forEach(j=>d.append(el("div",{class:"ist",title:"clic: reia parametrii acestei rulări",onclick:()=>reia(j)},
+    el("span",{class:"punct "+j.stare}), el("span",{class:"t",text:j.pornit.slice(5,16)}), el("span",{text:(j.reteta||j.script).split("/").pop().replace(".py","").slice(0,22)+(j.mod==="verifica"?" (verificare)":"")}))));
+}
+
+function alege(id, valori){
+  ACTIV = CAT.analize.find(a=>a.id===id); if (!ACTIV) return;
+  pastreaza("ultima", id); deseneazaNav();
+  const f = $("#formular"); f.innerHTML="";
+  f.append(el("h2",{},ACTIV.titlu, ACTIV.motor_titlu ? el("span",{class:"eticheta-motor",text:ACTIV.motor_titlu}) : null),
+           el("p",{class:"descriere",text:ACTIV.descriere||""}),
+           el("div",{class:"cost",id:"cost",text: ACTIV.cost ? "Cost estimat: "+ACTIV.cost : "Costul: apăsați „Verifică parametrii”",
+                     title:"estimarea din rețetă; „Verifică parametrii” o calculează exact pentru valorile din formular"}));
+  const principal = el("div"), avansat = el("details",{class:"avansat"},el("summary",{text:"Setări avansate"}));
+  CAMPURI = [];
+  for (const c of ACTIV.campuri){
+    const w = (W[c.tip] || W.text)(c);
+    CAMPURI.push({c,w});
+    const bloc = el("div",{class:"camp"}, el("label",{class:"et",text:c.eticheta||c.nume}), w.el, c.ajutor?el("div",{class:"ajutor",text:c.ajutor}):null);
+    CAMPURI[CAMPURI.length-1].bloc = bloc;
+    (c.sectiune==="avansat" ? avansat : principal).append(bloc);
+  }
+  f.append(principal);
+  if (avansat.children.length>1) f.append(avansat);
+  const bV = el("button",{class:"b",text:"Verifică parametrii",title:"rulează scriptul doar până la citirea parametrilor (fără descărcare)",onclick:()=>ruleaza("verifica")});
+  const bR = el("button",{class:"b prim",id:"b-ruleaza",text:"▶ Rulează",onclick:()=>ruleaza("ruleaza")});
+  const bO = el("button",{class:"b rosu",id:"b-opreste",text:"■ Oprește",disabled:"",onclick:opreste});
+  const bI = el("button",{class:"b",text:"Valorile implicite",onclick:()=>{
+    try { localStorage.removeItem("clima:param:" + ACTIV.id); } catch(e){}
+    CAMPURI.forEach(({c,w})=>w.set(c.implicit)); mesaj("Valorile implicite ale analizei au fost restaurate.");
+  }});
+  const extra = ACTIV.tip==="reteta" ? [
+    el("button",{class:"b",text:"Exportă Python",title:"scriptul Python echivalent formularului, gata de rulat fără interfață",onclick:exportaPython}),
+    el("button",{class:"b",text:"Salvează ca rețetă",title:"păstrează aceste setări ca analiză proprie, în retete/utilizator/",onclick:salveazaReteta}),
+    ACTIV.utilizator ? el("button",{class:"b rosu",text:"Șterge rețeta",onclick:stergeReteta}) : null] : [];
+  f.append(el("div",{class:"butoane"},bR,bV,bO,bI,...extra));
+  const salvate = valori || citeste("param:"+id) || {};
+  CAMPURI.forEach(({c,w})=>w.set(c.nume in salvate ? salvate[c.nume] : c.implicit));
+  f.addEventListener("change", vizibilitate); f.addEventListener("input", vizibilitate);
+  vizibilitate();
+  actualizeazaButoane();
+}
+
+// câmpurile cu „doar_daca”: {camp, valori} apar doar când câmpul de care depind are una dintre valori
+function vizibilitate(){
+  for (const {c,bloc} of CAMPURI){
+    if (!c.doar_daca || !bloc) continue;
+    const sursa = CAMPURI.find(x => x.c.nume === c.doar_daca.camp);
+    const v = sursa ? sursa.w.get() : null;
+    bloc.style.display = c.doar_daca.valori.map(String).includes(String(v)) ? "" : "none";
+  }
+}
+
+function colecteaza(){
+  const p = {_setari:{}, _zone:[]};
+  for (const {c,w} of CAMPURI){
+    const v = w.get();
+    if (c.setare) p._setari[c.nume] = v; else p[c.nume] = v;
+    if (c.tip==="zona") p._zone.push(c.nume);
+  }
+  return p;
+}
+
+function valideaza(p){
+  const erori = [];
+  for (const {c,w} of CAMPURI){
+    const v = c.setare ? p._setari[c.nume] : p[c.nume], et = c.eticheta||c.nume;
+    if (c.tip==="interval_ani" && (v[0]==null||v[1]==null||v[0]>v[1])) erori.push(`${et}: anii lipsesc sau sunt inversați`);
+    if (c.tip==="perioada" && !v[0]) erori.push(`${et}: lipsește data de început`);
+    if (c.tip==="zonari" && !v.length) erori.push(`${et}: adăugați cel puțin o zonare (cu coloana completată)`);
+    if (c.tip==="zonari") v.forEach((z,i)=>{ if(!z.prefix||!z.eticheta) erori.push(`${et}, rândul ${i+1}: lipsește prefixul sau eticheta`); });
+    if (c.tip==="vector" && !v) erori.push(`${et}: alegeți fișierul`);
+    if (c.tip==="bife" && c.nume==="VARIABILE" && !Object.values(v).some(Boolean)) erori.push(`${et}: bifați cel puțin una`);
+    if (c.tip==="indicatori"){
+      if (!v.length) erori.push(`${et}: alegeți cel puțin un indicator`);
+      v.forEach((x,i)=>Object.entries(x).forEach(([k,val])=>{ if (val===null || (typeof val==="number" && isNaN(val))) erori.push(`${et}, rândul ${i+1}: „${k}” lipsește`); }));
+    }
+    if (c.tip==="zona"){
+      if (v.tip==="punct" && (v.lon==null||v.lat==null)) erori.push(`${et}: lipsesc coordonatele punctului`);
+      if (v.tip==="dreptunghi" && (["lon_min","lat_min","lon_max","lat_max"].some(k=>v[k]==null) || v.lon_min>=v.lon_max || v.lat_min>=v.lat_max))
+        erori.push(`${et}: dreptunghiul cere lon_min < lon_max și lat_min < lat_max`);
+      if (v.tip==="poligoane" && !v.fisier) erori.push(`${et}: alegeți fișierul vectorial`);
+      if (v.tip==="poligoane" && v.valori && !v.coloana) erori.push(`${et}: valorile cer și coloana`);
+    }
+  }
+  return erori;
+}
+
+// ------------------------------------------------------------------ rulare și urmărire
+async function ruleaza(mod){
+  const p = colecteaza(), erori = valideaza(p);
+  if (erori.length){ alert("Corectați formularul:\n\n• " + erori.join("\n• ")); return; }
+  const salv = {...p}; Object.assign(salv, p._setari); delete salv._setari; delete salv._zone;
+  pastreaza("param:"+ACTIV.id, salv);
+  const r = await api("/api/ruleaza", ACTIV.tip==="reteta" ? {reteta:ACTIV.id, analiza:ACTIV.titlu, mod, parametri:p}
+                                                         : {script:ACTIV.script, analiza:ACTIV.titlu, mod, parametri:p});
+  if (r.eroare){ mesaj(r.eroare); return; }
+  NLINII = 0; TSTART = Date.now(); $("#jurnal").innerHTML=""; $("#rezultate").innerHTML=""; PROGRES = null; arataProgres();
+  urmareste();
+}
+
+async function opreste(){ const r = await api("/api/opreste", {}); if (r.eroare) mesaj(r.eroare); }
+
+function clasaLinie(l){
+  if (/rețea: |reîncerc/.test(l)) return "w";              // reîncercările de rețea sunt normale: portocaliu, nu roșu
+  if (/Traceback|Error|Eroare|eroare:|\[eroare|Exception/.test(l)) return "e";
+  if (/atenție|\[atenție\]|Warning|avertisment/i.test(l)) return "w";
+  if (/== gata|Verificare încheiată|MEDIUL ESTE GATA/.test(l)) return "s";
+  if (l.startsWith("$ ")) return "c";
+  return "";
+}
+
+const ETICHETE = {pornire:"Pornește…", ruleaza:"Rulează", gata:"Gata", eroare:"Eroare", oprit:"Oprită", niciunul:"Nicio analiză pornită"};
+async function urmareste(){
+  clearTimeout(URMARIRE);
+  let j; try { j = await api(`/api/job?de_la=${NLINII}`); } catch(e){ $("#s-text").textContent="Serverul nu răspunde (fereastra lui a fost închisă?)"; return; }
+  if (j.stare === "niciunul") return;
+  const pre = $("#jurnal"), jos = pre.scrollTop + pre.clientHeight >= pre.scrollHeight - 30;
+  for (const l of j.linii){
+    if (l.startsWith("[[cost]] ")){ arataCost(JSON.parse(l.slice(9))); continue; }
+    if (l.startsWith("[[folder]] ") || l.startsWith("[[titlu]] ")) continue;
+    citesteProgres(l);
+    pre.append(el("span",{class:clasaLinie(l),text:l+"\n"}));
+  }
+  arataProgres(activ_ = (j.stare==="pornire"||j.stare==="ruleaza"));
+  NLINII = j.total; if (jos) pre.scrollTop = pre.scrollHeight;
+  $("#s-punct").className = "punct " + j.stare;
+  $("#s-text").textContent = `${ETICHETE[j.stare]||j.stare} · ${j.analiza||j.script}` + (j.mod==="verifica"?" (verificare)":"") + (j.stare==="eroare"&&j.cod!=null?` (cod ${j.cod})`:"");
+  $("#s-timp").textContent = fmtT(j.durata);
+  const activ = activ_;
+  actualizeazaButoane(activ);
+  if (activ){ URMARIRE = setTimeout(urmareste, 700); return; }
+  arataRezultate(j.fisiere||[], j.mod, j.folder); deseneazaIstoric();
+  if (j.reteta && String(j.reteta).includes("00_verifica_datele")) frontiere(false);   // eticheta din antet
+  if (document.hidden && j.mod!=="verifica") document.title = `✔ ${j.script} — Clima ANM`;
+}
+
+function actualizeazaButoane(activ=false){
+  const r=$("#b-ruleaza"), o=$("#b-opreste"); if (r) r.disabled = activ; if (o) o.disabled = !activ;
+}
+
+function arataRezultate(fisiere, mod, folder){
+  const d = $("#rezultate"); d.innerHTML="";
+  if (mod==="verifica") return;
+  if (!fisiere.length){ d.append(el("div",{class:"gol",text:"Niciun fișier nou în folderul rezultatelor."})); return; }
+  d.append(el("h4",{text:`Rezultate (${fisiere.length} fișiere noi)`}));
+  if (folder) d.append(el("div",{class:"fis fisa"}, el("b",{text:"Folderul rulării"}), el("span",{class:"n",text:folder}),
+    el("a",{class:"leg",text:"deschide ↗",onclick:()=>api("/api/deschide_folder",{folder})}),
+    el("a",{class:"leg",text:"fișa de reproducere",href:"/rezultate/"+folder.split("/").map(encodeURIComponent).join("/")+"/reproducere.json",target:"_blank"})));
+  const imagini = fisiere.filter(f=>["png","gif","jpg","svg"].includes(f.tip)), altele = fisiere.filter(f=>!imagini.includes(f));
+  const url = f => "/rezultate/" + f.cale.split("/").map(encodeURIComponent).join("/");
+  altele.filter(f=>f.cale.endsWith("_fisa.html")).forEach(f=>d.append(el("div",{class:"fis fisa"},
+    el("b",{text:"Fișa interactivă"}), el("span",{class:"n",text:f.cale}), el("a",{href:url(f),target:"_blank",class:"leg",text:"deschide ↗"}))));
+  if (imagini.length){ const g = el("div",{class:"galerie"});
+    imagini.forEach(f=>g.append(el("a",{href:url(f),target:"_blank",title:f.cale},el("img",{src:url(f)+"?t="+Date.now(),loading:"lazy",alt:f.cale}),el("span",{text:f.cale})))); d.append(g); }
+  altele.forEach(f=>{
+    const abs = CAT.rezultate.replace(/[\\/]$/,"") + (CAT.rezultate.includes("\\")?"\\":"/") + f.cale.replaceAll("/", CAT.rezultate.includes("\\")?"\\":"/");
+    d.append(el("div",{class:"fis"}, el("span",{class:"pastila",text:f.tip}), el("span",{class:"n",title:abs,text:f.cale}), el("span",{class:"m",text:fmtMB(f.marime)}),
+      ["html","md","csv","json"].includes(f.tip) ? el("a",{href:url(f),target:"_blank",class:"leg",text:"vezi"}) : null,
+      f.tip === "tif" ? el("a",{class:"leg",text:"pe hartă",onclick:()=>Harta.deschide(f.cale,"A")}) : null,
+      el("a",{class:"leg",text:"copiază calea",onclick:()=>navigator.clipboard.writeText(abs).then(()=>mesaj("Calea a fost copiată — o puteți lipi în QGIS."))})));
+  });
+}
+
+async function reia(j){
+  const v = await api("/api/job_vechi?id="+encodeURIComponent(j.id));
+  if (v.eroare){ mesaj(v.eroare); return; }
+  const a = CAT.analize.find(x => v.reteta ? x.id===v.reteta : x.script===v.script); if (!a){ mesaj("Analiza nu mai există."); return; }
+  const p = {...v.parametri}; Object.assign(p, p._setari||{}); delete p._setari; delete p._zone;
+  alege(a.id, p); mesaj(`Parametrii rulării din ${v.pornit}.`);
+}
+
+// ------------------------------------------------------------------ progresul și costul
+// Liniile nucleului poartă timpul scurs („[  272.6 s]”) și contoare „(k/N)”, „bloc k/N”, „etichetă: k/N ani”.
+// O fază = un șir de contoare cu același N; timpul rămas = durata medie pe pas × pașii rămași.
+let PROGRES = null, activ_ = false;
+function citesteProgres(l){
+  const t = (l.match(/^\[\s*([\d.]+) s\]/)||[])[1]; if (t === undefined) return;
+  const ts = parseFloat(t);
+  if (/reîncerc/.test(l)) return;
+  let m, k, n, faza;
+  if ((m = l.match(/bloc (\d+)\/(\d+)/))) { k=+m[1]; n=+m[2]; faza = "blocuri de date"; }
+  else if ((m = l.match(/^\[[^\]]*\]\s+([^:(]{2,40}): (\d+)\/(\d+) ani/))) { k=+m[2]; n=+m[3]; faza = m[1].trim(); }
+  else if ((m = l.match(/\((\d+)\/(\d+)\)/))) { k=+m[1]; n=+m[2]; faza = "citire, an cu an"; }
+  else { if (PROGRES) PROGRES.t_ultim = ts; return; }
+  if (!PROGRES || PROGRES.n !== n || k < PROGRES.k || PROGRES.faza !== faza)
+    PROGRES = {faza, n, k:0, t0: PROGRES ? PROGRES.t_ultim : 0, nr: (PROGRES?.nr||0) + 1};
+  PROGRES.k = k; PROGRES.t = ts; PROGRES.t_ultim = ts;
+}
+function arataProgres(activ){
+  const d = $("#progres");
+  if (!PROGRES || !activ){ d.style.display = "none"; return; }
+  d.style.display = "block";
+  const P = PROGRES, f = P.k / P.n;
+  $("#pr-bara").style.width = (100*f).toFixed(1) + "%";
+  $("#pr-faza").textContent = `faza ${P.nr} · ${P.faza}: ${P.k}/${P.n}`;
+  const pas = (P.t - P.t0) / Math.max(P.k, 1), rest = pas * (P.n - P.k);
+  $("#pr-eta").textContent = P.k >= P.n ? "faza încheiată" : (P.k ? `mai durează ~${fmtT(rest)}` : "");
+}
+function arataCost(c){
+  const e = $("#cost"); if (!e) return;
+  const gb = x => String((x/1000).toFixed(1)).replace(".",",");
+  e.textContent = `Cost calculat: descărcare ≈ ${String(c.gb.toFixed(2)).replace(".",",")} GB (${c.durata} la prima rulare)`
+    + (c.ram_mb != null ? ` · memorie ≈ ${gb(c.ram_mb)} GB · calcul ${c.calcul}` : "") + ` · date până la ${c.frontiera}`;
+  e.classList.add("calculat");
+  const prea = c.ram_mb && c.ram_disponibil_mb && c.ram_mb > 0.8 * c.ram_disponibil_mb;
+  e.classList.toggle("rau", !!prea);
+  if (prea) e.textContent += ` — ATENȚIE: acum sunt libere doar ≈ ${gb(c.ram_disponibil_mb)} GB de memorie; alegeți o zonă mai mică.`;
+}
+
+// ------------------------------------------------------------------ frontierele datelor (antet)
+let FRONT = null;                                    // ultima zi cu date pentru toate variabilele (YYYY-MM-DD)
+const adunaZile = (iso, n) => { const t = new Date(iso + "T00:00:00Z"); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0,10); };
+async function frontiere(reincearca){
+  const f = await api("/api/frontiere" + (reincearca ? "?reincearca=1" : "")), p = $("#p-date");
+  if (f.stare === "ok"){
+    const v = Object.values(f.frontiere).sort()[0], d = v.split("-").reverse().join(".");
+    FRONT = v;
+    p.textContent = (f.test ? "CUB DE TEST · " : "date până la ") + d;
+    p.className = "pastila " + (f.test ? "atentie" : "ok");
+    p.title = Object.entries(f.frontiere).map(([k,x])=>`${k}: ${x}`).join("\n") + `\nînceput: ${f.inceput}\nsursa: ${f.sursa}`;
+    p.onclick = null; p.style.cursor = "";
+    const I = f.integritate, b = $("#b-verif");
+    if (I && I.frontiera_declarata === v){             // ultima verificare e pentru frontiera de acum
+      b.textContent = I.stare === "ok" ? "date verificate ✓" : `⚠ sigure până la ${I.ultima_zi_sigura.split("-").reverse().join(".")}`;
+      b.className = "pastila verif " + (I.stare === "ok" ? "ok" : "atentie");
+      b.title = `Verificat: ${I.verificat}` + (I.stare === "ok" ? " · date complete" :
+        ` · ${I.probleme} probleme (chunk-uri lipsă sau blocuri nescrise). Analizele le tratează automat ca date lipsă.`) + "\nclic: verifică din nou";
+    } else { b.textContent = "verifică datele"; b.className = "pastila verif"; }
+  } else if (f.stare === "eroare"){
+    p.textContent = "EOCube indisponibil ↻"; p.className = "pastila rau"; p.title = (f.eroare||"") + "\nclic: reîncearcă";
+    p.style.cursor = "pointer"; p.onclick = () => { p.textContent = "se verifică…"; frontiere(true); };
+  } else { p.textContent = "date: se verifică…"; p.className = "pastila"; }
+  if (f.stare !== "ok" && f.stare !== "eroare" || reincearca) setTimeout(()=>frontiere(false), 2500);
+}
+
+// butonul „verifică datele”: pornește rețeta 00 (raportul complet apare în rezultate, cu fișa vizuală)
+document.addEventListener("DOMContentLoaded", () => {
+  const b = $("#b-verif"); if (!b) return;
+  b.onclick = async () => {
+    if (!CAT || !CAT.analize.some(a => a.id === "00_verifica_datele")) return;
+    arataVedere("analize"); alege("00_verifica_datele");
+    setTimeout(() => ruleaza("ruleaza"), 300);
+  };
+});
+
+// ------------------------------------------------------------------ pagina de start: acțiunile și ultimele rezultate
+async function paginaStart(){
+  const v = $("#v-start"), [g] = await Promise.all([api("/api/galerie"), CAT ? null : new Promise(r => setTimeout(r, 300))]);
+  const rulari = g.rulari || [], nr = CAT ? CAT.analize.length : 0, nrRapide = CAT ? CAT.analize.filter(a => a.rapida).length : 0;
+  const dataRo = FRONT ? FRONT.split("-").reverse().join(".") : null;
+  const actiune = (titlu, text, cls, f) => el("button",{class:"s-act " + cls, onclick:f}, el("span",{class:"s-act-t",text:titlu}), el("span",{class:"s-act-d",text:text}));
+  v.innerHTML = "";
+  v.append(
+    el("section",{class:"s-cap"},
+      el("div",{class:"s-intro"},
+        el("h1",{text:"Clima României, zi cu zi, din 1961"}),
+        el("p",{text:`Grila ANM de 1 km din cubul anm-daily-grids (EOCube.ro): temperatura maximă, minimă și precipitațiile. `
+          + (dataRo ? `Datele merg până la ${dataRo}.` : "")})),
+      el("div",{class:"s-actiuni"},
+        actiune("⚡ Analize rapide", `${nrRapide} analize, rezultat în ~1 minut`, "rapid", () => { arataVedere("analize"); FILTRU = "⚡ Analize rapide"; deseneazaNav(); }),
+        actiune("Toate analizele", `${nr} rețete: hărți, trenduri, extreme, superlative`, "", () => arataVedere("analize")),
+        actiune("Hartă", "rasterele din rezultate, animații pe ani, comparații", "", () => arataVedere("harta")))),
+    el("section",{class:"s-rez"},
+      el("div",{class:"s-rez-cap"}, el("h2",{text:"Rezultatele recente"}),
+        rulari.length ? el("a",{class:"leg",text:"folderul rezultatelor",onclick:()=>api("/api/deschide_folder",{})}) : null),
+      rulari.length ? el("div",{class:"s-grila"}, rulari.map(carte)) :
+        el("div",{class:"s-gol"}, el("p",{text:"Încă nu există rezultate. O analiză rapidă e un început bun: descarcă sub 1 GB și calculează în jur de un minut."}),
+          el("button",{class:"b primar",text:"Alege o analiză rapidă",onclick:()=>{ arataVedere("analize"); FILTRU = "⚡ Analize rapide"; deseneazaNav(); }}))));
+}
+function carte(r){
+  const url = c => "/rezultate/" + c.split("/").map(encodeURIComponent).join("/");
+  const pePlan = async () => { arataVedere("harta"); await Harta.deschide(r.tif, "A"); };
+  const prezinta = async () => { arataVedere("harta"); Harta.prezentare(); await Harta.deschide(r.tif, "A"); Harta.porneste(); };
+  return el("article",{class:"s-carte" + (r.stare === "eroare" ? " eroare" : "")},
+    el("div",{class:"s-img", onclick: r.fisa ? () => window.open(url(r.folder + "/index.html"), "_blank") : (r.tif ? pePlan : null)},
+      r.imagine ? el("img",{src:url(r.imagine), alt:r.titlu, loading:"lazy"}) : el("span",{class:"s-fara",text:r.n_tif ? "GeoTIFF" : "fără imagini"}),
+      r.animatie ? el("span",{class:"s-eticheta",text:"▶ animație pe ani"}) : null,
+      r.stare === "eroare" ? el("span",{class:"s-eticheta rau",text:"oprită cu eroare"}) : null),
+    el("div",{class:"s-corp"},
+      el("h3",{text:r.titlu}),
+      el("div",{class:"s-meta",text:[r.data, r.n_png ? `${r.n_png} imagini` : null, r.n_tif ? `${r.n_tif} ${r.n_tif === 1 ? "raster" : "rastere"}` : null].filter(Boolean).join("  ·  ")}),
+      el("div",{class:"s-butoane"},
+        r.fisa ? el("a",{class:"s-b",text:"Fișa",href:url(r.folder + "/index.html"),target:"_blank"}) : null,
+        r.tif ? el("button",{class:"s-b",text:"Pe hartă",onclick:pePlan}) : null,
+        r.animatie ? el("button",{class:"s-b prim",text:"Prezintă",title:"ecran complet, cu animația pornită",onclick:prezinta}) : null,
+        el("button",{class:"s-b slab",text:"Folder",onclick:()=>api("/api/deschide_folder",{folder:r.folder})}))));
+}
+
+// ------------------------------------------------------------------ vederile (taburile din antet)
+const VEDERI_FACUTE = {};
+function arataVedere(v){
+  for (const x of ["start","analize","harta","indicatori","zarr"]) $("#v-"+x).style.display = x === v ? "" : "none";
+  document.querySelectorAll(".vederi button").forEach(b => b.classList.toggle("activ", b.dataset.v === v));
+  if (v === "harta") Harta.activeaza();
+  if (v === "start") paginaStart();
+  if (v === "indicatori" && !VEDERI_FACUTE.indicatori){ Indicatori.construieste(); VEDERI_FACUTE.indicatori = true; }
+  if (v === "zarr" && !VEDERI_FACUTE.zarr){ ZarrInfo.construieste(); VEDERI_FACUTE.zarr = true; }
+}
+
+// ------------------------------------------------------------------ fereastra, export, rețete proprii
+function fereastra(titlu, corp, butoane){
+  $("#f-titlu").textContent = titlu; const c=$("#f-corp"); c.innerHTML=""; c.append(...[corp].flat());
+  const j=$("#f-jos"); j.innerHTML=""; j.append(...butoane, el("button",{class:"b",text:"Închide",onclick:inchide}));
+  $("#fundal").classList.add("vizibil");
+}
+function inchide(){ $("#fundal").classList.remove("vizibil"); }
+$("#fundal").addEventListener("click", e => { if (e.target.id==="fundal") inchide(); });
+document.addEventListener("keydown", e => { if (e.key==="Escape") inchide(); });
+
+async function exportaPython(){
+  const p = colecteaza(), erori = valideaza(p);
+  if (erori.length){ alert("Corectați formularul:\n\n• " + erori.join("\n• ")); return; }
+  const r = await api("/api/exporta", {reteta:ACTIV.id, parametri:p});
+  if (r.eroare){ mesaj(r.eroare); return; }
+  fereastra("Scriptul Python echivalent", [el("p",{class:"ajutor",text:"Salvat în: "+r.cale}), el("pre",{text:r.cod})],
+    [el("button",{class:"b prim",text:"Copiază codul",onclick:()=>navigator.clipboard.writeText(r.cod).then(()=>mesaj("Codul a fost copiat."))})]);
+}
+
+function salveazaReteta(){
+  const titlu = el("input",{type:"text",style:"width:100%",value:ACTIV.utilizator ? ACTIV.titlu : ACTIV.titlu + " — varianta mea"});
+  const desc = el("textarea",{placeholder:"(opțional) ce face, pentru cine e"}); desc.value = ACTIV.utilizator ? (ACTIV.descriere||"") : "";
+  fereastra("Salvează ca rețetă proprie", [
+    el("p",{class:"ajutor",text:"Toate valorile din formular devin valorile implicite ale rețetei noi. Rețeta apare în grupul „Rețetele mele” și se poate copia pe alt calculator (folderul retete/utilizator/)."}),
+    el("label",{class:"et",text:"Titlul"}), titlu, el("label",{class:"et",text:"Descrierea"}), desc],
+    [el("button",{class:"b prim",text:"Salvează",onclick:async()=>{
+      if (!titlu.value.trim()){ mesaj("Scrieți un titlu."); return; }
+      const r = await api("/api/salveaza_reteta", {reteta:ACTIV.id, titlu:titlu.value, descriere:desc.value, parametri:colecteaza()});
+      if (r.eroare){ mesaj(r.eroare); return; }
+      inchide(); CAT = await api("/api/catalog"); alege(r.id); mesaj("Rețeta a fost salvată.");
+    }})]);
+}
+
+async function stergeReteta(){
+  if (!confirm(`Ștergeți rețeta „${ACTIV.titlu}”? Rezultatele deja produse rămân.`)) return;
+  const r = await api("/api/sterge_reteta", {reteta:ACTIV.id});
+  if (r.eroare){ mesaj(r.eroare); return; }
+  CAT = await api("/api/catalog"); alege(CAT.analize[0].id); mesaj("Rețeta a fost ștearsă.");
+}
+
+// ------------------------------------------------------------------ pornire
+(async function(){
+  CAT = await api("/api/catalog");
+  $("#p-gdal").textContent = CAT.gdal ? "GDAL " + CAT.gdal : "fără GDAL";
+  $("#p-gdal").className = "pastila " + (CAT.gdal ? "ok" : "rau");
+  $("#p-python").title = CAT.python; $("#p-python").textContent = "Python ✓";
+  $("#b-folder").onclick = () => api("/api/deschide_folder", {});
+  frontiere(false);
+  if (!CAT.analize.length){ $("#formular").innerHTML = '<div class="gol">Nu am găsit scripturi cu FORMULAR în folderul clima/.</div>'; deseneazaNav(); return; }
+  const ultima = citeste("ultima");
+  alege(CAT.analize.some(a=>a.id===ultima) ? ultima : CAT.analize[0].id);
+  urmareste();   // dacă o analiză rula deja (pagina reîncărcată), reia urmărirea
+  paginaStart();
+})();
+</script>
+<script src="/harta.js"></script>
+<script src="/indicatori.js"></script>
+<script src="/alegator.js"></script>
+<script src="/zarr_info.js"></script>
+</body>
+</html>

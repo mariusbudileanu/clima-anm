@@ -1,0 +1,31 @@
+{
+  "titlu": "Indicele de ariditate De Martonne",
+  "grup": "Precipitații și secetă",
+  "motor": "harta",
+  "descriere": "I = P / (T + 10), în clase: arid, semiarid, mediteranean, semiumed, umed, foarte umed.",
+  "cost": "10 ani ≈ 6 GB (toate cele trei variabile), pentru toată țara",
+  "etichete": [
+    "ariditate",
+    "secetă"
+  ],
+  "mod_indicatori": "blocat",
+  "parametri": {
+    "INDICATORI": [
+      {
+        "cod": "de_martonne"
+      }
+    ],
+    "ANI": [
+      2016,
+      2025
+    ],
+    "SEZON": "anual",
+    "CLASE": [
+      10,
+      20,
+      24,
+      28,
+      35
+    ]
+  }
+}

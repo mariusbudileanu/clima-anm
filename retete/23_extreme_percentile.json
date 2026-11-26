@@ -1,0 +1,25 @@
+{
+  "titlu": "Extreme termice relative (percentile ETCCDI)",
+  "grup": "Temperatură",
+  "motor": "harta",
+  "descriere": "Zile calde și nopți calde (TX90p, TN90p) și durata valurilor de căldură (WSDI), față de percentilele zilei calendaristice din normala 1991–2020. Pragurile depind de loc, deci munții și câmpia se compară corect. Prima rulare pe o zonă calculează pragurile (o singură dată); următoarele le citesc din cache.",
+  "cost": "prima rulare: pragurile 1991–2020 ≈ 4,6 GB pentru zona implicită (~8 min), ≈ 20 GB pentru toată țara; apoi doar anii aleși",
+  "etichete": [
+    "ETCCDI",
+    "percentile",
+    "valuri de căldură",
+    "extreme",
+    "normala 1991–2020"
+  ],
+  "mod_indicatori": "liber",
+  "parametri": {
+    "INDICATORI": [
+      {"cod": "pct_zile", "indice": "tx90p", "baza_de": 1991, "baza_pana": 2020},
+      {"cod": "pct_zile", "indice": "tn90p", "baza_de": 1991, "baza_pana": 2020},
+      {"cod": "wsdi", "durata": 6, "baza_de": 1991, "baza_pana": 2020}
+    ],
+    "ANI": [2016, 2025],
+    "SEZON": "anual",
+    "ZONA": {"tip": "dreptunghi", "lon_min": 25.5, "lat_min": 43.9, "lon_max": 27.0, "lat_max": 44.9, "nume": "Câmpia Română centrală"}
+  }
+}

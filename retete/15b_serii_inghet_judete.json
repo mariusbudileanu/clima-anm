@@ -1,0 +1,33 @@
+{
+  "titlu": "Zilele de îngheț pe județe (serii)",
+  "grup": "Zone și tabele",
+  "motor": "serii",
+  "descriere": "Numărul anual de zile cu Tmin < 0 °C pe fiecare județ: serii, multiple mici, dungi pe zone și harta tendinței. Indicatorul se calculează per pixel și per an, apoi se mediază pe județ.",
+  "cost": "toată țara, 1961–2025 ≈ 13 GB la prima rulare (apoi din cache); „Verifică parametrii” dă cifra exactă",
+  "etichete": [
+    "îngheț",
+    "serii",
+    "județe",
+    "tendință"
+  ],
+  "parametri": {
+    "INDICATORI": [
+      {
+        "cod": "zile_sub",
+        "var": "min_temp",
+        "prag": 0.0,
+        "strict": true
+      }
+    ],
+    "GRAFICE": {
+      "serie_zilnica": false,
+      "serii_anuale": true,
+      "multiple_mici": true,
+      "bare_zone": true,
+      "dungi_zone": true,
+      "dungi_detaliu": true,
+      "anomalii_lunare": false,
+      "harta_zone": true
+    }
+  }
+}

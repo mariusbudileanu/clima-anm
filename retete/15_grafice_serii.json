@@ -1,0 +1,14 @@
+{
+  "titlu": "Serii de timp pe zone (grafice complexe)",
+  "grup": "Zone și tabele",
+  "motor": "serii",
+  "descriere": "Seria zilnică, seriile anuale cu tendință, multiple mici, bare, dungi pe zone, anomalii lunare și harta pe zone, pentru județe sau alte poligoane.",
+  "cost": "toate județele, 1961–2025 ≈ 13 GB pe variabilă (o singură dată; apoi din cache)",
+  "etichete": [
+    "serii",
+    "grafice",
+    "județe",
+    "tendință"
+  ],
+  "parametri": {}
+}

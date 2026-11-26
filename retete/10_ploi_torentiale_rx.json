@@ -1,0 +1,31 @@
+{
+  "titlu": "Ploi torențiale: Rx1day și Rx5day",
+  "grup": "Precipitații și secetă",
+  "motor": "harta",
+  "descriere": "Cantitatea maximă de precipitații căzută într-o zi și în 5 zile consecutive (ETCCDI). Adăugați rânduri pentru alte durate.",
+  "cost": "un an ≈ 0,1 GB, pentru toată țara",
+  "etichete": [
+    "extreme",
+    "precipitații",
+    "inundații"
+  ],
+  "mod_indicatori": "acelasi",
+  "parametri": {
+    "INDICATORI": [
+      {
+        "cod": "rxnday",
+        "n": 1
+      },
+      {
+        "cod": "rxnday",
+        "n": 5
+      }
+    ],
+    "ANI": [
+      2025,
+      2025
+    ],
+    "SEZON": "anual"
+  },
+  "rapida": true
+}

@@ -1,0 +1,53 @@
+{
+  "titlu": "Indici ETCCDI de precipitații",
+  "grup": "Precipitații și secetă",
+  "motor": "atlas",
+  "descriere": "Opt indici standard ETCCDI pe județe, dintr-o singură citire: Rx1day, Rx5day, R10mm, R20mm, CDD, CWD, SDII și PRCPTOT. Arată nu doar cât plouă, ci și cum: în câte zile, cât de intens și cât de lungi sunt perioadele uscate sau ploioase.",
+  "etichete": [
+    "ETCCDI",
+    "precipitații",
+    "ploi torențiale",
+    "secetă",
+    "intensitate"
+  ],
+  "parametri": {
+    "INDICATORI": [
+      {
+        "cod": "rxnday",
+        "n": 1
+      },
+      {
+        "cod": "rxnday",
+        "n": 5
+      },
+      {
+        "cod": "zile_peste",
+        "var": "precipitation",
+        "prag": 10.0,
+        "strict": false
+      },
+      {
+        "cod": "zile_peste",
+        "var": "precipitation",
+        "prag": 20.0,
+        "strict": false
+      },
+      {
+        "cod": "cdd",
+        "prag": 1.0
+      },
+      {
+        "cod": "cwd",
+        "prag": 1.0
+      },
+      {
+        "cod": "sdii",
+        "prag": 1.0
+      },
+      {
+        "cod": "prcptot",
+        "prag": 1.0
+      }
+    ]
+  }
+}

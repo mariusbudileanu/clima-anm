@@ -1,0 +1,36 @@
+# Mediul portabil al programului Clima ANM (conda-forge, rezolvat și blocat în pixi.lock)
+# Se creează automat de porneste.bat în folderul .pixi\ al programului; nu atinge QGIS / OSGeo4W.
+[workspace]
+name = "clima-anm"
+version = "1.0.0"
+description = "Analize climatice pe cubul Zarr anm-daily-grids (EOCube.ro)"
+channels = ["conda-forge"]
+platforms = ["win-64", "linux-64", "osx-arm64", "osx-64"]
+
+[dependencies]
+python = "3.12.*"
+numpy = ">=2.0"
+xarray = ">=2025.1"
+zarr = ">=3.0"
+fsspec = "*"
+aiohttp = "*"
+requests = "*"
+dask-core = "*"
+cftime = "*"
+matplotlib-base = "*"
+gdal = ">=3.9"          # include libgdal-core: GeoTIFF/COG, GPKG, SHP, GeoJSON
+netcdf4 = "*"           # export NetCDF (scriptul 12)
+pillow = "*"            # animații GIF
+
+[tasks]
+interfata = "python interfata/server_clima.py"
+verifica = "python clima/00_verificare_mediu.py"
+
+# Izolare: mediul nu încarcă pachetele instalate cu `pip install --user` (AppData\Roaming\Python\Python312)
+# și nici căile setate de OSGeo4W / QGIS. Exact acestea produceau conflictul NumPy 1.x / 2.x.
+[activation.env]
+PYTHONNOUSERSITE = "1"
+PYTHONPATH = ""
+PYTHONHOME = ""
+PYTHONUTF8 = "1"
+MPLBACKEND = "Agg"

@@ -1,0 +1,26 @@
+{
+  "titlu": "Hartă — orice indicator",
+  "grup": "Analize libere",
+  "motor": "harta",
+  "descriere": "Alegeți unul sau mai mulți indicatori din registru, cu parametrii lor; se calculează media pe anii aleși.",
+  "cost": "≈ 0,1–0,25 GB pe an și pe variabilă, pentru toată țara",
+  "etichete": [
+    "liber"
+  ],
+  "mod_indicatori": "liber",
+  "parametri": {
+    "INDICATORI": [
+      {
+        "cod": "zile_peste",
+        "var": "max_temp",
+        "prag": 25.0,
+        "strict": true
+      }
+    ],
+    "ANI": [
+      2016,
+      2025
+    ],
+    "SEZON": "anual"
+  }
+}

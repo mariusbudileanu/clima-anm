@@ -1,0 +1,14 @@
+{
+  "titlu": "Analiza unui episod: cât de rar a fost?",
+  "grup": "Episoade și extreme",
+  "motor": "analiza_episod",
+  "descriere": "Statistici, anomalie, raritate (rang, top episoade, Gumbel, șiruri), context, hărți, GIF și fișa interactivă HTML, pentru o perioadă aleasă.",
+  "cost": "prima rulare: punct ≈ 1,6 GB (~3 min), țara ≈ 13 GB; apoi din cache, câteva secunde",
+  "etichete": [
+    "episod",
+    "raritate",
+    "fișă",
+    "HTML"
+  ],
+  "parametri": {}
+}

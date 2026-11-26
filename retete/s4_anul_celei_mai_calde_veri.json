@@ -1,0 +1,34 @@
+{
+  "titlu": "Harta: anul celei mai calde veri",
+  "grup": "Superlative",
+  "motor": "superlative",
+  "descriere": "Pentru fiecare pixel: cea mai caldă vară (temperatura medie iunie–august) din toată seria, anul în care a fost, cu cât a depășit a doua cea mai caldă vară și locul unui an ales. Plus graficul: în ce procent din zonă deține fiecare an recordul.",
+  "cost": "o zonă de câmpie, toată seria ≈ 3 GB (Tmax + Tmin, doar verile); toată țara ≈ 13 GB",
+  "etichete": [
+    "superlative",
+    "record",
+    "vară",
+    "hartă",
+    "anul recordului"
+  ],
+  "parametri": {
+    "VARIABILA": "tmedie",
+    "SENS": "max",
+    "UNITATE": "sezon",
+    "SEZON": "JJA",
+    "ANI": [
+      1961,
+      2025
+    ],
+    "MOD": "harta",
+    "ZONA": {
+      "tip": "dreptunghi",
+      "lon_min": 25.5,
+      "lat_min": 43.9,
+      "lon_max": 27.0,
+      "lat_max": 44.9,
+      "nume": "Câmpia Română centrală"
+    },
+    "AN_EVIDENTIAT": 2024
+  }
+}

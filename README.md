@@ -2,7 +2,7 @@
 
 [![teste](https://github.com/mariusbudileanu/clima-anm/actions/workflows/teste.yml/badge.svg)](https://github.com/mariusbudileanu/clima-anm/actions/workflows/teste.yml)
 [![licență: MIT](https://img.shields.io/badge/licen%C8%9B%C4%83-MIT-0f6b8c)](LICENSE)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24564872.svg)](https://doi.org/10.5281/zenodo.24564872)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24564871.svg)](https://doi.org/10.5281/zenodo.24564871)
 
 Analize climatice pe datele zilnice ANM pentru România, 1961 – prezent, grilă de 1 km, citite direct din cubul Zarr
 [`anm-daily-grids`](https://eocube.ro) de pe EOCube.ro. Un program local, cu interfața în browser, făcut pentru
@@ -45,11 +45,12 @@ Rulează automat pe GitHub la fiecare modificare.
 
 ## Citare
 
-Budileanu, M. (2026). *Clima ANM: analize climatice pe cubul Zarr anm-daily-grids (EOCube.ro)* (versiunea 1.0.0)
-[Software]. Zenodo. https://doi.org/10.5281/zenodo.24564872
+Budileanu, M. (2026). *Clima ANM: analize climatice pe cubul Zarr anm-daily-grids (EOCube.ro)* [Software].
+Zenodo. https://doi.org/10.5281/zenodo.24564871
 
-Vezi și [`CITATION.cff`](CITATION.cff) (butonul *Cite this repository* din dreapta paginii). Versiunile viitoare vor
-avea DOI-uri proprii, toate legate pe pagina Zenodo a proiectului.
+DOI-ul de mai sus e al proiectului și duce mereu la ultima versiune. Fiecare versiune are și DOI-ul ei, pe pagina
+Zenodo (de ex. 1.0.0: [10.5281/zenodo.24564872](https://doi.org/10.5281/zenodo.24564872)); într-o lucrare, citați
+versiunea folosită. Vezi și [`CITATION.cff`](CITATION.cff) (butonul *Cite this repository*).
 
 ## Licențe și atribuiri
 

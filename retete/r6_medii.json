@@ -1,0 +1,23 @@
+{
+  "titlu": "Medii: temperatura și precipitațiile",
+  "grup": "Analize rapide",
+  "rapida": true,
+  "motor": "harta",
+  "descriere": "Temperatura medie, media maximelor și a minimelor zilnice și cantitatea medie de precipitații, pentru anii, sezonul (an, anotimp, luni alese sau un interval de zile) și zona alese. Doar aceste trei alegeri; restul e fixat. Cu cât sunt mai mulți ani și o zonă mai mare, cu atât descărcarea crește: costul apare înainte de pornire.",
+  "cost": "≈ 0,6 GB pentru un an pe toată țara; fiecare an în plus, încă ~0,6 GB",
+  "etichete": ["rapid", "medii", "temperatura medie", "precipitații", "normale", "climatologie"],
+  "mod_indicatori": "blocat",
+  "ascunse": ["INDICATORI", "IESIRI", "CLASE"],
+  "parametri": {
+    "INDICATORI": [
+      {"cod": "tmedie"},
+      {"cod": "medie", "var": "max_temp"},
+      {"cod": "medie", "var": "min_temp"},
+      {"cod": "suma", "var": "precipitation"}
+    ],
+    "ANI": [2025, 2025],
+    "SEZON": "anual",
+    "ZONA": {"tip": "tara"},
+    "IESIRI": {"cog": true, "png": true, "grafic": false, "gpkg": true, "csv": true, "ani": false}
+  }
+}

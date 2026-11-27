@@ -210,15 +210,15 @@ main.harta{grid-template-columns:270px minmax(400px,1fr) 300px}
 .h-unelte .h-sep{height:6px}
 .h-unelte button.text{font:700 11px var(--titluri);letter-spacing:-.02em}
 .h-unelte button.activ{background:var(--accent);border-color:var(--accent);color:#fff}
-.h-player{position:absolute;top:10px;left:10px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.94);
-  border:1px solid var(--linie);border-radius:999px;padding:4px 12px 4px 4px;box-shadow:0 2px 10px rgba(23,38,52,.12);backdrop-filter:blur(4px)}
-.h-play{width:34px;height:34px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:13px;cursor:pointer;flex:none}
+.h-player{position:absolute;top:8px;left:8px;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.92);
+  border:1px solid var(--linie);border-radius:999px;padding:2px 8px 2px 2px;box-shadow:0 1px 6px rgba(23,38,52,.10);backdrop-filter:blur(4px)}
+.h-play{width:24px;height:24px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:9px;cursor:pointer;flex:none;padding:0}
 .h-play:hover{background:var(--accent-inchis)}
-.h-an{font:700 17px var(--titluri);font-variant-numeric:tabular-nums;min-width:54px;color:var(--text)}
-.h-player:not(.serie) .h-an{font-size:13px;font-weight:600;min-width:72px}
-.h-player input[type=range]{width:clamp(90px,18vw,240px);accent-color:var(--accent)}
-.h-player select{border:0;background:transparent;font-size:12px;color:var(--slab);cursor:pointer}
-.h-video{border:1px solid var(--linie);background:#fff;border-radius:999px;font-size:12px;padding:4px 10px;cursor:pointer;color:var(--accent-inchis);white-space:nowrap}
+.h-an{font:600 12.5px var(--titluri);font-variant-numeric:tabular-nums;min-width:0;white-space:nowrap;color:var(--text)}
+.h-player:not(.serie) .h-an{font-size:12px;min-width:60px}
+.h-player input[type=range]{width:clamp(70px,10vw,140px);height:14px;accent-color:var(--accent)}
+.h-player select{border:0;background:transparent;font-size:11px;color:var(--slab);cursor:pointer;padding:0}
+.h-video{border:1px solid var(--linie);background:#fff;border-radius:999px;font-size:11px;padding:1px 8px;cursor:pointer;color:var(--accent-inchis);white-space:nowrap}
 .h-video:hover{border-color:var(--accent)} .h-video:disabled{color:var(--eroare);cursor:progress}
 .h-legflot,.h-ajprez{display:none}
 .h-scena:fullscreen{background:#fff}
@@ -269,9 +269,9 @@ main.start{display:block;overflow:auto;padding:0 0 40px}
 .h-scena:fullscreen .h-legflot .h-ticks{font-size:13px}
 .h-legflot canvas{position:static;inset:auto}
 .h-legB{font-size:12px;color:var(--slab);margin-top:6px}
-.h-scena:fullscreen .h-ajprez{display:block;position:absolute;left:50%;transform:translateX(-50%);bottom:78px;font-size:12px;color:var(--slab);
+.h-scena:fullscreen .h-ajprez{display:block;position:absolute;left:50%;transform:translateX(-50%);bottom:52px;font-size:12px;color:var(--slab);
   background:rgba(255,255,255,.85);border-radius:999px;padding:3px 12px;animation:stinge 6s forwards}
-.h-scena:fullscreen .h-player{top:auto;bottom:20px;left:50%;transform:translateX(-50%)}
+.h-scena:fullscreen .h-player{top:auto;bottom:16px;left:50%;transform:translateX(-50%)}
 @keyframes stinge{0%,70%{opacity:1}100%{opacity:0}}
 .h-faraB{background:linear-gradient(180deg,#fffaf3,#fff);border:1px dashed #e8b98a;border-radius:var(--raza-mica);padding:10px 10px 12px}
 select.clipeste{animation:clipeste .4s 3;outline:2px solid var(--atentie)}

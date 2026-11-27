@@ -5,6 +5,13 @@ Cele mai noi sus. Manualul de utilizare este în `CITESTE_MA.md`.
 Versiunea publică **1.0.0** corespunde versiunii interne 5.2. Versiunile interne 3.x – 5.2 au fost etapele de
 dezvoltare de dinaintea publicării; sunt păstrate mai jos ca istoric al metodelor și al deciziilor.
 
+## 1.0.1 — 2026-11-27 · primele observații ale utilizatorilor
+
+* **Analize rapide → „Medii: temperatura și precipitațiile”** (rețeta `r6`): temperatura medie, media maximelor și a
+  minimelor și cantitatea medie de precipitații. Formularul are doar trei alegeri: anii, sezonul (an, anotimp, luni
+  alese, interval de zile) și zona. Implicit: ultimul an încheiat, toată țara (≈ 0,6 GB).
+* **Harta**: playerul animației și eticheta anului de pe hartă sunt mult mai mici (anul apare deja în titlu și în player).
+
 ## 1.0.0 (intern 5.2) — 2026-11-26 · prima versiune publică · animație, comparație, relief, pagina de start, prezentare
 
 **Pagina de start** (tabul *Start*, deschis implicit): trei intrări (analize rapide, toate analizele, harta) și ultimele 24 de rulări ca fișe cu imagine. Fiecare fișă are butoanele *Fișa*, *Pe hartă* și, dacă rularea are o serie pe ani, *Prezintă*. Rulările fără PNG primesc o miniatură generată din GeoTIFF (în `rezultate/_cache/miniaturi/`).

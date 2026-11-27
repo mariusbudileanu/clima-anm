@@ -325,18 +325,18 @@ function deseneaza(ctx = $("#h-canvas")?.getContext("2d")){
     ctx.beginPath(); ctx.arc(x, S.h/2, 11, 0, 2*Math.PI); ctx.fill();
     ctx.fillStyle = "#fff"; ctx.font = "bold 11px system-ui"; ctx.textAlign = "center"; ctx.fillText("⇆", x, S.h/2 + 4);
     ctx.font = "600 12px system-ui"; ctx.fillStyle = "rgba(29,36,48,.85)";
-    if (!(S.A.ani && S.B.ani)){ const y = $("#h-player")?.style.display === "none" ? 20 : 66;
+    if (!(S.A.ani && S.B.ani)){ const y = $("#h-player")?.style.display === "none" ? 20 : 52;
       ctx.textAlign = "left"; ctx.fillText("A", 10, y); ctx.textAlign = "right"; ctx.fillText("B", S.w - 10, y); }
   }
   const anul = L => L && L.ani ? L.info.benzi[L.banda-1].descriere : null;       // eticheta mare a anului
   const eA = anul(S.A), eB = S.B ? anul(S.B) : null;
   if (eA || eB){
-    const m = Math.max(28, Math.min(64, S.w/12));
-    ctx.save(); ctx.font = `700 ${m}px ${getComputedStyle(document.body).getPropertyValue("--titluri") || "system-ui"}`;
-    ctx.lineJoin = "round"; ctx.lineWidth = 5; ctx.strokeStyle = "rgba(255,255,255,.85)"; ctx.fillStyle = "#172634";
+    const m = Math.round(Math.max(15, Math.min(24, S.w/55)));            // discret: anul e și în titlu și în player
+    ctx.save(); ctx.font = `600 ${m}px ${getComputedStyle(document.body).getPropertyValue("--titluri") || "system-ui"}`;
+    ctx.lineJoin = "round"; ctx.lineWidth = 4; ctx.strokeStyle = "rgba(255,255,255,.9)"; ctx.fillStyle = "#33475b";
     ctx.textBaseline = "bottom";
-    if (eA){ ctx.textAlign = "left"; ctx.strokeText(eA, 18, S.h - 14); ctx.fillText(eA, 18, S.h - 14); }
-    if (eB){ ctx.textAlign = "right"; ctx.strokeText(eB, S.w - 18, S.h - 14); ctx.fillText(eB, S.w - 18, S.h - 14); }
+    if (eA){ ctx.textAlign = "left"; ctx.strokeText(eA, 12, S.h - 10); ctx.fillText(eA, 12, S.h - 10); }
+    if (eB){ ctx.textAlign = "right"; ctx.strokeText(eB, S.w - 12, S.h - 10); ctx.fillText(eB, S.w - 12, S.h - 10); }
     ctx.restore();
   }
 }

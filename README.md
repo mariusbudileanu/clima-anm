@@ -21,6 +21,26 @@ Prima pornire descarcă `pixi` și instalează mediul fixat în `pixi.lock` (Pyt
 programului: 3–10 minute, o singură dată. Ștergerea folderului înseamnă dezinstalare completă.
 Manualul complet: [`CITESTE_MA.md`](CITESTE_MA.md).
 
+## Fișierele vectoriale (de adăugat în `date`)
+
+Limitele administrative nu sunt incluse în program. Pentru analizele pe județe și pentru conturul de pe hărți,
+copiați în folderul **`date`** două fișiere (recomandat: **GeoPackage**, `.gpkg`), cu exact aceste nume:
+
+| Fișier | Ce conține | Folosit de |
+|---|---|---|
+| `date/ro_judete_poligon.gpkg` | poligoanele județelor, cu o coloană cu numele județului (implicit `name`) | analizele pe județe: r4 „Județele în ultimele 30 de zile”, s5 „Recordurile județelor”, atlasul și statisticile pe zone |
+| `date/ro_frontiera_poligon.gpkg` | conturul României (un poligon) | linia de contur de pe hărțile PNG |
+
+Datele se găsesc în catalogul geo-spatial.org: https://services.geo-spatial.org/geonetwork/srv/eng/catalog.search#/search?from=1&to=30
+(căutați limitele administrative ale județelor și limita de stat; descărcați în format GeoPackage și respectați
+licența și atribuirea fiecărui set).
+
+* **Sistemul de coordonate** nu contează (Stereo 70, ETRS89, WGS84 …): programul reproiectează.
+* **Coloana cu numele** se poate alege din formular, pentru fiecare analiză; `name` e doar valoarea implicită.
+* **Fără aceste fișiere**, programul funcționează, dar analizele care cer județele se opresc cu un mesaj, iar hărțile
+  PNG nu au contur. Pentru zone proprii (bazine hidrografice, regiuni etc.) se poate folosi orice GPKG, SHP sau
+  GeoJSON pus în `date`: apare automat în listele de fișiere.
+
 ## Ce face
 
 * **Hărți și serii**: medii pe ani, anomalii, trenduri (OLS cu test Student, Sen + Mann–Kendall), praguri,

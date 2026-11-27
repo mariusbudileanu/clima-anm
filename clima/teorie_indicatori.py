@@ -656,6 +656,8 @@ TEORIE.update({
               "Pe pixel: q, apoi α și β din totalurile pozitive (cel puțin 10). Parametrii se salvează în <code>rezultate/_cache/spi/</code>.",
               "Pentru fiecare an analizat: totalul perioadei → H(x) → SPI. Probabilitățile se limitează la [10⁻⁶; 1 − 10⁻⁶], "
               "deci SPI rămâne în ±4,75.",
+              "Totalul se corectează pentru zilele lipsă (× n / n<sub>valide</sub>), atât în anii de bază, cât și în anul analizat; "
+              "o perioadă incompletă (ex. vara în curs) nu primește SPI, chiar dacă „Acceptă perioade incomplete” e bifat.",
               "Funcțiile gamma incompletă și Φ⁻¹ sunt scrise de mână (fără scipy) și verificate cu valori din tabele."],
         interpretare="Clasele OMM (McKee et al., 1993): ≥ 2 extrem de umed · 1,5…2 foarte umed · 1…1,5 moderat umed · −1…1 aproape "
                      "normal · −1,5…−1 secetă moderată · −2…−1,5 secetă severă · ≤ −2 secetă extremă. Pentru un an anume alegeți "
@@ -680,7 +682,8 @@ TEORIE.update({
         pasi=["O singură dată pentru zonă și sezon: bilanțul P − PET al perioadei în fiecare an de bază.",
               "Pe pixel: L-momentele nedeplasate și parametrii ξ, α, κ (necesită |κ| &lt; 1 și cel puțin 10 ani). Cache în "
               "<code>rezultate/_cache/spei/</code>.",
-              "Pentru fiecare an: D → F(D) → SPEI. În afara domeniului distribuției F = 0 sau 1, limitate ca la SPI (±4,75)."],
+              "Pentru fiecare an: D → F(D) → SPEI. În afara domeniului distribuției F = 0 sau 1, limitate ca la SPI (±4,75).",
+              "Bilanțul se corectează pentru zilele lipsă ca totalul SPI; perioadele incomplete nu primesc SPEI."],
         interpretare="Aceleași clase ca SPI. Diferența SPEI − SPI arată rolul temperaturii: în verile foarte calde SPEI e mult "
                      "sub SPI. Pentru tendințe de secetă într-un climat care se încălzește, SPEI e de obicei mai relevant.",
         standard="Vicente-Serrano, Beguería &amp; López-Moreno (2010), J. Climate; ajustarea prin L-momente nedeplasate și logistica "
@@ -695,6 +698,97 @@ TEORIE.update({
         calculator="spei"),
 })
 
+
+METODE["validitate"] = dict(
+    titlu="Date lipsă și validitate",
+    rezumat="Ce face programul când lipsesc zile: pragul de 90 %, corecția sumelor, perioadele incomplete, golurile din cub "
+            "(fragmente lipsă sau nescrise) și ce înseamnă toate acestea pentru o hartă.",
+    definitie="O valoare anuală sau sezonieră se calculează pentru un pixel doar dacă perioada are date în cel puțin 90 % din "
+              "zile (pragul se poate schimba în Setări avansate). Mediile folosesc zilele valide. Sumele (precipitații, PET, "
+              "bilanț, grade-zile, PRCPTOT, SPI, SPEI) se corectează proporțional: totalul zilelor valide × n / n<sub>valide</sub>, "
+              "ca și cum zilele lipsă ar fi avut media celorlalte. Numărătorile (zile tropicale, zile de îngheț…) nu se corectează: "
+              "ele numără doar zilele cu date. O perioadă care iese din date (anul în curs) se exclude, dacă nu bifați „Acceptă "
+              "perioade incomplete”; SPI și SPEI le exclud oricum.",
+    formula="valid ⇔ n<sub>valide</sub> ≥ 0,9 · n &nbsp;·&nbsp; Σ<sub>corectat</sub> = Σ<sub>valide</sub> · n / n<sub>valide</sub>",
+    simboluri=[["n", "numărul de zile ale perioadei (ex. 92 pentru vară)"],
+               ["n<sub>valide</sub>", "zilele cu date pentru acel pixel"],
+               ["gol în cub", "fragment (chunk) de 90 de zile × 161 × 324 pixeli care lipsește sau a fost creat fără date (valori exact 0)"]],
+    pasi=["La citire: fragmentele lipsă din cub și blocurile nescrise (toți pixelii exact 0 la temperatură) devin date lipsă, "
+          "nu 0 °C. La un punct sau o zonă mică, blocul se judecă întreg; la precipitații, unde 0 e o valoare reală, după Tmax.",
+          "Pe pixel și perioadă: se numără zilele valide; sub prag → fără valoare (NoData) pentru acel an.",
+          "Sumele se corectează proporțional; mediile și numărătorile nu au nevoie.",
+          "Media pe ani (harta finală) folosește anii cu valoare; o zonă primește valoare dacă cel puțin jumătate din pixelii ei au.",
+          "Jurnalul și fișa rulării spun ce goluri s-au întâlnit („Date cu goluri”); butonul „Verifică datele” arată unde sunt."],
+    interpretare="Pragul de 90 % e cel din recomandările ETCCDI și OMM pentru indicatorii anuali. Corecția sumelor evită o "
+                 "eroare sistematică: fără ea, o vară cu 8 zile lipsă ar avea cu ~9 % mai puține precipitații și ar apărea mai "
+                 "uscată decât a fost. Pentru o hartă de medii pe 30 de ani, câteva zile lipsă nu contează; pentru un singur "
+                 "an sau un record, contează.",
+    standard="Zhang et al. (2011), WIREs Climate Change (regulile de completitudine ETCCDI); WMO-No. 1203 (2017), regulile "
+             "pentru normale climatice.",
+    limitari=["Corecția presupune că zilele lipsă seamănă cu celelalte; într-o lună cu o singură ploaie torențială lipsă, "
+              "totalul rămâne subestimat.",
+              "Numărătorile pe perioade cu zile lipsă sunt ușor subestimate (până la 10 %).",
+              "Fișa „Verifică datele” arată doar golurile; cauza lor (stații, procesare) e la producătorul datelor."],
+    intrebare="O vară are 92 de zile, iar un pixel are 85 cu date, care însumează 170 mm. Ce total folosește programul? "
+              "(170 × 92 / 85 ≈ 184 mm.) Dar dacă ar avea doar 80 de zile cu date?",
+    functii=["zarr_clima._suma_corectata", "zarr_clima.zile_bloc_zero", "zarr_clima._corecteaza_bucata"])
+
+METODE["fdr"] = dict(
+    titlu="Testele multiple: corecția FDR",
+    rezumat="De ce o hartă de trend cu „5 % pixeli semnificativi” poate să nu arate nimic real și cum o corectează "
+            "procedura Benjamini–Hochberg (opțiunea avansată a hărților de tendință).",
+    definitie="Pe o hartă de trend se face câte un test pe pixel: zeci de mii de teste deodată. La α = 0,05, chiar fără nicio "
+              "tendință reală, ~5 % din pixeli ies „semnificativi” din întâmplare. Corecția FDR (false discovery rate) ține "
+              "sub α proporția descoperirilor false printre pixelii declarați semnificativi: p-valorile se ordonează "
+              "crescător, iar p-valoarea de rang k se compară cu k·α/m în loc de α.",
+    formula="q<sub>(k)</sub> = min<sub>j ≥ k</sub> ( p<sub>(j)</sub> · m / j ) &nbsp;·&nbsp; semnificativ ⇔ q &lt; α",
+    simboluri=[["m", "numărul de pixeli cu p-valoare din zonă"], ["p<sub>(k)</sub>", "a k-a p-valoare, în ordine crescătoare"],
+               ["q", "p-valoarea ajustată FDR (banda „p ajustat FDR” din GeoTIFF)"]],
+    pasi=["Testul obișnuit pe fiecare pixel (OLS + t sau Mann–Kendall), ca până acum.",
+          "Toate p-valorile valide din zonă se ordonează; fiecare se înmulțește cu m / rang.",
+          "Monotonie: de la cel mai mare rang spre cel mai mic, q = minimul valorilor de deasupra (și cel mult 1).",
+          "Hașura se face după q ≥ α; GeoTIFF-ul primește o bandă în plus cu q; jurnalul spune câți pixeli rămân semnificativi."],
+    interpretare="Dacă după corecție rămân mulți pixeli semnificativi, tendința e solidă la nivelul hărții. Dacă dispar aproape "
+                 "toți, pixelii „semnificativi” de dinainte nu se pot distinge de hazard. Pentru temperaturi pe 1961–2025, "
+                 "tendințele sunt atât de clare încât corecția schimbă puțin; la precipitații, schimbă mult.",
+    standard="Benjamini &amp; Hochberg (1995), J. R. Stat. Soc. B; recomandat pentru hărți climatice de Wilks (2016), BAMS.",
+    limitari=["Procedura presupune teste independente sau pozitiv dependente; pixelii vecini sunt puternic corelați, caz în "
+              "care BH rămâne de obicei prudentă (Wilks, 2016).",
+              "Rezultatul depinde de zonă: aceeași tendință poate fi semnificativă pe un județ și nesemnificativă pe toată țara, "
+              "pentru că m diferă.",
+              "Corecția nu tratează autocorelația în timp a seriei unui pixel (alt subiect: pre-whitening)."],
+    intrebare="O hartă are 20 000 de pixeli și 1 200 dintre ei au p < 0,05. Câți v-ați aștepta să apară din întâmplare dacă "
+              "n-ar exista nicio tendință? Ce vă spune asta despre hartă înainte de orice corecție?",
+    functii=["zarr_clima.fdr_bh"])
+
+METODE["climatograma"] = dict(
+    titlu="Climatograma Walter–Lieth",
+    rezumat="Diagrama climatică clasică: temperatura și precipitațiile lunare pe aceeași figură, la o scară care arată direct "
+            "lunile aride, plus înghețul și extremele.",
+    definitie="Pentru fiecare lună: temperatura medie, (Tmax + Tmin)/2, și precipitațiile medii lunare, ca medii pe anii perioadei, "
+              "din seria zilnică medie a zonei (pentru un punct, a pixelului). Axele sunt legate: 10 °C ↔ 20 mm. Unde curba "
+              "precipitațiilor coboară sub cea a temperaturii (P &lt; 2T), luna e considerată aridă (punctat); deasupra, umedă "
+              "(hașură verticală). Peste 100 mm, scara precipitațiilor se comprimă de 10 ori (fond albastru plin).",
+    formula="aridă ⇔ P &lt; 2·T &nbsp;·&nbsp; y(P) = P/2 pentru P ≤ 100 mm, 50 + (P − 100)/20 peste",
+    simboluri=[["T", "temperatura medie lunară (°C)"], ["P", "precipitațiile medii lunare (mm)"],
+               ["îngheț sigur", "media minimelor lunii &lt; 0 °C (bară plină)"],
+               ["îngheț probabil", "minima absolută a lunii &lt; 0 °C (bară hașurată)"]],
+    pasi=["Seriile zilnice ale zonei (Tmax, Tmin, P) pentru toți anii, din cache-ul seriilor.",
+          "Pentru fiecare an și lună: media temperaturilor și suma precipitațiilor (corectată pentru zilele lipsă).",
+          "Pentru fiecare lună: media pe anii perioadei; luna intră doar dacă are date în cel puțin 80 % din ani.",
+          "Extremele absolute: cea mai mare Tmax și cea mai mică Tmin zilnică a fiecărei luni din perioadă.",
+          "Cu două perioade: aceleași axe pentru amândouă și un grafic cu diferențele lunare (°C și %)."],
+    interpretare="Forma curbelor arată regimul: maximul de precipitații la începutul verii (mai–iunie) e tipic pentru climatul "
+                 "temperat-continental al României. Un „ochi” arid vara apare în Dobrogea și în sudul Câmpiei Române; la munte, "
+                 "bara de îngheț acoperă aproape tot anul. Comparația 1961–1990 / 1991–2020 arată direct ce s-a schimbat în "
+                 "fiecare lună.",
+    standard="Walter &amp; Lieth (1960–1967), Klimadiagramm-Weltatlas; normalele climatice: WMO-No. 1203 (2017).",
+    limitari=["Pragul P = 2T e o convenție grafică (Gaussen), nu un bilanț hidric: nu ține seama de evapotranspirația reală.",
+              "Valorile sunt ale seriei medii a zonei: pe o zonă întinsă, contrastele de relief se netezesc.",
+              "Datele grilate netezesc extremele absolute față de stații."],
+    intrebare="De ce o lună cu 60 mm poate fi aridă în iulie, dar umedă în aprilie? Ce s-ar întâmpla cu lunile aride dacă "
+              "precipitațiile ar rămâne aceleași, iar temperatura ar crește cu 2 °C?",
+    functii=["zarr_climatograma.statistici_perioada", "zarr_climatograma.png_climatograma"])
 
 METODE["superlative"] = dict(
     titlu="Superlative și recorduri",

@@ -48,6 +48,12 @@ REF = {
     "mann1945": "Mann, H. B. (1945). Nonparametric tests against trend. Econometrica, 13(3), 245–259. "
                 "https://doi.org/10.2307/1907187",
     "kendall1975": "Kendall, M. G. (1975). Rank correlation methods (4th ed.). Charles Griffin, London.",
+    "bh1995": "Benjamini, Y., & Hochberg, Y. (1995). Controlling the false discovery rate: A practical and powerful approach "
+              "to multiple testing. Journal of the Royal Statistical Society: Series B, 57(1), 289–300. "
+              "https://doi.org/10.1111/j.2517-6161.1995.tb02031.x",
+    "wilks2016": "Wilks, D. S. (2016). “The stippling shows statistically significant grid points”: How research results are "
+                 "routinely overstated and overinterpreted, and what to do about it. Bulletin of the American Meteorological "
+                 "Society, 97(12), 2263–2273. https://doi.org/10.1175/BAMS-D-15-00267.1",
     "walter1960": "Walter, H., & Lieth, H. (1960–1967). Klimadiagramm-Weltatlas. VEB Gustav Fischer Verlag, Jena.",
     "coumou2012": "Coumou, D., & Rahmstorf, S. (2012). A decade of weather extremes. Nature Climate Change, 2(7), "
                   "491–496. https://doi.org/10.1038/nclimate1452",
@@ -58,7 +64,8 @@ SCURT = {"zhang2011": "Zhang et al., 2011", "wmo1203": "WMO, 2017", "mckee1993":
          "wmo1090": "WMO, 2012", "vicente2010": "Vicente-Serrano et al., 2010", "beg2014": "Beguería et al., 2014",
          "hargreaves1985": "Hargreaves & Samani, 1985", "fao56": "Allen et al., 1998",
          "demartonne1926": "De Martonne, 1926", "sen1968": "Sen, 1968", "mann1945": "Mann, 1945",
-         "kendall1975": "Kendall, 1975", "coumou2012": "Coumou & Rahmstorf, 2012", "walter1960": "Walter & Lieth, 1960"}
+         "kendall1975": "Kendall, 1975", "coumou2012": "Coumou & Rahmstorf, 2012", "walter1960": "Walter & Lieth, 1960",
+         "bh1995": "Benjamini & Hochberg, 1995", "wilks2016": "Wilks, 2016"}
 
 # indicator → referințele lui (codurile din indicatori.py)
 REF_INDICATOR = {
@@ -231,7 +238,13 @@ def compune(fisa: dict, versiune: str = "") -> dict | None:
                       f"nesemnificative sunt hașurate pe hartă. Panta este exprimată pe deceniu.")
             en.append(f"Trends were estimated for each grid cell by ordinary least-squares linear regression and tested "
                       f"with Student's t test at α = {alfa}; non-significant trends are hatched. Slopes are per decade.")
-    elif motor == "superlative":
+    if motor == "trend" and p.get("FDR"):
+        refs += ["bh1995", "wilks2016"]
+        ro.append("Pentru testele multiple (câte un test pe pixel), semnificația s-a stabilit după corecția FDR "
+                  "Benjamini–Hochberg (Benjamini & Hochberg, 1995; Wilks, 2016).")
+        en.append("To account for multiple testing (one test per grid cell), significance was assessed after the "
+                  "Benjamini–Hochberg false discovery rate correction (Benjamini & Hochberg, 1995; Wilks, 2016).")
+    if motor == "superlative":
         refs.append("coumou2012")
         ro.append("Recordurile s-au determinat prin compararea tuturor perioadelor candidate din anii analizați "
                   "(ferestre care nu se suprapun), fiecare candidat fiind acceptat doar cu cel puțin 90 % zile valide.")

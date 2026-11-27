@@ -2562,7 +2562,24 @@ def ruleaza_anomalie(ind: Indicator, ani_tinta, ani_referinta, sezon, zona: Zona
     return _masca_zona(h, zona), g
 
 
-def ruleaza_trend(ind: Indicator, ani, sezon, zona: Zona, iesiri: dict, out, nume, alfa=0.05, metoda="ols"):
+def fdr_bh(p):
+    """p-valorile ajustate Benjamini–Hochberg (1995), pe toți pixelii valizi ai hărții: controlează proporția de
+    descoperiri false (FDR) printre pixelii declarați semnificativi. NaN rămân NaN."""
+    p = np.asarray(p, dtype="float64")
+    rez = np.full(p.shape, np.nan)
+    ok = np.isfinite(p)
+    v = p[ok]; m = v.size
+    if m == 0:
+        return rez
+    o = np.argsort(v, kind="mergesort")
+    q = v[o] * m / np.arange(1, m + 1)
+    q = np.minimum.accumulate(q[::-1])[::-1]                 # monotonie: p ajustat nu scade cu rangul
+    adj = np.empty(m); adj[o] = np.minimum(q, 1.0)
+    rez[ok] = adj
+    return rez
+
+
+def ruleaza_trend(ind: Indicator, ani, sezon, zona: Zona, iesiri: dict, out, nume, alfa=0.05, metoda="ols", fdr=False):
     """Panta (unitate/deceniu) a indicatorului an de an, per pixel; hașurat = nesemnificativ (p ≥ alfa).
     metoda: „ols” (regresie liniară + test t) sau „sen” (Theil–Sen + Mann–Kendall, robustă la anii excepționali)."""
     out = Path(out)
@@ -2582,8 +2599,22 @@ def ruleaza_trend(ind: Indicator, ani, sezon, zona: Zona, iesiri: dict, out, num
             log(f"   Theil–Sen față de OLS: diferența medie {ro(float(np.nanmean(dif)), 3)}, la 95 % din pixeli sub "
                 f"{ro(float(np.nanpercentile(np.abs(dif), 95)), 3)} {ind.unitate}/deceniu")
     serie = [medie_zona(s, zona) for s in st[ind.cod]]
+    pz = _masca_zona(p, zona)
+    benzi_extra = [(p, "p-valoare")]
+    if fdr:
+        # mii de pixeli testați deodată: la α = 0,05, ~5 % din pixelii fără tendință ies „semnificativi” din întâmplare.
+        # FDR (Benjamini–Hochberg) ține sub α proporția celor falși printre pixelii declarați semnificativi.
+        pa = fdr_bh(pz)
+        n0, n1 = int(np.nansum(pz < alfa)), int(np.nansum(pa < alfa))
+        log(f"   FDR (Benjamini–Hochberg): pixeli semnificativi {n0} → {n1} din {int(np.isfinite(pz).sum())}")
+        hasura = pa >= alfa
+        benzi_extra.append((pa, "p ajustat FDR (Benjamini–Hochberg)"))
+        sub = sub.replace(f"hașurat: nesemnificativ (p ≥ {alfa})",
+                          f"hașurat: nesemnificativ după corecția FDR Benjamini–Hochberg (q ≥ {alfa})")
+    else:
+        hasura = pz >= alfa
     fis = _iesiri_harta(out, nume, b, g, zona, ind2, titlu, sub, iesiri, None, None, divergent=True,
-                        hasura=_masca_zona(p, zona) >= alfa, benzi_extra=[(p, "p-valoare")])
+                        hasura=hasura, benzi_extra=benzi_extra)
     if iesiri.get("grafic"):
         png_serie(out / f"{nume}_serie.png", lista, serie, f"{ind.titlu} · media zonei, pe ani", ind.unitate, subtitlu=zona.descriere())
     if iesiri.get("csv"):

@@ -572,6 +572,17 @@ def test_climatograma_luni_aride_si_inghet():
     assert st["n_ani"] == 2 and np.isfinite(st["P_an"])
 
 
+def test_fdr_benjamini_hochberg():
+    # exemplul clasic: p = [0,01; 0,04; 0,03; 0,005], m = 4 → q = [0,02; 0,04; 0,04; 0,02]
+    egal(zc.fdr_bh([0.01, 0.04, 0.03, 0.005]), [0.02, 0.04, 0.04, 0.02], 1e-12, "q Benjamini–Hochberg")
+    q = zc.fdr_bh(np.array([[0.2, np.nan], [0.9, 0.001]]))
+    assert np.isnan(q[0, 1]) and q.shape == (2, 2) and (q[np.isfinite(q)] <= 1).all()
+    egal(float(q[1, 1]), 0.003, 1e-12, "cel mai mic p × m / 1")
+    # sub ipoteza nulă (p uniforme), după corecție aproape nimic nu mai e semnificativ
+    u = np.random.default_rng(7).uniform(size=20000)
+    assert (u < 0.05).mean() > 0.04 and (zc.fdr_bh(u) < 0.05).mean() < 0.001
+
+
 # ------------------------------------------------------------------
 def main():
     teste = [(k, f) for k, f in sorted(globals().items()) if k.startswith("test_") and callable(f)]

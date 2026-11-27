@@ -5,9 +5,18 @@ Cele mai noi sus. Manualul de utilizare este în `CITESTE_MA.md`.
 Versiunea publică **1.0.0** corespunde versiunii interne 5.2. Versiunile interne 3.x – 5.2 au fost etapele de
 dezvoltare de dinaintea publicării; sunt păstrate mai jos ca istoric al metodelor și al deciziilor.
 
-## 1.1.0 — în lucru
+## 1.1.0 — 2026-11-27 · versiunea finală a acestei serii
+
+Dezvoltarea se oprește aici; versiunile următoare doar dacă apar cereri concrete ale utilizatorilor (ex. SPI / SPEI
+pe scări lunare).
 
 ### Nou
+
+* **Tabul Tutorial:** șapte pași, de la prima analiză la lucrul cu studenții, cu butoane care deschid locul din program.
+* **Fișe noi în Indicatori → Metode:** „Date lipsă și validitate”, „Climatograma Walter–Lieth”, „Testele multiple:
+  corecția FDR”; fișele SPI și SPEI descriu corecția sumelor și refuzul perioadelor incomplete.
+* **Corecția FDR (Benjamini–Hochberg) la hărțile de trend** (Setări avansate): hașura după p-valoarea ajustată,
+  o bandă în plus în GeoTIFF și numărul de pixeli semnificativi înainte și după, în jurnal.
 
 * **Stil QGIS pentru fiecare GeoTIFF:** lângă fiecare `.tif` colorat se scrie un `.qml` cu același nume, pe care QGIS
   îl încarcă automat: aceeași paletă, aceeași scară (2–98 % sau limitele alese) și aceleași clase ca harta PNG.
@@ -15,13 +24,11 @@ dezvoltare de dinaintea publicării; sunt păstrate mai jos ca istoric al metode
   sezonul, zona, indicatorii, metoda, regulile de validitate, golurile întâlnite, versiunea programului) și
   bibliografia în format APA, alese după indicatorii și metoda folosite. Apar în fișa vizuală, cu butoane de copiere,
   și în `metode.md`. Textul nu conține interpretări.
-
 * **Refacerea unei rulări:** butonul „Refă” pe fiecare rulare din pagina Start și „↻ Refă sau modifică analiza” în
   fișa vizuală încarcă în formular exact parametrii acelei rulări (din `reproducere.json`), gata de rulat din nou sau
   de modificat. Pe pagina Start, „deschide o fișă de reproducere…” încarcă un `reproducere.json` primit de la altcineva
   (ex. profesorul trimite fișa, studenții refac aceeași analiză); fișierele vectoriale cu căi de pe alt calculator
   se caută automat în folderul `date/`, după nume.
-
 * **Climatograma Walter–Lieth** (rețeta `c1`, grupul Temperatură): temperatura medie și precipitațiile lunare ale
   unui punct sau ale unei zone, cu convențiile Walter–Lieth (10 °C ↔ 20 mm, comprimarea peste 100 mm, perioada aridă
   punctată, cea umedă hașurată, bara de îngheț sigur / probabil, extremele pe margine). Implicit, normalele OMM

@@ -2,7 +2,7 @@
 # Se creează automat de porneste.bat în folderul .pixi\ al programului; nu atinge QGIS / OSGeo4W.
 [workspace]
 name = "clima-anm"
-version = "1.0.1"
+version = "1.1.0"
 description = "Analize climatice pe cubul Zarr anm-daily-grids (EOCube.ro)"
 channels = ["conda-forge"]
 platforms = ["win-64", "linux-64", "osx-arm64", "osx-64"]

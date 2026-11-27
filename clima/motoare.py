@@ -251,7 +251,7 @@ def _exporta_trend(job, p, setari):
     l += ["", f"INDICATOR = {_py_indicator(p['INDICATORI'][0])}",
           f"ZONA = {_py_zona(p['ZONA'])}",
           f"zc.ruleaza_trend(INDICATOR, {_py(p['ANI'])}, {_py(p['SEZON'])}, ZONA, {_py(p['IESIRI'])},",
-          f"                 {_py_cale(p['OUT'])}, {p['NUME']!r}, alfa={p['ALFA']!r}, metoda={p.get('METODA_TREND', 'ols')!r})"]
+          f"                 {_py_cale(p['OUT'])}, {p['NUME']!r}, alfa={p['ALFA']!r}, metoda={p.get('METODA_TREND', 'ols')!r}, fdr={bool(p.get('FDR'))!r})"]
     return "\n".join(l) + "\n"
 
 
@@ -264,11 +264,15 @@ def _exporta_trend(job, p, setari):
         CAMP_METODA_TREND,
         {"nume": "ALFA", "tip": "numar", "eticheta": "Pragul de semnificație (α)", "implicit": 0.05,
          "min": 0.001, "max": 0.5, "pas": 0.01},
+        {"nume": "FDR", "tip": "bifa", "eticheta": "Corecția pentru testele multiple (FDR, Benjamini–Hochberg)",
+         "implicit": False, "sectiune": "avansat",
+         "ajutor": "pe o hartă se testează mii de pixeli deodată; corecția ține sub α proporția pixelilor declarați "
+                   "semnificativi din întâmplare (vezi fișa din Indicatori → Metode)"},
         camp_zona(), camp_iesiri()],
        _exporta_trend, nume=_nume_ani)
 def _trend(p):
     return zc.ruleaza_trend(_indicatori(p, unul=True), p["ANI"], p["SEZON"], p["ZONA"], p["IESIRI"], p["OUT"], p["NUME"],
-                            alfa=float(p.get("ALFA", 0.05)), metoda=p.get("METODA_TREND", "ols"))
+                            alfa=float(p.get("ALFA", 0.05)), metoda=p.get("METODA_TREND", "ols"), fdr=bool(p.get("FDR")))
 
 
 # =====================================================================================

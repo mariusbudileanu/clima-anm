@@ -15,11 +15,14 @@ authors:
     orcid: "https://orcid.org/0000-0002-4840-5707"
     affiliation: "University of Bucharest, Faculty of Geography"
 version: 1.0.1
-doi: 10.5281/zenodo.24564872
+doi: 10.5281/zenodo.24564871
 identifiers:
   - type: doi
+    value: 10.5281/zenodo.24564871
+    description: "DOI-ul proiectului pe Zenodo (toate versiunile)"
+  - type: doi
     value: 10.5281/zenodo.24564872
-    description: "Versiunea 1.0.0, arhivată pe Zenodo"
+    description: "Versiunea 1.0.0"
 date-released: "2026-11-27"
 license: MIT
 repository-code: "https://github.com/mariusbudileanu/clima-anm"

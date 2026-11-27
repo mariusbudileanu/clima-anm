@@ -16,6 +16,12 @@ dezvoltare de dinaintea publicării; sunt păstrate mai jos ca istoric al metode
   bibliografia în format APA, alese după indicatorii și metoda folosite. Apar în fișa vizuală, cu butoane de copiere,
   și în `metode.md`. Textul nu conține interpretări.
 
+* **Refacerea unei rulări:** butonul „Refă” pe fiecare rulare din pagina Start și „↻ Refă sau modifică analiza” în
+  fișa vizuală încarcă în formular exact parametrii acelei rulări (din `reproducere.json`), gata de rulat din nou sau
+  de modificat. Pe pagina Start, „deschide o fișă de reproducere…” încarcă un `reproducere.json` primit de la altcineva
+  (ex. profesorul trimite fișa, studenții refac aceeași analiză); fișierele vectoriale cu căi de pe alt calculator
+  se caută automat în folderul `date/`, după nume.
+
 ### Corecturi (auditul independent din 27.11.2026, fiecare cu test de regresie)
 
 * **Blocurile nescrise (valori exact 0) pe puncte și zone mici** sunt acum tratate ca date lipsă: verificarea se
@@ -36,6 +42,7 @@ dezvoltare de dinaintea publicării; sunt păstrate mai jos ca istoric al metode
   nu un fișier lipsă raportat ca scris.
 * **Windows:** mutarea la coș a unei rulări deschise pe hartă (fișier blocat de GDAL); fereastra de pornire nu se mai
   închide fără mesaj la o eroare; curățenia de după instalare nu mai poate opri pornirea.
+* **Formularul:** „Valorile implicite” reface și câmpurile care apar doar pentru anumite alegeri.
 * **Harta:** etichetele legendei pe clase („10–20”, nu „20”); o bandă fără date nu mai blochează panoul.
 * **Titlul mediilor multianuale:** „media 2020–2025 (6 ani)” în loc de „medie anuală”.
 * **Rețetele rapide nu mai îmbătrânesc:** „Vara trecută”, „Iarna trecută” și „Medii” folosesc ultima perioadă

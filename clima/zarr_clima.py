@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import csv
 import json
+import re
 import math
 import time
 import warnings
@@ -3747,12 +3748,24 @@ def _ruleaza_serii(var, ani, referinta, recent, zona, grafice, iesiri, out, nume
 CHEI_CALE = ("OUT", "DATE_VECTOR")
 
 
+_EXT_VECTOR = (".gpkg", ".shp", ".geojson", ".json", ".fgb", ".kml", ".gml")
+
+
 def _cale(v, radacina):
-    """Calea relativă se socotește față de folderul programului (portabil între calculatoare)."""
+    """Calea relativă se socotește față de folderul programului (portabil între calculatoare).
+    Un fișier vectorial cu cale absolută de pe ALT calculator (ex. o fișă de reproducere primită de la profesor:
+    C:\\Users\\prof\\…\\judete.gpkg) se caută și în folderul date/ al programului, după nume."""
     if v in (None, ""):
         return None
     p = Path(str(v)).expanduser()
-    return p if p.is_absolute() else (Path(radacina) / p).resolve()
+    p = p if p.is_absolute() else (Path(radacina) / p).resolve()
+    if not p.exists() and str(v).lower().endswith(_EXT_VECTOR):
+        nume = re.split(r"[\\/]", str(v))[-1]
+        alt = (Path(radacina) / "date" / nume).resolve()
+        if alt.exists():
+            log(f"   {nume}: calea din fișă ({v}) nu există aici; folosesc date/{nume}")
+            return alt
+    return p
 
 
 def zona_din_dict(d, radacina="."):

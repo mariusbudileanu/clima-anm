@@ -537,6 +537,19 @@ def test_metode_text():
     assert mt.compune({"motor": "integritate"}) is None
 
 
+def test_cale_de_pe_alt_calculator():
+    # o fișă de reproducere primită de la altcineva: calea absolută nu există aici → date/<nume>, dacă există
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        (Path(d) / "date").mkdir(); (Path(d) / "date" / "judete.gpkg").write_bytes(b"x")
+        r = zc._cale(r"C:\Users\prof\Documente\judete.gpkg", d)
+        assert r == (Path(d) / "date" / "judete.gpkg").resolve(), r
+        assert zc._cale("date/judete.gpkg", d) == (Path(d) / "date" / "judete.gpkg").resolve()
+        lipsa = zc._cale(r"C:\Users\prof\altceva.gpkg", d)              # nici în date/: rămâne calea dată (eroare clară)
+        assert lipsa.name.endswith("altceva.gpkg")
+        assert zc._cale("rezultate/x", d) == (Path(d) / "rezultate" / "x").resolve(), "folderele de ieșire nu se ating"
+
+
 # ------------------------------------------------------------------
 def main():
     teste = [(k, f) for k, f in sorted(globals().items()) if k.startswith("test_") and callable(f)]

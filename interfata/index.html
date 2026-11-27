@@ -257,6 +257,7 @@ main.start{display:block;overflow:auto;padding:0 0 40px}
 .s-b:hover{border-color:var(--accent)}
 .s-b.prim{background:var(--accent);border-color:var(--accent);color:#fff}
 .s-b.prim:hover{background:var(--accent-inchis)}
+.s-legaturi{display:flex;gap:18px}
 .s-b.slab{color:var(--slab);margin-left:auto}
 .s-gol{background:var(--panou);border:1px dashed var(--linie);border-radius:var(--raza);padding:28px;text-align:center;color:var(--slab)}
 @media (max-width:980px){.s-cap{grid-template-columns:1fr}.s-actiuni{grid-template-columns:1fr}}
@@ -736,7 +737,7 @@ function alege(id, valori){
   const bO = el("button",{class:"b rosu",id:"b-opreste",text:"■ Oprește",disabled:"",onclick:opreste});
   const bI = el("button",{class:"b",text:"Valorile implicite",onclick:()=>{
     try { localStorage.removeItem("clima:param:" + ACTIV.id); } catch(e){}
-    CAMPURI.forEach(({c,w})=>w.set(c.implicit)); mesaj("Valorile implicite ale analizei au fost restaurate.");
+    CAMPURI.forEach(({c,w})=>w.set(c.implicit)); vizibilitate(); mesaj("Valorile implicite ale analizei au fost restaurate.");
   }});
   const extra = ACTIV.tip==="reteta" ? [
     el("button",{class:"b",text:"Exportă Python",title:"scriptul Python echivalent formularului, gata de rulat fără interfață",onclick:exportaPython}),
@@ -874,9 +875,35 @@ function arataRezultate(fisiere, mod, folder){
 async function reia(j){
   const v = await api("/api/job_vechi?id="+encodeURIComponent(j.id));
   if (v.eroare){ mesaj(v.eroare); return; }
-  const a = CAT.analize.find(x => v.reteta ? x.id===v.reteta : x.script===v.script); if (!a){ mesaj("Analiza nu mai există."); return; }
-  const p = {...v.parametri}; Object.assign(p, p._setari||{}); delete p._setari; delete p._zone;
-  alege(a.id, p); mesaj(`Parametrii rulării din ${v.pornit}.`);
+  deschideParametri(v, `Parametrii rulării din ${v.pornit}.`);
+}
+
+// o rulare veche în formular: din folderul ei (reproducere.json) sau dintr-un fișier primit (ex. de la profesor)
+function deschideParametri(v, text){
+  if (!CAT) return;
+  const a = CAT.analize.find(x => v.reteta ? x.id === v.reteta : x.script === v.script);
+  if (!a){ mesaj(`Analiza „${v.reteta || v.script || "?"}” nu există în acest program (o rețetă proprie, ștearsă sau de pe alt calculator?).`); return false; }
+  const p = {...(v.parametri || {})}; Object.assign(p, p._setari || {}); delete p._setari; delete p._zone;
+  delete p.OUT; delete p.NUME;                         // rularea nouă primește folderul ei
+  arataVedere("analize"); alege(a.id, p);
+  mesaj(text || "Parametrii rulării au fost încărcați. Modificați ce doriți, apoi „▶ Rulează”.");
+  return true;
+}
+async function refaRulare(folder){
+  const v = await api("/api/rulare?folder=" + encodeURIComponent(folder));
+  if (v.eroare){ mesaj(v.eroare); return; }
+  deschideParametri(v, `Parametrii rulării „${v.titlu || folder}” (${(v.pornit || "").replace("T", " ").slice(0, 16)}). ` +
+                       "Anii, zona și setările sunt cei folosiți atunci; modificați ce doriți, apoi „▶ Rulează”.");
+}
+function incarcaFisaReproducere(){                    // un reproducere.json de pe disc (trimis de profesor, de pe alt calculator)
+  const i = el("input",{type:"file", accept:".json,application/json"});
+  i.onchange = async () => {
+    const f = i.files[0]; if (!f) return;
+    let v; try { v = JSON.parse(await f.text()); } catch(e){ mesaj(`${f.name} nu e un fișier JSON valid.`); return; }
+    if (!v || !(v.reteta || v.script) || typeof v.parametri !== "object"){ mesaj(`${f.name} nu e o fișă de reproducere Clima ANM (lipsesc „reteta” și „parametri”).`); return; }
+    deschideParametri(v, `Parametrii din ${f.name}` + (v.titlu ? ` („${v.titlu}”)` : "") + ". Fișierele vectoriale cu căi de pe alt calculator se caută în folderul date/ după nume.");
+  };
+  i.click();
 }
 
 // ------------------------------------------------------------------ progresul și costul
@@ -981,7 +1008,9 @@ async function paginaStart(){
         actiune("Hartă", "rasterele din rezultate, animații pe ani, comparații", "", () => arataVedere("harta")))),
     el("section",{class:"s-rez"},
       el("div",{class:"s-rez-cap"}, el("h2",{text:"Rezultatele recente"}),
-        rulari.length ? el("a",{class:"leg",text:"folderul rezultatelor",onclick:()=>api("/api/deschide_folder",{})}) : null),
+        el("span",{class:"s-legaturi"},
+        el("a",{class:"leg",text:"deschide o fișă de reproducere…",title:"reproducere.json primit de la altcineva: analiza se deschide în formular, cu aceiași parametri",onclick:incarcaFisaReproducere}),
+        rulari.length ? el("a",{class:"leg",text:"folderul rezultatelor",onclick:()=>api("/api/deschide_folder",{})}) : null)),
       rulari.length ? el("div",{class:"s-grila"}, rulari.map(carte)) :
         el("div",{class:"s-gol"}, el("p",{text:"Încă nu există rezultate. O analiză rapidă e un început bun: descarcă sub 1 GB și calculează în jur de un minut."}),
           el("button",{class:"b prim",text:"Alege o analiză rapidă",onclick:()=>{ arataVedere("analize"); FILTRU = "⚡ Analize rapide"; deseneazaNav(); }}))));
@@ -1002,6 +1031,7 @@ function carte(r){
         r.fisa ? el("a",{class:"s-b",text:"Fișa",href:url(r.folder + "/index.html"),target:"_blank"}) : null,
         r.tif ? el("button",{class:"s-b",text:"Pe hartă",onclick:pePlan}) : null,
         r.animatie ? el("button",{class:"s-b prim",text:"Prezintă",title:"ecran complet, cu animația pornită",onclick:prezinta}) : null,
+        r.refacere ? el("button",{class:"s-b",text:"Refă",title:"aceiași parametri în formular, ca să o refaceți sau să schimbați ceva",onclick:()=>refaRulare(r.folder)}) : null,
         el("button",{class:"s-b slab",text:"Folder",onclick:()=>api("/api/deschide_folder",{folder:r.folder})}))));
 }
 
@@ -1068,7 +1098,9 @@ async function stergeReteta(){
   const ultima = citeste("ultima");
   alege(CAT.analize.some(a=>a.id===ultima) ? ultima : CAT.analize[0].id);
   urmareste();   // dacă o analiză rula deja (pagina reîncărcată), reia urmărirea
-  paginaStart();
+  const refa = new URLSearchParams(location.search).get("refa");
+  if (refa){ history.replaceState(null, "", location.pathname); refaRulare(refa); }
+  else paginaStart();
 })();
 </script>
 <script src="/harta.js"></script>

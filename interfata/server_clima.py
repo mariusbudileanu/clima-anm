@@ -446,6 +446,7 @@ def galerie(n=24):
                     "imagine": png[0].relative_to(REZULTATE).as_posix() if png else
                                (miniatura(next((f for f in tif if not f.stem.endswith("_pe_ani")), tif[0]), d.name) if tif else None),
                     "n_png": len(png), "n_tif": len(tif), "fisa": (d / "index.html").exists(),
+                    "refacere": (d / "reproducere.json").exists(),
                     "tif": tif[0].relative_to(REZULTATE).as_posix() if tif else None,
                     "animatie": any(f.stem.endswith("_pe_ani") for f in tif)})
     return rez
@@ -830,6 +831,16 @@ class Cereri(BaseHTTPRequestHandler):
             return self._json(r)
         if u.path == "/api/istoric":
             return self._json(ISTORIC[:50])
+        if u.path == "/api/rulare":                     # parametrii unei rulări, din reproducere.json (butonul „Refă”)
+            d = (REZULTATE / Path(q.get("folder", "")).name).resolve()
+            f = d / "reproducere.json"
+            if not f.is_file() or REZULTATE.resolve() not in d.parents:
+                return self._json({"eroare": "rularea nu are fișă de reproducere"}, 404)
+            try:
+                r = json.loads(f.read_text(encoding="utf-8"))
+            except ValueError:
+                return self._json({"eroare": "reproducere.json nu se poate citi"}, 400)
+            return self._json({k: r.get(k) for k in ("reteta", "parametri", "pornit", "titlu", "motor", "versiune_program")})
         if u.path == "/api/job_vechi":
             p = JOBURI / f"{Path(q.get('id', '')).name}.rezumat.json"
             return self._json(json.loads(p.read_text(encoding="utf-8")) if p.exists() else {"eroare": "negăsit"})

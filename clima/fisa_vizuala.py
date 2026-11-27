@@ -197,6 +197,7 @@ pre{{background:#1d2733;color:#e4ebf0;padding:14px 16px;border-radius:8px;overfl
 .ref{{margin:0;padding-left:20px;font-size:13px;line-height:1.5}}
 .ref li{{margin:3px 0}}
 .ajutor{{color:#5b6875;font-size:13px}}
+.buton-refa{{display:inline-block;background:var(--petrol);color:#fff;text-decoration:none;border-radius:6px;padding:5px 12px;font-weight:600}}
 .cita{{background:var(--hartie);border-left:4px solid var(--petrol);padding:12px 16px;border-radius:0 8px 8px 0;font-size:14px}}
 .eroare{{background:#fbe9e7;border:1px solid #f0b8ae;color:#8a2a1c;padding:12px 16px;border-radius:8px}}
 footer{{color:var(--slab);font-size:12.5px;text-align:center;padding:24px}}
@@ -247,7 +248,11 @@ r.oninput=m;sa.onchange=()=>a.src=sa.value;sb.onchange=()=>b.src=sb.value;m();}}
 <tr><th>sursa datelor</th><td>{_e(fisa.get('sursa_datelor', ''))}</td></tr>
 <tr><th>durata</th><td>{_e(str(fisa.get('durata_s', '–')).replace('.', ','))} s</td></tr></table>
 <h2>Refacerea și citarea</h2>
-<p>Analiza se reface, într-un folder nou, din fișa de reproducere (<a href="reproducere.json">reproducere.json</a>):</p>
+<p id="refa-app" style="display:none"><a class="buton-refa" href="/?refa={_e(out.name)}">↻ Refă sau modifică analiza în Clima ANM</a>
+(parametrii acestei rulări se încarcă în formular)</p>
+<script>if (location.protocol.startsWith("http")) document.getElementById("refa-app").style.display = "";</script>
+<p>Analiza se reface, într-un folder nou, din fișa de reproducere (<a href="reproducere.json">reproducere.json</a>).
+În Clima ANM: pagina Start → „deschide o fișă de reproducere…”. Din linia de comandă:</p>
 <pre>{_e(fisa.get('refacere', 'instrumente/pixi run python clima/ruleaza.py reproducere.json'))}</pre>
 {_metode(fisa)}
 </main><footer>Clima ANM · {_e(_data_ro(fisa.get('pornit', '')))} · <a href="jurnal.txt">jurnalul rulării</a></footer>

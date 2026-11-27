@@ -7,6 +7,15 @@ dezvoltare de dinaintea publicării; sunt păstrate mai jos ca istoric al metode
 
 ## 1.1.0 — în lucru
 
+### Nou
+
+* **Stil QGIS pentru fiecare GeoTIFF:** lângă fiecare `.tif` colorat se scrie un `.qml` cu același nume, pe care QGIS
+  îl încarcă automat: aceeași paletă, aceeași scară (2–98 % sau limitele alese) și aceleași clase ca harta PNG.
+* **„Date și metode”:** fiecare rulare primește un paragraf descriptiv, în română și în engleză (datele, perioada,
+  sezonul, zona, indicatorii, metoda, regulile de validitate, golurile întâlnite, versiunea programului) și
+  bibliografia în format APA, alese după indicatorii și metoda folosite. Apar în fișa vizuală, cu butoane de copiere,
+  și în `metode.md`. Textul nu conține interpretări.
+
 ### Corecturi (auditul independent din 27.11.2026, fiecare cu test de regresie)
 
 * **Blocurile nescrise (valori exact 0) pe puncte și zone mici** sunt acum tratate ca date lipsă: verificarea se
@@ -23,6 +32,8 @@ dezvoltare de dinaintea publicării; sunt păstrate mai jos ca istoric al metode
   face mereu între ani („locul 3 din 65 de ani”), și la unitatea „zi”; anul evidențiat se colorează corect și la iarnă.
 * **Punctul din afara grilei** e refuzat cu un mesaj clar, care recunoaște coordonatele inversate (lat, lon).
 * **Dungile și harta an × lună**: un an lipsă devine o coloană goală, nu mai decalează anii de după el.
+* **Scrierea GeoTIFF-urilor** se verifică: un fișier blocat (deschis în QGIS) sau un disc plin dau un mesaj clar,
+  nu un fișier lipsă raportat ca scris.
 * **Windows:** mutarea la coș a unei rulări deschise pe hartă (fișier blocat de GDAL); fereastra de pornire nu se mai
   închide fără mesaj la o eroare; curățenia de după instalare nu mai poate opri pornirea.
 * **Harta:** etichetele legendei pe clase („10–20”, nu „20”); o bandă fără date nu mai blochează panoul.

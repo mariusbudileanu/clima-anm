@@ -318,10 +318,29 @@ def ruleaza(cale_job: Path, verifica=False, exporta=False):
             raise
         raise EroareParametri(e.args[0] if e.args else e) from None
     fisa["frontiera_datelor"] = {k: str(v) for k, v in (getattr(zc, "FRONTIERE_ULTIME", None) or {}).items()}
+    try:                                             # paragraful „Date și metode” (RO + EN) și bibliografia
+        import metode_text
+        m = metode_text.compune(fisa, fisa.get("versiune_program", ""))
+        if m:
+            fisa["metode"] = m
+            metode_text.scrie_md(out, m)
+    except Exception as e:  # noqa: BLE001  (un plus: rularea e bună și fără el)
+        zc.log(f"   [atenție] paragraful de metode nu s-a putut scrie: {type(e).__name__}: {e}")
     fisa["fisiere"] = sorted(str(f.relative_to(out)).replace("\\", "/") for f in out.rglob("*")
                              if f.is_file() and f.name not in ("reproducere.json", "jurnal.txt", "index.html"))
     _scrie_fisa(out, fisa)
     _fisa_vizuala(out, fisa)
+
+
+def versiune_program():
+    """Versiunea din pixi.toml (sursa unică a numărului de versiune)."""
+    import re
+    try:
+        t = (Path(__file__).resolve().parent.parent / "pixi.toml").read_text(encoding="utf-8")
+        m = re.search(r'^version\s*=\s*"([^"]+)"', t, re.M)
+        return m.group(1) if m else ""
+    except OSError:
+        return ""
 
 
 def _fisa_vizuala(out, fisa):
@@ -353,7 +372,7 @@ def _fisa_reproducere(job, r, m, p, setari):
     param["_setari"] = setari
     # fișa este și un job valid: „reteta” + „parametri” → ruleaza.py o poate rula din nou (într-un folder nou)
     return {"reteta": r["id"], "parametri": param,          # fără _radacina: merge și pe alt calculator
-            "program": "Clima ANM", "titlu": p.get("_titlu_rulare") or r["titlu"], "reteta_titlu": r["titlu"], "motor": r["motor"],
+            "program": "Clima ANM", "versiune_program": versiune_program(), "titlu": p.get("_titlu_rulare") or r["titlu"], "reteta_titlu": r["titlu"], "motor": r["motor"],
             "pornit": datetime.now().isoformat(timespec="seconds"), "sursa_datelor": zc.URL,
             "versiuni": vers, "pixi_lock_sha256": hashlib.sha256(lock.read_bytes()).hexdigest()[:16] if lock.exists() else None,
             "refacere": "instrumente\\pixi.exe run python clima\\ruleaza.py <acest folder>\\reproducere.json"}

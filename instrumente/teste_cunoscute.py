@@ -503,6 +503,40 @@ def test_reperele_de_an():
     assert f("ultima_iarna", "2026-02-27") == 2025 and f("ultima_iarna", "2026-03-01") == 2026
 
 
+# ------------------------------------------------------------------ v1.1 etapa 2: stilul QGIS și „Date și metode”
+def test_qml_aceleasi_culori_ca_png():
+    import tempfile
+    import xml.etree.ElementTree as ET
+    import matplotlib
+    from matplotlib.colors import BoundaryNorm
+    h = np.linspace(5, 40, 400).reshape(20, 20)
+    with tempfile.TemporaryDirectory() as d:
+        q = zc.scrie_qml(Path(d) / "x.tif", h, "BrBG", clase=[10, 20, 24, 28, 35])
+        it = ET.parse(q).getroot().findall(".//colorrampshader/item")
+        assert [i.get("value") for i in it] == ["10", "20", "24", "28", "35", "inf"], "limitele claselor"
+        cm = matplotlib.colormaps["BrBG"]; nrm = BoundaryNorm([10, 20, 24, 28, 35], cm.N, extend="both")
+        png = "#{:02x}{:02x}{:02x}".format(*(int(round(255 * x)) for x in cm(nrm(22))[:3]))
+        assert it[2].get("color") == png, "clasa 20–24 are culoarea din PNG"
+        assert it[2].get("label") == "20 – 24"
+        q = zc.scrie_qml(Path(d) / "y.tif", h - 22, "RdBu_r", divergent=True)            # divergent: centrat pe 0
+        it = ET.parse(q).getroot().findall(".//colorrampshader/item")
+        egal(float(it[5].get("value")), 0.0, 1e-9, "mijlocul rampei divergente"); egal(float(it[0].get("value")), -float(it[-1].get("value")), 1e-6)
+
+
+def test_metode_text():
+    import metode_text as mt
+    f = {"motor": "trend", "titlu": "Tendința (+2)", "reteta_titlu": "Viteza de încălzire", "pornit": "2026-11-27T10:00",
+         "frontiera_datelor": {"max_temp": "2026-11-18"},
+         "parametri": {"INDICATORI": [{"cod": "medie", "var": "max_temp"}], "ANI": [1961, 2025], "SEZON": "JJA",
+                       "METODA_TREND": "sen_mk", "ALFA": 0.05, "ZONA": {"tip": "tara"}, "_setari": {"PRAG_VALID": 0.9}}}
+    m = mt.compune(f, "1.1.0")
+    assert "„Viteza de încălzire”" in m["ro"] and "(+2)" not in m["ro"], "titlul fără „(+2)”"
+    assert "1961–2025" in m["ro"] and "vara (iunie–august)" in m["ro"] and "α = 0,05" in m["ro"]
+    assert any(r.startswith("Sen, P. K.") for r in m["referinte"]) and any(r.startswith("Mann, H. B.") for r in m["referinte"])
+    assert any("10.5281/zenodo.24564871" in r and "1.1.0" in r for r in m["referinte"]), "citarea programului, cu versiunea"
+    assert mt.compune({"motor": "integritate"}) is None
+
+
 # ------------------------------------------------------------------
 def main():
     teste = [(k, f) for k, f in sorted(globals().items()) if k.startswith("test_") and callable(f)]

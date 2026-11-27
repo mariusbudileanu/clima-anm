@@ -1868,8 +1868,81 @@ def _gata(cale):
     return cale
 
 
+def scara_harta(h, divergent=False, vmin=None, vmax=None, centru=None):
+    """Scara de culori a hărții (aceeași regulă ca în png_harta): limitele date sau percentilele 2–98 %; divergent:
+    simetric față de centru. → (lo, centru sau None, hi)."""
+    vals = np.asarray(h, dtype="float64"); vals = vals[np.isfinite(vals)]
+    if divergent:
+        if vmin is not None and vmax is not None:
+            return float(vmin), float(centru if centru is not None else (vmin + vmax) / 2), float(vmax)
+        m = float(np.percentile(np.abs(vals), 98)) if vals.size else 1.0
+        m = m or 1.0
+        return -m, 0.0, m
+    lo = float(vmin) if vmin is not None else (float(np.percentile(vals, 2)) if vals.size else 0.0)
+    hi = float(vmax) if vmax is not None else (float(np.percentile(vals, 98)) if vals.size else 1.0)
+    return lo, None, (hi if hi > lo else lo + 1)
+
+
+def _fmt_qml(v):
+    return f"{v:.4g}".replace("e+0", "e").replace("e-0", "e-")
+
+
+def scrie_qml(cale_tif, h, cmap="viridis", divergent=False, centru=None, clase=None, vmin=None, vmax=None, unitate=""):
+    """Stilul QGIS (.qml cu același nume ca GeoTIFF-ul: QGIS îl încarcă automat) pentru banda 1, cu exact culorile
+    hărții PNG: aceeași paletă, aceeași scară, aceleași clase. → calea fișierului .qml."""
+    import matplotlib
+    from matplotlib.colors import BoundaryNorm
+    from xml.sax.saxutils import quoteattr
+    cm = matplotlib.colormaps[cmap or "viridis"]
+    hexa = lambda c: "#{:02x}{:02x}{:02x}".format(*(int(round(255 * x)) for x in c[:3]))
+    u = f" {unitate}" if unitate else ""
+    itemi = []
+    if clase:
+        cl = [float(c) for c in clase]
+        norm = BoundaryNorm(cl, cm.N, extend="both")
+        rep = [cl[0] - 1] + [(a + b) / 2 for a, b in zip(cl, cl[1:])] + [cl[-1] + 1]      # câte o valoare din fiecare clasă
+        lim = cl + ["inf"]
+        et = [f"< {_fmt_qml(cl[0])}"] + [f"{_fmt_qml(a)} – {_fmt_qml(b)}" for a, b in zip(cl, cl[1:])] + [f"≥ {_fmt_qml(cl[-1])}"]
+        for r, l, e in zip(rep, lim, et):
+            itemi.append((l if l == "inf" else _fmt_qml(l), hexa(cm(norm(r))), e + u))
+        tip, lo, hi = "DISCRETE", cl[0], cl[-1]
+    else:
+        lo, c, hi = scara_harta(h, divergent, vmin, vmax, centru)
+        for t in np.linspace(0, 1, 11):                 # 11 opriri; divergent: jumătățile se întind separat (TwoSlopeNorm)
+            if c is not None:
+                v = lo + (c - lo) * t / 0.5 if t <= 0.5 else c + (hi - c) * (t - 0.5) / 0.5
+            else:
+                v = lo + (hi - lo) * t
+            itemi.append((_fmt_qml(v), hexa(cm(t)), f"{v:.3g}".replace(".", ",") + u))
+        tip = "INTERPOLATED"
+    rand = "\n".join(f'          <item alpha="255" value="{v}" label={quoteattr(e)} color="{col}"/>' for v, col, e in itemi)
+    xml = f"""<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis version="3.28.0" styleCategories="Symbology">
+  <pipe>
+    <rasterrenderer type="singlebandpseudocolor" band="1" opacity="1" alphaBand="-1" nodataColor=""
+                    classificationMin="{_fmt_qml(lo)}" classificationMax="{_fmt_qml(hi)}">
+      <rasterTransparency/>
+      <minMaxOrigin><limits>None</limits><extent>WholeRaster</extent><statAccuracy>Estimated</statAccuracy>
+        <cumulativeCutLower>0.02</cumulativeCutLower><cumulativeCutUpper>0.98</cumulativeCutUpper>
+        <stdDevFactor>2</stdDevFactor></minMaxOrigin>
+      <rastershader>
+        <colorrampshader colorRampType="{tip}" classificationMode="1" clip="0"
+                         minimumValue="{_fmt_qml(lo)}" maximumValue="{_fmt_qml(hi)}" labelPrecision="2">
+{rand}
+        </colorrampshader>
+      </rastershader>
+    </rasterrenderer>
+  </pipe>
+  <blendMode>0</blendMode>
+</qgis>
+"""
+    q = Path(cale_tif).with_suffix(".qml")
+    q.write_text(xml, encoding="utf-8")
+    return q
+
+
 def scrie_cog(cale, benzi, g: Grila, descrieri=None, unitate="", cmap=None, divergent=False, centru=None, clase=None,
-              meta=None):
+              meta=None, vmin=None, vmax=None):
     """GeoTIFF optimizat pentru cloud (COG), float32, NoData = NaN, EPSG:4326.
     cmap / divergent / centru / clase: cum trebuie colorată harta (le citește vizualizatorul din interfață)."""
     from osgeo import gdal, osr
@@ -1901,8 +1974,19 @@ def scrie_cog(cale, benzi, g: Grila, descrieri=None, unitate="", cmap=None, dive
     for k, v in (meta or {}).items():               # ex. ANI = „2016,2017,…”: seria pe ani, pentru animația din Hartă
         if v is not None:
             mem.SetMetadataItem(k, str(v))
-    gdal.GetDriverByName("COG").CreateCopy(str(cale), mem, options=["COMPRESS=DEFLATE", "PREDICTOR=3", "OVERVIEWS=AUTO"])
+    rez = gdal.GetDriverByName("COG").CreateCopy(str(cale), mem, options=["COMPRESS=DEFLATE", "PREDICTOR=3", "OVERVIEWS=AUTO"])
+    if rez is None:                                  # ex. fișierul e deschis în QGIS (Windows) sau discul e plin
+        raise RuntimeError(f"GeoTIFF-ul nu s-a putut scrie: {cale}. E deschis în alt program sau discul e plin? "
+                           f"({gdal.GetLastErrorMsg()})")
+    rez = None                                       # închide fișierul
     log(f"   COG: {cale}")
+    if cmap:                                         # stilul QGIS, cu culorile hărții PNG
+        sc = (meta or {}).get("SCARA")
+        lo, hi = ([float(x) for x in str(sc).split(",")] if sc else (vmin, vmax))
+        try:
+            scrie_qml(cale, benzi[0], cmap, divergent, centru, clase, lo, hi, unitate[0] if isinstance(unitate, (list, tuple)) else unitate)
+        except Exception as e:  # noqa: BLE001  (stilul e un plus: fără el, GeoTIFF-ul rămâne bun)
+            log(f"   [atenție] stilul QGIS (.qml) nu s-a putut scrie: {e}")
     return cale
 
 
@@ -2250,8 +2334,7 @@ def _iesiri_harta(out, nume, h, g, zona, ind, titlu, subtitlu, iesiri, serie=Non
         benzi = [h] + ([_masca_zona(b, zona) for b, _ in benzi_extra] if benzi_extra else [])
         descr = [titlu] + ([d for _, d in benzi_extra] if benzi_extra else [])
         fisiere.append(scrie_cog(out / f"{nume}.tif", benzi, g, descr, ind.unitate, cmap=ind.cmap, divergent=divergent,
-                                 centru=centru,
-                                 clase=clase))
+                                 centru=centru, clase=clase, vmin=vmin, vmax=vmax))
     if iesiri.get("png"):
         png_harta(out / f"{nume}_harta.png", h, g, titlu, ind.unitate, ind.cmap, vmin, vmax, divergent, zona, subtitlu, hasura, clase)
     if iesiri.get("gpkg"):

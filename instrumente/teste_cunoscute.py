@@ -550,6 +550,28 @@ def test_cale_de_pe_alt_calculator():
         assert zc._cale("rezultate/x", d) == (Path(d) / "rezultate" / "x").resolve(), "folderele de ieșire nu se ating"
 
 
+# ------------------------------------------------------------------ v1.1 etapa 4: climatograma Walter–Lieth
+def test_climatograma_luni_aride_si_inghet():
+    import zarr_climatograma as zcg
+    # doi ani sintetici, o zonă: Tmax = 10 + 15·sin, Tmin = Tmax − 10; P = 1 mm/zi, iar în iulie 0,2 mm/zi (aridă)
+    S = {"max_temp": {}, "min_temp": {}, "precipitation": {}}
+    for an in (2001, 2002):
+        z = np.arange(f"{an}-01-01", f"{an + 1}-01-01", dtype="datetime64[D]")
+        doy = (z - z[0]).astype(int)
+        tx = 10 + 15 * np.sin(2 * np.pi * (doy - 105) / 365)
+        luna = z.astype("datetime64[M]").astype(int) % 12 + 1
+        p = np.where(luna == 7, 0.2, 1.0)
+        S["max_temp"][an] = tx[None].astype("float32"); S["min_temp"][an] = (tx - 10)[None].astype("float32")
+        S["precipitation"][an] = p[None].astype("float32")
+    st = zcg.statistici_perioada(S, [2001, 2002], np.datetime64("2030-01-01"), k=0)
+    egal(st["P"][6], 0.2 * 31, 1e-4, "P iulie = 6,2 mm"); egal(st["P"][0], 31.0, 1e-4, "P ianuarie = 31 mm")
+    egal(st["T"][6], st["Tmax"][6] - 5, 1e-5, "T = (Tmax + Tmin)/2")
+    assert st["luni_aride"] == ["iul"] or "iul" in st["luni_aride"], st["luni_aride"]    # 6,2 mm < 2 × ~20 °C
+    assert "ian" in st["luni_inghet"] and "iul" not in st["luni_inghet"], st["luni_inghet"]
+    egal(zcg._y_p([40, 100, 300]), [20, 50, 60], 1e-9, "scara P: P/2 până la 100 mm, apoi 1:10")
+    assert st["n_ani"] == 2 and np.isfinite(st["P_an"])
+
+
 # ------------------------------------------------------------------
 def main():
     teste = [(k, f) for k, f in sorted(globals().items()) if k.startswith("test_") and callable(f)]

@@ -209,6 +209,11 @@ def citiri(motor, p, cub, fr):
     elif motor == "episod_zilnic":
         d1 = min(_d(p["PERIOADA"][1]), frontiera) if p["PERIOADA"][1] else frontiera
         adauga("zilele episodului", _vars(p["VARIABILA"]), [("", _d(p["PERIOADA"][0]), d1)], z)
+    elif motor == "climatograma":
+        per = [p["PERIOADA_A"]] + ([p["PERIOADA_B"]] if p.get("COMPARA") and p.get("PERIOADA_B") else [])
+        a0, a1 = min(x[0] for x in per), max(x[1] for x in per)
+        adauga(f"seriile zilnice ale zonei, {a0}–{a1} (o singură dată; apoi din cache)", ("max_temp", "min_temp", "precipitation"),
+               _ani((a0, a1), "anual", frontiera, "", inceput), z)
     elif motor in ("dungi", "serii"):
         # din v5.0 indicatorul seriei vine în INDICATORI (valori anuale per pixel, apoi pe zonă), ca la hărți
         v = _vars_indicatori(p) if p.get("INDICATORI") else _vars(p["VARIABILA"])

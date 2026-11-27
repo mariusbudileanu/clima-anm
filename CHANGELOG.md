@@ -22,6 +22,11 @@ dezvoltare de dinaintea publicării; sunt păstrate mai jos ca istoric al metode
   (ex. profesorul trimite fișa, studenții refac aceeași analiză); fișierele vectoriale cu căi de pe alt calculator
   se caută automat în folderul `date/`, după nume.
 
+* **Climatograma Walter–Lieth** (rețeta `c1`, grupul Temperatură): temperatura medie și precipitațiile lunare ale
+  unui punct sau ale unei zone, cu convențiile Walter–Lieth (10 °C ↔ 20 mm, comprimarea peste 100 mm, perioada aridă
+  punctată, cea umedă hașurată, bara de îngheț sigur / probabil, extremele pe margine). Implicit, normalele OMM
+  1961–1990 și 1991–2020 una lângă alta, plus diferențele lunare (°C și %) și tabelul lunar (CSV).
+
 ### Corecturi (auditul independent din 27.11.2026, fiecare cu test de regresie)
 
 * **Blocurile nescrise (valori exact 0) pe puncte și zone mici** sunt acum tratate ca date lipsă: verificarea se

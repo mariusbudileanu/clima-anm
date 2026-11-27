@@ -435,6 +435,44 @@ def _dungi(p):
 
 
 # =====================================================================================
+# CLIMATOGRAMA WALTER–LIETH
+# =====================================================================================
+def _exporta_climatograma(job, p, setari):
+    l = _antet_py(job, setari)
+    l += ["import zarr_climatograma as zcg  # noqa: E402", "", f"ZONA = {_py_zona(p['ZONA'])}",
+          f"zcg.ruleaza_climatograma(ZONA, {_py(p['PERIOADA_A'])}, {_py(p['PERIOADA_B'] if p.get('COMPARA') else None)}, "
+          f"{_py(p['IESIRI'])}, {_py_cale(p['OUT'])}, {p['NUME']!r})"]
+    return "\n".join(l) + "\n"
+
+
+def _titlu_climatograma(p):
+    per = f"{p['PERIOADA_A'][0]}–{p['PERIOADA_A'][1]}"
+    if p.get("COMPARA") and p.get("PERIOADA_B"):
+        per += f" și {p['PERIOADA_B'][0]}–{p['PERIOADA_B'][1]}"
+    return f"Climatograma {nume_zona_scurt(p.get('ZONA'))}, {per}"
+
+
+@motor("climatograma", "Climatograma Walter–Lieth",
+       "Regimul anual al temperaturii și al precipitațiilor (diagrama Walter–Lieth) pentru un punct sau o zonă, pe una "
+       "sau două perioade alăturate (implicit normalele 1961–1990 și 1991–2020), cu perioadele aride și umede, "
+       "lunile de îngheț și diferențele lunare dintre perioade.",
+       [camp_zona(forme=("punct", "poligoane", "dreptunghi"), implicit={"tip": "punct", "lon": 26.1025, "lat": 44.4268, "nume": "București"}),
+        {"nume": "PERIOADA_A", "tip": "interval_ani", "eticheta": "Perioada", "implicit": [1961, 1990],
+         "ajutor": "normala climatică veche (OMM): 1961–1990"},
+        {"nume": "COMPARA", "tip": "bifa", "eticheta": "Compară cu a doua perioadă", "implicit": True},
+        {"nume": "PERIOADA_B", "tip": "interval_ani", "eticheta": "A doua perioadă", "implicit": [1991, 2020],
+         "ajutor": "normala climatică actuală (OMM): 1991–2020", "doar_daca": {"camp": "COMPARA", "valori": [True]}},
+        {"nume": "IESIRI", "tip": "bife", "eticheta": "Rezultate",
+         "optiuni": {"png": "climatograma și diferențele (PNG)", "csv": "tabelul lunar (CSV)"},
+         "implicit": {"png": True, "csv": True}}],
+       _exporta_climatograma, setari=[], titlu_rulare=_titlu_climatograma)
+def _climatograma(p):
+    import zarr_climatograma as zcg
+    return zcg.ruleaza_climatograma(p["ZONA"], p["PERIOADA_A"], p["PERIOADA_B"] if p.get("COMPARA") else None,
+                                    p["IESIRI"], p["OUT"], p["NUME"])
+
+
+# =====================================================================================
 # 15 — SERII DE TIMP PE ZONE (grafice complexe)
 # =====================================================================================
 GRAFICE_SERII = {"serie_zilnica": "seria zilnică", "serii_anuale": "seriile anuale", "multiple_mici": "multiple mici",

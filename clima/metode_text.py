@@ -48,6 +48,7 @@ REF = {
     "mann1945": "Mann, H. B. (1945). Nonparametric tests against trend. Econometrica, 13(3), 245–259. "
                 "https://doi.org/10.2307/1907187",
     "kendall1975": "Kendall, M. G. (1975). Rank correlation methods (4th ed.). Charles Griffin, London.",
+    "walter1960": "Walter, H., & Lieth, H. (1960–1967). Klimadiagramm-Weltatlas. VEB Gustav Fischer Verlag, Jena.",
     "coumou2012": "Coumou, D., & Rahmstorf, S. (2012). A decade of weather extremes. Nature Climate Change, 2(7), "
                   "491–496. https://doi.org/10.1038/nclimate1452",
 }
@@ -57,7 +58,7 @@ SCURT = {"zhang2011": "Zhang et al., 2011", "wmo1203": "WMO, 2017", "mckee1993":
          "wmo1090": "WMO, 2012", "vicente2010": "Vicente-Serrano et al., 2010", "beg2014": "Beguería et al., 2014",
          "hargreaves1985": "Hargreaves & Samani, 1985", "fao56": "Allen et al., 1998",
          "demartonne1926": "De Martonne, 1926", "sen1968": "Sen, 1968", "mann1945": "Mann, 1945",
-         "kendall1975": "Kendall, 1975", "coumou2012": "Coumou & Rahmstorf, 2012"}
+         "kendall1975": "Kendall, 1975", "coumou2012": "Coumou & Rahmstorf, 2012", "walter1960": "Walter & Lieth, 1960"}
 
 # indicator → referințele lui (codurile din indicatori.py)
 REF_INDICATOR = {
@@ -163,6 +164,9 @@ def compune(fisa: dict, versiune: str = "") -> dict | None:
 
     # perioada, sezonul, zona
     ani = _ani(p.get("ANI")) or _ani(p.get("ANI_TINTA"))
+    if motor == "climatograma":
+        pa, pb = _ani(p.get("PERIOADA_A")), (_ani(p.get("PERIOADA_B")) if p.get("COMPARA") else None)
+        ani = pa + (f" și {pb}" if pb else "") if pa else None
     per = p.get("PERIOADA")
     sez_ro, sez_en = _sezon(p.get("SEZON"))
     z_ro, z_en = _zona(p.get("ZONA"))
@@ -233,6 +237,16 @@ def compune(fisa: dict, versiune: str = "") -> dict | None:
                   "(ferestre care nu se suprapun), fiecare candidat fiind acceptat doar cu cel puțin 90 % zile valide.")
         en.append("Records were identified by ranking all candidate periods in the study years (non-overlapping "
                   "windows), each accepted only with at least 90 % valid days.")
+    elif motor == "climatograma":
+        refs.append("walter1960")
+        ro.append("Climatograma urmează convențiile Walter–Lieth (Walter & Lieth, 1960): temperatura medie lunară, "
+                  "(Tmax + Tmin)/2, și precipitațiile medii lunare, la scara 10 °C ↔ 20 mm (perioadă aridă: P < 2T), "
+                  "calculate din seria zilnică medie a zonei; o lună intră într-o perioadă doar dacă are date în cel "
+                  "puțin 80 % din ani. Îngheț sigur: media minimelor lunii < 0 °C; probabil: minima absolută < 0 °C.")
+        en.append("The climate diagram follows the Walter–Lieth conventions (Walter & Lieth, 1960): mean monthly "
+                  "temperature, (Tmax + Tmin)/2, and mean monthly precipitation, scaled 10 °C ↔ 20 mm (arid period: "
+                  "P < 2T), computed from the zone's mean daily series; a month enters a period only if it has data in "
+                  "at least 80 % of the years. Certain frost: mean monthly minimum < 0 °C; probable: absolute minimum < 0 °C.")
     elif motor in ("statistici", "zonal"):
         ro.append("Statisticile s-au calculat din valorile zilnice, pe pixel" + (" și pe zone." if motor == "zonal" else "."))
         en.append("Statistics were computed from the daily values, per grid cell" + (" and per zone." if motor == "zonal" else "."))

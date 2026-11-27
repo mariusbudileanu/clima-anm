@@ -32,10 +32,7 @@
         "strict": false
       }
     ],
-    "ANI": [
-      2026,
-      2026
-    ],
+    "ANI": ["ultima_iarna", "ultima_iarna"],
     "SEZON": "DJF",
     "ZONA": {
       "tip": "tara"

@@ -15,7 +15,7 @@
       {"cod": "medie", "var": "min_temp"},
       {"cod": "suma", "var": "precipitation"}
     ],
-    "ANI": [2025, 2025],
+    "ANI": ["ultimul_an", "ultimul_an"],
     "SEZON": "anual",
     "ZONA": {"tip": "tara"},
     "IESIRI": {"cog": true, "png": true, "grafic": false, "gpkg": true, "csv": true, "ani": false}

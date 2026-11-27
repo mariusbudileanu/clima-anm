@@ -62,16 +62,33 @@ def _afiseaza(v):
     return str(v)
 
 
+# Reperele de an din rețetele rapide („Vara trecută” rămâne vara trecută și la anul): (luna, ziua) la care se
+# încheie perioada în anul ei. Iarna anului A = decembrie A−1 … februarie A, deci se încheie la sfârșitul lui februarie.
+REPERE_AN = {"ultimul_an": (12, 31), "ultima_vara": (8, 31), "ultima_iarna": (2, 28)}
+
+
+def an_reper(reper, frontiera):
+    """Ultimul an în care perioada reperului e încheiată până la frontiera datelor."""
+    luna, zi = REPERE_AN[reper]
+    an = int(str(frontiera)[:4])
+    return an if str(frontiera)[5:] >= f"{luna:02d}-{zi:02d}" else an - 1
+
+
 def _date_relative(p, m):
-    """Perioadele cu începutul „-N” = ultimele N zile până la frontiera datelor (rețetele rapide nu îmbătrânesc).
+    """Perioadele cu începutul „-N” = ultimele N zile până la frontiera datelor, iar anii „ultimul_an”, „ultima_vara”,
+    „ultima_iarna” = ultima perioadă încheiată (rețetele rapide nu îmbătrânesc).
     Se rezolvă aici, deci fișa de reproducere păstrează datele exacte."""
     import re
     rel = [c["nume"] for c in m["campuri"] if c.get("tip") == "perioada" and isinstance(p.get(c["nume"]), (list, tuple))
            and p[c["nume"]] and isinstance(p[c["nume"]][0], str) and re.fullmatch(r"-\d+", p[c["nume"]][0].strip())]
-    if not rel:
+    ani = [c["nume"] for c in m["campuri"] if c.get("tip") == "interval_ani" and isinstance(p.get(c["nume"]), (list, tuple))
+           and any(isinstance(v, str) and v.strip() in REPERE_AN for v in p[c["nume"]])]
+    if not rel and not ani:
         return
     _, fr = zc.deschide()
     frontiera = min(fr.values())
+    for k in ani:
+        p[k] = [an_reper(v.strip(), frontiera) if isinstance(v, str) and v.strip() in REPERE_AN else int(v) for v in p[k]]
     for k in rel:
         n = int(p[k][0].strip()[1:])
         p[k] = [str(frontiera - np.timedelta64(max(n, 1) - 1, "D")), p[k][1] or str(frontiera)]   # capete fixe: reproductibil

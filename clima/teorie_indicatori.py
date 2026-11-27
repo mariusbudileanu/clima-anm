@@ -62,7 +62,7 @@ TEORIE = {
                   "și se împart la numărul zilelor cu date. Este cel mai simplu descriptor al climei unei perioade.",
         formula="X̄ = (1 / n) · Σ<sub>z=1…n</sub> X<sub>z</sub>",
         simboluri=[["X<sub>z</sub>", "valoarea variabilei în ziua z (°C sau mm)"],
-                   ["n", "numărul zilelor cu date din perioadă (zilele NaN nu intră nici la sumă, nici la numărător)"]],
+                   ["n", "numărul zilelor cu date din perioadă (zilele NaN nu intră nici la sumă, nici la numitor)"]],
         pasi=["Ia tabloul variabilei alese, de forma (zile, rânduri, coloane).",
               "Calculează <code>np.nanmean</code> pe axa zilelor: media fiecărui pixel, ignorând zilele fără date.",
               "Rezultă o hartă cu media perioadei (pentru un an); motorul face apoi media pe ani."],
@@ -314,7 +314,7 @@ TEORIE = {
         formula="Rx<i>n</i>day = max<sub>z</sub> ( P<sub>z</sub> + P<sub>z+1</sub> + … + P<sub>z+n−1</sub> )",
         simboluri=[["n", "durata ferestrei (zile)"], ["P<sub>z</sub>", "precipitațiile zilei z (mm)"]],
         pasi=["Înlocuiește zilele lipsă cu 0 mm.",
-              "Pentru n > 1: calculează sumele mobile pe n zile cu suma cumulativă (<code>np.cumsum</code>, apoi diferențe), rapid pentru toată harta.",
+              "Pentru n > 1: adună cele n zile consecutive prin deplasări succesive ale seriei, pe benzi de rânduri (memorie mică pentru toată harta).",
               "Ia maximul pe toate pozițiile ferestrei.",
               "Pixelii fără date devin NoData."],
         interpretare="Rx1day mare: averse convective intense (vara) sau ploi orografice. Rx5day mare: episoade lungi de ploaie "
@@ -475,7 +475,7 @@ METODE = {
                      "corespunde niciunui loc real.",
         standard="Aceeași regulă ca în produsele grilate ETCCDI (HadEX, Copernicus C3S): indicii se calculează la nivel de celulă, "
                  "apoi se agregă spațial.",
-        limitari=["Media pixelilor nu ține cont că pixelii de 0,01° au arii puțin diferite cu latitudinea (sub 2 % în România).",
+        limitari=["Media pixelilor nu ține cont că pixelii de 0,01° au arii diferite cu latitudinea: aria e proporțională cu cos φ, deci un pixel din sudul țării (43,5° N) e cu ~9 % mai mare decât unul din nord (48,4° N). Media zonei supraponderează astfel ușor nordul; pe o zonă cât un județ efectul e neglijabil.",
                   "Seriile zilnice și lunare din graficele de serii folosesc tot media zilnică a zonei (calea A): sunt utile pentru "
                   "a vedea evoluția, dar pragurile se citesc din valorile anuale.",
                   "Raportul mediilor (pentru %) dă mai multă greutate pixelilor umezi; media rapoartelor ar da greutate egală "

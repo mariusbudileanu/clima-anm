@@ -45,7 +45,8 @@ def test_medie_si_suma_cu_lipsa():
     z = np.arange(np.datetime64("2020-01-01"), np.datetime64("2020-01-05"))
     egal(zc.i_medie({"max_temp": np.array([10, 20, NAN, 30.0])[:, None, None]}, z, var="max_temp"), [[20]], msg="media")
     z3 = z[:3]
-    egal(zc.i_suma({"precipitation": np.array([1, NAN, 2.0])[:, None, None]}, z3, var="precipitation"), [[3]], msg="suma")
+    # v1.1: suma se corectează pentru ziua lipsă: (1 + 2) × 3/2 = 4,5 (înainte: 3, lipsa intra ca 0 mm)
+    egal(zc.i_suma({"precipitation": np.array([1, NAN, 2.0])[:, None, None]}, z3, var="precipitation"), [[4.5]], msg="suma")
 
 
 def test_sezon_fara_inghet_borne_si_lipsa():
@@ -87,7 +88,8 @@ def test_cwd_sdii_prcptot():
     #   PRCPTOT = 3 + 2 + 4 + 1 + 1 = 11 (0,5 mm e o urmă, nu intră) · SDII = 11 / 5 = 2,2 mm/zi
     z = np.arange(np.datetime64("2021-05-01"), np.datetime64("2021-05-09"))
     d = {"precipitation": np.array([3, 0.5, 2, 4, NAN, 1, 1, 0])[:, None, None]}
-    egal(zc.i_cwd(d, z), [[2]], msg="CWD"); egal(zc.i_prcptot(d, z), [[11]], msg="PRCPTOT")
+    # v1.1: PRCPTOT se corectează pentru ziua lipsă ca toate sumele: 11 × 8/7 = 12,571 mm (SDII, un raport, nu)
+    egal(zc.i_cwd(d, z), [[2]], msg="CWD"); egal(zc.i_prcptot(d, z), [[11 * 8 / 7]], tol=1e-4, msg="PRCPTOT")
     egal(zc.i_sdii(d, z), [[2.2]], tol=1e-5, msg="SDII")
     uscat = {"precipitation": np.array([0, 0.3, 0.2])[:, None, None]}       # nicio zi ploioasă: SDII nedefinit, nu 0
     egal(zc.i_sdii(uscat, z[:3]), [[NAN]], msg="SDII fără zile ploioase")
@@ -427,6 +429,78 @@ def test_bloc_zero_si_chunk_lipsa():
         assert zc.raport_corectii() is not None
     finally:
         zc.CHUNKURI_LIPSA.clear(); zc.CHUNKURI_LIPSA.update(vechi[0]); zc._CORECTII.update(vechi[1])
+
+
+# ------------------------------------------------------------------ regresii din auditul Gemini (v1.1.0)
+def test_suma_corectata_pentru_zilele_lipsa():
+    # 10 zile, una lipsă, 2 mm/zi: suma corectă e 20 mm (9 × 2 × 10/9), nu 18 (lipsa ca 0)
+    a = np.full((10, 1, 1), 2.0); a[3] = NAN
+    egal(float(zc._suma_corectata(a)[0, 0]), 20.0, 1e-5, "suma × n/n_valide")
+    egal(float(zc.i_suma({"precipitation": a}, None, "precipitation")[0, 0]), 20.0, 1e-5, "i_suma")
+    assert np.isnan(zc._suma_corectata(np.full((5, 1, 1), NAN))[0, 0]), "fără nicio zi validă → NaN"
+    # SPEI și SPI pe același gol trebuie să se miște în aceeași direcție: bilanțul nu mai câștigă „+PET” pe zilele lipsă
+    P = np.full((10, 1, 1), 1.0); P[2] = NAN
+    D = P - 3.0                                        # P − PET = −2 mm/zi
+    egal(float(zc._suma_corectata(D)[0, 0]), -20.0, 1e-5, "bilanțul cu o zi lipsă")
+
+
+def test_trend_serie_constanta_p_unu():
+    ani = np.arange(1991, 2021)
+    st = np.zeros((30, 1, 2), "float32"); st[:, 0, 1] = 0.3 * (ani - 1991)      # pixel 0: constant; pixel 1: perfect liniar
+    b, p = zc.panta_deceniu(ani, st)
+    egal(float(b[0, 0]), 0.0, 1e-6, "panta constantă"); egal(float(p[0, 0]), 1.0, 1e-9, "p = 1 pentru serie constantă")
+    egal(float(b[0, 1]), 3.0, 1e-4, "panta liniară /deceniu"); egal(float(p[0, 1]), 0.0, 1e-9, "p = 0 pentru serie perfect liniară")
+    _, pm = zc.sen_mk_deceniu(ani, np.zeros((30, 1, 1), "float32"))
+    egal(float(pm[0, 0]), 1.0, 1e-9, "Mann–Kendall: p = 1 pentru serie constantă")
+    egal(zc._panta(list(ani), [5.0] * 30, "ols")[1], 1.0, 1e-9, "_panta pe zonă, serie constantă")
+
+
+def test_punct_in_afara_grilei():
+    from types import SimpleNamespace
+    cub = SimpleNamespace(x=SimpleNamespace(values=np.arange(20.135, 29.86, 0.01)),
+                          y=SimpleNamespace(values=np.arange(48.355, 43.53, -0.01)))
+    g = zc.grila_zonei(cub, zc.Zona.punct(26.10, 44.43, "București"))
+    assert g.ix1 - g.ix0 == 1 and abs(float(g.x[0]) - 26.10) <= 0.0051
+    try:
+        zc.grila_zonei(cub, zc.Zona.punct(44.43, 26.10, "inversat")); raise AssertionError("trebuia să refuze")
+    except ValueError as e:
+        assert "inversate" in str(e), e
+
+
+def test_ani_contigui_pentru_dungi():
+    x, y = zc.ani_contigui([2000, 2001, 2003], [1.0, 2.0, 4.0])
+    assert list(x) == [2000, 2001, 2002, 2003] and np.isnan(y[2]) and y[3] == 4.0
+    x, A = zc.ani_contigui([1, 3], np.array([[1.0, 3.0], [5.0, 7.0]]))   # pe zone: ultima axă e anul
+    assert A.shape == (2, 3) and np.isnan(A[:, 1]).all()
+
+
+def test_bloc_zero_pe_un_singur_pixel():
+    # un punct (1 pixel) dintr-un bloc nescris: fereastra are sub 50 de pixeli, deci se judecă blocul întreg
+    import xarray as xr
+    from types import SimpleNamespace
+    zile = np.arange("2026-01-01", "2026-03-31", dtype="datetime64[D]")              # 89 de zile, un chunk
+    t = np.random.default_rng(3).normal(5, 2, (len(zile), 10, 10)).astype("float32")
+    t[40] = 0.0                                                                         # ziua 41: bloc nescris
+    cub = xr.Dataset({"max_temp": (("time", "y", "x"), t)}, coords={"time": zile})
+    vechi = (dict(zc.FRONTIERE_ULTIME or {}), dict(zc._MASCA_RECENTA), set(zc.CHUNKURI_LIPSA), dict(zc._CORECTII))
+    try:
+        zc.FRONTIERE_ULTIME = {"max_temp": zile[-1]}; zc._MASCA_RECENTA.clear(); zc.CHUNKURI_LIPSA.clear()
+        arr = t[:, 3:4, 3:4].copy()
+        zc._corecteaza_bucata(cub, "max_temp", arr, zile, 0, SimpleNamespace(iy0=3, iy1=4, ix0=3, ix1=4), (90, 10, 10))
+        assert np.isnan(arr[40, 0, 0]), "ziua nescrisă trebuie să devină NaN și pe un singur pixel"
+        assert np.isfinite(arr[np.arange(len(zile)) != 40]).all(), "celelalte zile rămân"
+    finally:
+        zc.FRONTIERE_ULTIME = vechi[0]; zc._MASCA_RECENTA.clear(); zc._MASCA_RECENTA.update(vechi[1])
+        zc.CHUNKURI_LIPSA.clear(); zc.CHUNKURI_LIPSA.update(vechi[2]); zc._CORECTII.update(vechi[3])
+
+
+def test_reperele_de_an():
+    import importlib
+    ruleaza = importlib.import_module("ruleaza")
+    f = lambda r, d: ruleaza.an_reper(r, np.datetime64(d))
+    assert f("ultimul_an", "2026-11-25") == 2025 and f("ultimul_an", "2026-12-31") == 2026
+    assert f("ultima_vara", "2026-08-30") == 2025 and f("ultima_vara", "2026-09-01") == 2026
+    assert f("ultima_iarna", "2026-02-27") == 2025 and f("ultima_iarna", "2026-03-01") == 2026
 
 
 # ------------------------------------------------------------------

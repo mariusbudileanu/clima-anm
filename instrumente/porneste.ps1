@@ -95,7 +95,10 @@ if (-not (Test-Path (Join-Path $Mediu "python.exe"))) {
                  "        Reîncercare de la zero:  porneste.bat -Reinstaleaza")
     }
     # arhivele .conda descărcate nu mai sunt necesare (mediul are deja fișierele): eliberăm ~0,7 GB
-    & $Pixi clean cache --conda --yes 2>$null | Out-Null
+    # în Windows PowerShell 5.1, cu ErrorActionPreference = Stop, orice text pe stderr al unui program extern
+    # devine eroare fatală; curățenia e opțională, deci erorile ei nu trebuie să oprească pornirea
+    $vechi = $ErrorActionPreference; $ErrorActionPreference = "Continue"
+    try { & $Pixi clean cache --conda --yes 2>&1 | Out-Null } catch { } finally { $ErrorActionPreference = $vechi }
     Linie "   Mediul este instalat." Green
 }
 
@@ -103,5 +106,12 @@ if (-not (Test-Path (Join-Path $Mediu "python.exe"))) {
 Linie ""
 Linie "Pornesc interfața; browserul se deschide singur. Oprire: închideți această fereastră (sau Ctrl+C)." White
 Linie ""
+$ErrorActionPreference = "Continue"           # mesajele serverului pe stderr nu sunt erori fatale
 & $Pixi run --locked --manifest-path (Join-Path $Rad "pixi.toml") interfata
-exit $LASTEXITCODE
+$cod = $LASTEXITCODE
+# Ctrl+C (oprirea obișnuită) nu e o eroare: 0xC000013A pe Windows, 130 pe Unix
+if ($cod -ne 0 -and $cod -ne -1073741510 -and $cod -ne 130 -and $cod -ne 3221225786) {
+    Opreste ("Interfața s-a oprit cu o eroare (cod $cod). Mesajul e mai sus, în această fereastră.`n" +
+             "        Dacă problema persistă: porneste.bat -Reinstaleaza")
+}
+exit $cod

@@ -56,10 +56,14 @@ licența și atribuirea fiecărui set).
 
 ## Teste
 
+Din folderul programului, după prima pornire (care descarcă `pixi` în `instrumente`):
+
 ```
-pixi run --locked python instrumente/teste_cunoscute.py     # răspunsuri cunoscute, câteva secunde
-pixi run --locked python instrumente/testeaza_retete.py     # toate rețetele, pe un cub sintetic (~4 min)
+instrumente\pixi.exe run --locked python instrumente/teste_cunoscute.py     # răspunsuri cunoscute, câteva secunde
+instrumente\pixi.exe run --locked python instrumente/testeaza_retete.py     # toate rețetele, pe un cub sintetic (~4 min)
 ```
+
+Pe Linux / macOS: `instrumente/pixi run --locked python …`.
 
 Rulează automat pe GitHub la fiecare modificare.
 

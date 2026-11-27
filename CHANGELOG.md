@@ -5,6 +5,33 @@ Cele mai noi sus. Manualul de utilizare este în `CITESTE_MA.md`.
 Versiunea publică **1.0.0** corespunde versiunii interne 5.2. Versiunile interne 3.x – 5.2 au fost etapele de
 dezvoltare de dinaintea publicării; sunt păstrate mai jos ca istoric al metodelor și al deciziilor.
 
+## 1.1.0 — în lucru
+
+### Corecturi (auditul independent din 27.11.2026, fiecare cu test de regresie)
+
+* **Blocurile nescrise (valori exact 0) pe puncte și zone mici** sunt acum tratate ca date lipsă: verificarea se
+  face pe blocul întreg de 161 × 324 pixeli, nu pe fereastra decupată (sub 50 de pixeli nu se putea decide). Înainte,
+  o analiză pe un oraș putea lua zilele nescrise drept 0 °C.
+* **Sumele pe perioadă** (precipitații, PRCPTOT, grade-zile, PET, bilanț, SPI, SPEI) se corectează proporțional pentru
+  zilele lipsă (× n / n valide), ca seriile pe zone. Înainte, până la 10 % zile lipsă intrau ca 0: SPI ieșea mai uscat,
+  SPEI mai umed. Parametrii SPI / SPEI din cache se recalculează automat.
+* **SPI / SPEI refuză perioadele incomplete**, și cu „Acceptă perioade incomplete” bifat (o vară tăiată ieșea „secetă
+  extremă”).
+* **Trendul pe serii constante** (ex. 0 zile tropicale pe munte): p = 1, deci hașurat ca nesemnificativ; seriile
+  perfect liniare: p = 0.
+* **Superlative:** GeoPackage-ul pe zone nu se mai decalează când o zonă nu are candidați; rangul anului evidențiat se
+  face mereu între ani („locul 3 din 65 de ani”), și la unitatea „zi”; anul evidențiat se colorează corect și la iarnă.
+* **Punctul din afara grilei** e refuzat cu un mesaj clar, care recunoaște coordonatele inversate (lat, lon).
+* **Dungile și harta an × lună**: un an lipsă devine o coloană goală, nu mai decalează anii de după el.
+* **Windows:** mutarea la coș a unei rulări deschise pe hartă (fișier blocat de GDAL); fereastra de pornire nu se mai
+  închide fără mesaj la o eroare; curățenia de după instalare nu mai poate opri pornirea.
+* **Harta:** etichetele legendei pe clase („10–20”, nu „20”); o bandă fără date nu mai blochează panoul.
+* **Titlul mediilor multianuale:** „media 2020–2025 (6 ani)” în loc de „medie anuală”.
+* **Rețetele rapide nu mai îmbătrânesc:** „Vara trecută”, „Iarna trecută” și „Medii” folosesc ultima perioadă
+  încheiată (reperele `ultima_vara`, `ultima_iarna`, `ultimul_an`).
+* **Documentație:** variația ariei pixelilor e ~9 % între sud și nord (nu „sub 2 %”); comenzile de test pentru Windows;
+  vechiul manual al scripturilor marcat ca istoric.
+
 ## 1.0.1 — 2026-11-27 · primele observații ale utilizatorilor
 
 * **Analize rapide → „Medii: temperatura și precipitațiile”** (rețeta `r6`): temperatura medie, media maximelor și a

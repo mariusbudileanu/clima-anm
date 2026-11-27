@@ -125,7 +125,7 @@ ClimaANM\
   interfata\                    serverul local (server_clima.py) și pagina (index.html)
   clima\                        nucleul, indicatorii, motoarele (scripturile vechi rulează și manual, ca înainte)
   retete\                       analizele (JSON); retete\utilizator\ = rețetele salvate din interfață
-  date\                         fișierele vectoriale (județe, frontieră …)
+  date\                         fișierele vectoriale (județe, frontieră …): vezi README, „Fișierele vectoriale”
   rezultate\                    un folder per rulare (<data_ora>_<analiza>: rezultate, jurnal.txt, reproducere.json);
                                 _cache\ = serii refolosite; _joburi\ = istoricul interfeței; _scripturi\ = exporturi
   instrumente\, .pixi\          create automat (pixi și mediul)

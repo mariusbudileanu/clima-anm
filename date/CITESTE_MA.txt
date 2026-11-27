@@ -1,6 +1,10 @@
-Copiați aici fișierele vectoriale folosite de analize (GPKG, SHP, GeoJSON), de exemplu:
-  ro_frontiera_poligon.gpkg   (conturul de pe hărți)
-  ro_judete_poligon.gpkg      (județele, coloana name — numele coloanei nu ține cont de majuscule)
-Interfața le afișează automat în listele de fișiere. Căile relative (date/…) funcționează pe orice calculator.
+Copiați aici fișierele vectoriale folosite de analize (recomandat GeoPackage; merg și SHP, GeoJSON):
+  ro_judete_poligon.gpkg      județele (coloana cu numele: implicit name; se poate alege în formular)
+  ro_frontiera_poligon.gpkg   conturul României, pentru hărțile PNG
+Sursa recomandată: catalogul geo-spatial.org,
+  https://services.geo-spatial.org/geonetwork/srv/eng/catalog.search#/search?from=1&to=30
+Sistemul de coordonate nu contează (programul reproiectează). Fără aceste fișiere, analizele pe județe se opresc cu
+un mesaj, iar hărțile nu au contur. Interfața afișează automat fișierele de aici în listele de fișiere.
+Căile relative (date/…) funcționează pe orice calculator.
 
 dem_grila_zarr.tif — Copernicus DEM GLO-30 pe grila cubului Zarr (inclus; se regenerează cu instrumente/pregateste_dem.bat).

@@ -5,6 +5,63 @@ Cele mai noi sus. Manualul de utilizare este în `CITESTE_MA.md`.
 Versiunea publică **1.0.0** corespunde versiunii interne 5.2. Versiunile interne 3.x – 5.2 au fost etapele de
 dezvoltare de dinaintea publicării; sunt păstrate mai jos ca istoric al metodelor și al deciziilor.
 
+## 1.1.0 — 2026-11-27 · versiunea finală a acestei serii
+
+Dezvoltarea se oprește aici; versiunile următoare doar dacă apar cereri concrete ale utilizatorilor (ex. SPI / SPEI
+pe scări lunare).
+
+### Nou
+
+* **Tabul Tutorial:** șapte pași, de la prima analiză la lucrul cu studenții, cu butoane care deschid locul din program.
+* **Fișe noi în Indicatori → Metode:** „Date lipsă și validitate”, „Climatograma Walter–Lieth”, „Testele multiple:
+  corecția FDR”; fișele SPI și SPEI descriu corecția sumelor și refuzul perioadelor incomplete.
+* **Corecția FDR (Benjamini–Hochberg) la hărțile de trend** (Setări avansate): hașura după p-valoarea ajustată,
+  o bandă în plus în GeoTIFF și numărul de pixeli semnificativi înainte și după, în jurnal.
+
+* **Stil QGIS pentru fiecare GeoTIFF:** lângă fiecare `.tif` colorat se scrie un `.qml` cu același nume, pe care QGIS
+  îl încarcă automat: aceeași paletă, aceeași scară (2–98 % sau limitele alese) și aceleași clase ca harta PNG.
+* **„Date și metode”:** fiecare rulare primește un paragraf descriptiv, în română și în engleză (datele, perioada,
+  sezonul, zona, indicatorii, metoda, regulile de validitate, golurile întâlnite, versiunea programului) și
+  bibliografia în format APA, alese după indicatorii și metoda folosite. Apar în fișa vizuală, cu butoane de copiere,
+  și în `metode.md`. Textul nu conține interpretări.
+* **Refacerea unei rulări:** butonul „Refă” pe fiecare rulare din pagina Start și „↻ Refă sau modifică analiza” în
+  fișa vizuală încarcă în formular exact parametrii acelei rulări (din `reproducere.json`), gata de rulat din nou sau
+  de modificat. Pe pagina Start, „deschide o fișă de reproducere…” încarcă un `reproducere.json` primit de la altcineva
+  (ex. profesorul trimite fișa, studenții refac aceeași analiză); fișierele vectoriale cu căi de pe alt calculator
+  se caută automat în folderul `date/`, după nume.
+* **Climatograma Walter–Lieth** (rețeta `c1`, grupul Temperatură): temperatura medie și precipitațiile lunare ale
+  unui punct sau ale unei zone, cu convențiile Walter–Lieth (10 °C ↔ 20 mm, comprimarea peste 100 mm, perioada aridă
+  punctată, cea umedă hașurată, bara de îngheț sigur / probabil, extremele pe margine). Implicit, normalele OMM
+  1961–1990 și 1991–2020 una lângă alta, plus diferențele lunare (°C și %) și tabelul lunar (CSV).
+
+### Corecturi (auditul independent din 27.11.2026, fiecare cu test de regresie)
+
+* **Blocurile nescrise (valori exact 0) pe puncte și zone mici** sunt acum tratate ca date lipsă: verificarea se
+  face pe blocul întreg de 161 × 324 pixeli, nu pe fereastra decupată (sub 50 de pixeli nu se putea decide). Înainte,
+  o analiză pe un oraș putea lua zilele nescrise drept 0 °C.
+* **Sumele pe perioadă** (precipitații, PRCPTOT, grade-zile, PET, bilanț, SPI, SPEI) se corectează proporțional pentru
+  zilele lipsă (× n / n valide), ca seriile pe zone. Înainte, până la 10 % zile lipsă intrau ca 0: SPI ieșea mai uscat,
+  SPEI mai umed. Parametrii SPI / SPEI din cache se recalculează automat.
+* **SPI / SPEI refuză perioadele incomplete**, și cu „Acceptă perioade incomplete” bifat (o vară tăiată ieșea „secetă
+  extremă”).
+* **Trendul pe serii constante** (ex. 0 zile tropicale pe munte): p = 1, deci hașurat ca nesemnificativ; seriile
+  perfect liniare: p = 0.
+* **Superlative:** GeoPackage-ul pe zone nu se mai decalează când o zonă nu are candidați; rangul anului evidențiat se
+  face mereu între ani („locul 3 din 65 de ani”), și la unitatea „zi”; anul evidențiat se colorează corect și la iarnă.
+* **Punctul din afara grilei** e refuzat cu un mesaj clar, care recunoaște coordonatele inversate (lat, lon).
+* **Dungile și harta an × lună**: un an lipsă devine o coloană goală, nu mai decalează anii de după el.
+* **Scrierea GeoTIFF-urilor** se verifică: un fișier blocat (deschis în QGIS) sau un disc plin dau un mesaj clar,
+  nu un fișier lipsă raportat ca scris.
+* **Windows:** mutarea la coș a unei rulări deschise pe hartă (fișier blocat de GDAL); fereastra de pornire nu se mai
+  închide fără mesaj la o eroare; curățenia de după instalare nu mai poate opri pornirea.
+* **Formularul:** „Valorile implicite” reface și câmpurile care apar doar pentru anumite alegeri.
+* **Harta:** etichetele legendei pe clase („10–20”, nu „20”); o bandă fără date nu mai blochează panoul.
+* **Titlul mediilor multianuale:** „media 2020–2025 (6 ani)” în loc de „medie anuală”.
+* **Rețetele rapide nu mai îmbătrânesc:** „Vara trecută”, „Iarna trecută” și „Medii” folosesc ultima perioadă
+  încheiată (reperele `ultima_vara`, `ultima_iarna`, `ultimul_an`).
+* **Documentație:** variația ariei pixelilor e ~9 % între sud și nord (nu „sub 2 %”); comenzile de test pentru Windows;
+  vechiul manual al scripturilor marcat ca istoric.
+
 ## 1.0.1 — 2026-11-27 · primele observații ale utilizatorilor
 
 * **Analize rapide → „Medii: temperatura și precipitațiile”** (rețeta `r6`): temperatura medie, media maximelor și a

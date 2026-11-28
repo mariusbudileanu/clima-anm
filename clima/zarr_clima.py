@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import csv
 import json
+import re
 import math
 import time
 import warnings
@@ -547,7 +548,7 @@ def _store_cu_cache(store, folder):
 # se folosește masca găsită pe Tmax în același bloc. Raportul complet: clima/integritate.py (butonul „Verifică datele”).
 CHUNKURI_LIPSA = set()          # (variabilă, chunk timp, chunk y, chunk x)
 ZILE_SUSPECTE = {}              # (variabilă, chunk y, chunk x) → set de zile (datetime64[D]) cu blocul la exact 0
-_MASCA_RECENTA = {}             # (chunk timp, cy, cx) → vector bool pe zilele chunk-ului (din Tmax)
+_MASCA_RECENTA = {}             # (variabilă, chunk timp, cy, cx) → (zilele chunk-ului, bool „bloc nescris”) sau None
 MIN_PIXELI_BLOC = 50
 _CORECTII = {"lipsa": 0, "zero": 0}
 
@@ -588,7 +589,15 @@ def _corecteaza_bucata(cub, v, arr, zile, ct, g, chunks):
             arr[:, rs, cs] = np.nan
             continue
         if v in ("max_temp", "min_temp"):
-            z = zile_bloc_zero(arr[:, rs, cs])
+            sub = arr[:, rs, cs]
+            if int(np.isfinite(sub).any(axis=0).sum()) >= MIN_PIXELI_BLOC:
+                z = zile_bloc_zero(sub)
+            elif _e_recent(cub, ct):
+                # zonă mică (un punct, un UAT): sub 50 de pixeli nu se poate decide din fereastră → se judecă
+                # blocul întreg de 161 × 324 (același chunk, deja în cache-ul local)
+                z = _masca_recenta(cub, ct, cy, cx, zile, chunks, v)
+            else:
+                continue
         elif v == "precipitation" and _e_recent(cub, ct):
             z = _masca_recenta(cub, ct, cy, cx, zile, chunks)
         else:
@@ -608,18 +617,23 @@ def _e_recent(cub, ct):
     return ct >= ct_fr - 1                             # ultimele două chunk-uri de timp (~3–6 luni)
 
 
-def _masca_recenta(cub, ct, cy, cx, zile, chunks):
-    """Zilele în care blocul (cy, cx) al Tmax e exact 0 în chunk-ul de timp ct (citit o singură dată pe proces)."""
+def _masca_recenta(cub, ct, cy, cx, zile, chunks, var="max_temp"):
+    """Zilele în care blocul întreg (cy, cx) al variabilei `var` (implicit Tmax) e exact 0 în chunk-ul de timp ct
+    (citit o singură dată pe proces). Chunk lipsă sau fără nicio valoare: toate zilele sunt suspecte."""
     ctn, cy_n, cx_n = chunks
-    cheie = (ct, cy, cx)
+    cheie = (var, ct, cy, cx)
     if cheie not in _MASCA_RECENTA:
-        if ("max_temp", ct, cy, cx) in CHUNKURI_LIPSA:
+        if (var, ct, cy, cx) in CHUNKURI_LIPSA:
             _MASCA_RECENTA[cheie] = None
         else:
-            da = cub["max_temp"].isel(time=slice(ct * ctn, (ct + 1) * ctn), y=slice(cy * cy_n, (cy + 1) * cy_n),
-                                      x=slice(cx * cx_n, (cx + 1) * cx_n))
+            da = cub[var].isel(time=slice(ct * ctn, (ct + 1) * ctn), y=slice(cy * cy_n, (cy + 1) * cy_n),
+                               x=slice(cx * cx_n, (cx + 1) * cx_n))
             b = np.asarray(da.values, dtype="float32")
-            _MASCA_RECENTA[cheie] = (da.time.values.astype("datetime64[D]"), zile_bloc_zero(b))
+            # verificarea registrului abia DUPĂ citire: chunk-ul lipsă se înregistrează chiar la această citire
+            if (var, ct, cy, cx) in CHUNKURI_LIPSA or not np.isfinite(b).any():
+                _MASCA_RECENTA[cheie] = None
+            else:
+                _MASCA_RECENTA[cheie] = (da.time.values.astype("datetime64[D]"), zile_bloc_zero(b))
     m = _MASCA_RECENTA[cheie]
     if m is None:
         return np.ones(len(zile), bool)
@@ -725,7 +739,16 @@ def grila_zonei(cub, zona: Zona) -> Grila:
     if zona.gpkg and not zona.poligoane:
         _citeste_poligoane(zona)
     if zona.punct:
-        ix = int(np.abs(x - zona.punct[0]).argmin()); iy = int(np.abs(y - zona.punct[1]).argmin())
+        lon, lat = float(zona.punct[0]), float(zona.punct[1])
+        jum = PAS / 2 + 1e-9
+        x0, x1, y0, y1 = float(x.min()) - jum, float(x.max()) + jum, float(y.min()) - jum, float(y.max()) + jum
+        if not (x0 <= lon <= x1 and y0 <= lat <= y1):
+            inversat = x0 <= lat <= x1 and y0 <= lon <= y1
+            raise ValueError(
+                f"Punctul ({lon:g}, {lat:g}) e în afara grilei României (lon {x0:.2f}…{x1:.2f}, lat {y0:.2f}…{y1:.2f})."
+                + (f" Coordonatele par inversate: scrieți întâi longitudinea, apoi latitudinea ({lat:g}, {lon:g})."
+                   if inversat else ""))
+        ix = int(np.abs(x - lon).argmin()); iy = int(np.abs(y - lat).argmin())
         return Grila(iy, iy + 1, ix, ix + 1, x[ix:ix + 1], y[iy:iy + 1])
     if zona.bbox:
         lo0, la0, lo1, la1 = zona.bbox
@@ -918,6 +941,16 @@ def _valid(arr):
     return np.isfinite(arr)
 
 
+def _suma_corectata(a):
+    """Σ pe zilele valide, corectată proporțional pentru zilele lipsă (× n / n_valide), ca la seriile pe zone
+    (_agregat). Perioada trece oricum prin PRAG_VALID; fără corecție, cele până la 10 % zile lipsă ar intra ca 0
+    (SPI deplasat spre secetă, iar SPEI, prin P − PET = 0, spre umed). NaN unde nu există nicio zi validă."""
+    fin = np.isfinite(a)
+    nv = fin.sum(axis=0)
+    s = np.where(fin, a, 0).sum(axis=0, dtype="float64")
+    return np.where(nv > 0, s * a.shape[0] / np.maximum(nv, 1), np.nan).astype("float32")
+
+
 def i_medie(d, zile, var):
     """Media zilnică a variabilei pe perioadă (ex. Tmax medie a verii)."""
     return np.nanmean(d[var], axis=0)
@@ -925,7 +958,7 @@ def i_medie(d, zile, var):
 
 def i_suma(d, zile, var):
     """Suma pe perioadă (ex. precipitații totale, mm). ETCCDI PRCPTOT folosește doar zilele ≥ 1 mm; aici: toate zilele."""
-    return np.nansum(d[var], axis=0) * np.where(_valid(d[var]).any(axis=0), 1, np.nan)
+    return _suma_corectata(d[var])
 
 
 def i_tmedie(d, zile):
@@ -962,7 +995,7 @@ def i_gdd(d, zile, baza=10.0):
     """Grade-zile de creștere: Σ max((Tmax + Tmin)/2 − bază, 0). Baza: 10 °C porumb, vița-de-vie; 5 °C păioase."""
     tm = (d["max_temp"] + d["min_temp"]) / 2
     g = np.clip(tm - baza, 0, None)
-    return np.where(_valid(tm).any(axis=0), np.nansum(g, axis=0), np.nan)
+    return _suma_corectata(g)
 
 
 def _prima_ultima(mask, zile, valid):
@@ -1057,8 +1090,7 @@ def i_sdii(d, zile, prag=1.0):
 def i_prcptot(d, zile, prag=1.0):
     """PRCPTOT (ETCCDI): suma precipitațiilor din zilele ploioase (P ≥ prag). Zilele sub prag (urme, 0,3 mm) nu intră."""
     p = d["precipitation"]
-    ud = (p >= prag) & _valid(p)
-    return np.where(_valid(p).any(axis=0), np.where(ud, p, 0.0).sum(axis=0), np.nan).astype("float32")
+    return _suma_corectata(np.where(_valid(p), np.where(p >= prag, p, 0.0), np.nan))
 
 
 def i_rxnday(d, zile, n=1):
@@ -1176,7 +1208,7 @@ def _verifica_baza(cub, fr, variabile, baza):
 
 def _cheie_baza(*parti):
     import hashlib
-    return hashlib.md5(json.dumps([*parti, PRAG_VALID, URL], default=str).encode()).hexdigest()[:12]
+    return hashlib.md5(json.dumps([*parti, PRAG_VALID, URL, "sume-corectate-1.1"], default=str).encode()).hexdigest()[:12]
 
 
 def _blocuri(g: Grila, ty=161, tx=81):
@@ -1347,13 +1379,13 @@ def pet_hargreaves(tmax, tmin, zile, lat):
 def i_pet(d, zile, _ctx=None):
     """Evapotranspirația potențială pe perioadă (Hargreaves, mm): suma valorilor zilnice."""
     pet = pet_hargreaves(d["max_temp"], d["min_temp"], zile, _ctx["lat"])
-    return np.where(np.isfinite(pet).any(axis=0), np.nansum(pet, axis=0), np.nan)
+    return _suma_corectata(pet)
 
 
 def i_bilant(d, zile, _ctx=None):
     """Bilanțul climatic al apei pe perioadă: Σ (P − PET) (mm). Negativ = cererea atmosferei depășește precipitațiile."""
     D = d["precipitation"] - pet_hargreaves(d["max_temp"], d["min_temp"], zile, _ctx["lat"])
-    return np.where(np.isfinite(D).any(axis=0), np.nansum(D, axis=0), np.nan)
+    return _suma_corectata(D)
 
 
 def _preg_lat(cub, fr, g, sezon, ind):
@@ -1500,8 +1532,7 @@ def i_spi(d, zile, baza_de, baza_pana, _ctx=None):
     """SPI pe perioada aleasă (sezonul dă scara: anual = SPI-12, iunie–august = SPI-3, o lună = SPI-1):
     totalul precipitațiilor transformat prin distribuția gamma a acelorași perioade din anii de bază."""
     p = d["precipitation"]
-    x = np.where(np.isfinite(p).any(axis=0), np.nansum(p, axis=0), np.nan)
-    return spi_din(x, _ctx["par"])
+    return spi_din(_suma_corectata(p), _ctx["par"])
 
 
 def i_spei(d, zile, baza_de, baza_pana, _ctx=None):
@@ -1642,6 +1673,12 @@ def harti_anuale(cub, fr, indicatori, ani, sezon, g: Grila, mesaj=""):
             raport.append(f"{et}: exclus ({motiv})")
             log(f"   {et}: exclus — {motiv} (ACCEPTA_PARTIAL = False)")
             continue
+        if (d1 > frontiera or d0 < inceput) and any(e_standardizat(i) for i in indicatori):
+            # SPI / SPEI compară totalul cu distribuția perioadelor COMPLETE din anii de bază: o perioadă tăiată
+            # (ex. 45 din 92 de zile ale verii) ar ieși „secetă extremă” fără motiv. Se exclude chiar și cu ACCEPTA_PARTIAL.
+            raport.append(f"{et}: exclus (perioadă incompletă; SPI / SPEI cer perioada întreagă)")
+            log(f"   {et}: exclus — perioadă incompletă, iar SPI / SPEI se calculează doar pe perioade întregi")
+            continue
         d0, d1 = max(d0, inceput), min(d1, frontiera)
         nch = mb = 0
         for v in variabile:
@@ -1765,8 +1802,12 @@ def panta_deceniu(ani, stiva):
     b = sxy / np.where(sxx > 0, sxx, np.nan)
     res = y - (my + b * (xm - mx))
     se = np.sqrt(np.nansum(res ** 2, axis=0) / np.maximum(n - 2, 1) / np.where(sxx > 0, sxx, np.nan))
-    t = b / se
+    with np.errstate(invalid="ignore", divide="ignore"):
+        t = b / se
     p = p_student(t, n - 2)
+    # se = 0: seria e constantă (b = 0 → nicio tendință, p = 1) sau perfect liniară (b ≠ 0 → p = 0)
+    fix = (n >= 3) & np.isfinite(b) & (se == 0)
+    p = np.where(fix, np.where(b == 0, 1.0, 0.0), p)
     b = np.where(n >= 10, b * 10, np.nan)
     return b.astype("float32"), np.where(n >= 10, p, np.nan).astype("float32")
 
@@ -1806,6 +1847,7 @@ def sen_mk_deceniu(ani, stiva, bloc=8000):
         with np.errstate(invalid="ignore", divide="ignore"):
             z = np.where(S > 0, S - 1, np.where(S < 0, S + 1, 0.0)) / np.sqrt(np.where(var > 0, var, np.nan))
         p = np.array([math.erfc(abs(v) / math.sqrt(2)) if np.isfinite(v) else np.nan for v in z])
+        p = np.where((var <= 0) & (n >= 3) & (S == 0), 1.0, p)     # toți anii egali: nicio tendință (p = 1)
         b_out[c0:c0 + bloc] = np.where(n >= 10, panta * 10, np.nan)
         p_out[c0:c0 + bloc] = np.where(n >= 10, p, np.nan)
     return b_out.reshape(forma).astype("float32"), p_out.reshape(forma).astype("float32")
@@ -1827,8 +1869,81 @@ def _gata(cale):
     return cale
 
 
+def scara_harta(h, divergent=False, vmin=None, vmax=None, centru=None):
+    """Scara de culori a hărții (aceeași regulă ca în png_harta): limitele date sau percentilele 2–98 %; divergent:
+    simetric față de centru. → (lo, centru sau None, hi)."""
+    vals = np.asarray(h, dtype="float64"); vals = vals[np.isfinite(vals)]
+    if divergent:
+        if vmin is not None and vmax is not None:
+            return float(vmin), float(centru if centru is not None else (vmin + vmax) / 2), float(vmax)
+        m = float(np.percentile(np.abs(vals), 98)) if vals.size else 1.0
+        m = m or 1.0
+        return -m, 0.0, m
+    lo = float(vmin) if vmin is not None else (float(np.percentile(vals, 2)) if vals.size else 0.0)
+    hi = float(vmax) if vmax is not None else (float(np.percentile(vals, 98)) if vals.size else 1.0)
+    return lo, None, (hi if hi > lo else lo + 1)
+
+
+def _fmt_qml(v):
+    return f"{v:.4g}".replace("e+0", "e").replace("e-0", "e-")
+
+
+def scrie_qml(cale_tif, h, cmap="viridis", divergent=False, centru=None, clase=None, vmin=None, vmax=None, unitate=""):
+    """Stilul QGIS (.qml cu același nume ca GeoTIFF-ul: QGIS îl încarcă automat) pentru banda 1, cu exact culorile
+    hărții PNG: aceeași paletă, aceeași scară, aceleași clase. → calea fișierului .qml."""
+    import matplotlib
+    from matplotlib.colors import BoundaryNorm
+    from xml.sax.saxutils import quoteattr
+    cm = matplotlib.colormaps[cmap or "viridis"]
+    hexa = lambda c: "#{:02x}{:02x}{:02x}".format(*(int(round(255 * x)) for x in c[:3]))
+    u = f" {unitate}" if unitate else ""
+    itemi = []
+    if clase:
+        cl = [float(c) for c in clase]
+        norm = BoundaryNorm(cl, cm.N, extend="both")
+        rep = [cl[0] - 1] + [(a + b) / 2 for a, b in zip(cl, cl[1:])] + [cl[-1] + 1]      # câte o valoare din fiecare clasă
+        lim = cl + ["inf"]
+        et = [f"< {_fmt_qml(cl[0])}"] + [f"{_fmt_qml(a)} – {_fmt_qml(b)}" for a, b in zip(cl, cl[1:])] + [f"≥ {_fmt_qml(cl[-1])}"]
+        for r, l, e in zip(rep, lim, et):
+            itemi.append((l if l == "inf" else _fmt_qml(l), hexa(cm(norm(r))), e + u))
+        tip, lo, hi = "DISCRETE", cl[0], cl[-1]
+    else:
+        lo, c, hi = scara_harta(h, divergent, vmin, vmax, centru)
+        for t in np.linspace(0, 1, 11):                 # 11 opriri; divergent: jumătățile se întind separat (TwoSlopeNorm)
+            if c is not None:
+                v = lo + (c - lo) * t / 0.5 if t <= 0.5 else c + (hi - c) * (t - 0.5) / 0.5
+            else:
+                v = lo + (hi - lo) * t
+            itemi.append((_fmt_qml(v), hexa(cm(t)), f"{v:.3g}".replace(".", ",") + u))
+        tip = "INTERPOLATED"
+    rand = "\n".join(f'          <item alpha="255" value="{v}" label={quoteattr(e)} color="{col}"/>' for v, col, e in itemi)
+    xml = f"""<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis version="3.28.0" styleCategories="Symbology">
+  <pipe>
+    <rasterrenderer type="singlebandpseudocolor" band="1" opacity="1" alphaBand="-1" nodataColor=""
+                    classificationMin="{_fmt_qml(lo)}" classificationMax="{_fmt_qml(hi)}">
+      <rasterTransparency/>
+      <minMaxOrigin><limits>None</limits><extent>WholeRaster</extent><statAccuracy>Estimated</statAccuracy>
+        <cumulativeCutLower>0.02</cumulativeCutLower><cumulativeCutUpper>0.98</cumulativeCutUpper>
+        <stdDevFactor>2</stdDevFactor></minMaxOrigin>
+      <rastershader>
+        <colorrampshader colorRampType="{tip}" classificationMode="1" clip="0"
+                         minimumValue="{_fmt_qml(lo)}" maximumValue="{_fmt_qml(hi)}" labelPrecision="2">
+{rand}
+        </colorrampshader>
+      </rastershader>
+    </rasterrenderer>
+  </pipe>
+  <blendMode>0</blendMode>
+</qgis>
+"""
+    q = Path(cale_tif).with_suffix(".qml")
+    q.write_text(xml, encoding="utf-8")
+    return q
+
+
 def scrie_cog(cale, benzi, g: Grila, descrieri=None, unitate="", cmap=None, divergent=False, centru=None, clase=None,
-              meta=None):
+              meta=None, vmin=None, vmax=None):
     """GeoTIFF optimizat pentru cloud (COG), float32, NoData = NaN, EPSG:4326.
     cmap / divergent / centru / clase: cum trebuie colorată harta (le citește vizualizatorul din interfață)."""
     from osgeo import gdal, osr
@@ -1860,8 +1975,19 @@ def scrie_cog(cale, benzi, g: Grila, descrieri=None, unitate="", cmap=None, dive
     for k, v in (meta or {}).items():               # ex. ANI = „2016,2017,…”: seria pe ani, pentru animația din Hartă
         if v is not None:
             mem.SetMetadataItem(k, str(v))
-    gdal.GetDriverByName("COG").CreateCopy(str(cale), mem, options=["COMPRESS=DEFLATE", "PREDICTOR=3", "OVERVIEWS=AUTO"])
+    rez = gdal.GetDriverByName("COG").CreateCopy(str(cale), mem, options=["COMPRESS=DEFLATE", "PREDICTOR=3", "OVERVIEWS=AUTO"])
+    if rez is None:                                  # ex. fișierul e deschis în QGIS (Windows) sau discul e plin
+        raise RuntimeError(f"GeoTIFF-ul nu s-a putut scrie: {cale}. E deschis în alt program sau discul e plin? "
+                           f"({gdal.GetLastErrorMsg()})")
+    rez = None                                       # închide fișierul
     log(f"   COG: {cale}")
+    if cmap:                                         # stilul QGIS, cu culorile hărții PNG
+        sc = (meta or {}).get("SCARA")
+        lo, hi = ([float(x) for x in str(sc).split(",")] if sc else (vmin, vmax))
+        try:
+            scrie_qml(cale, benzi[0], cmap, divergent, centru, clase, lo, hi, unitate[0] if isinstance(unitate, (list, tuple)) else unitate)
+        except Exception as e:  # noqa: BLE001  (stilul e un plus: fără el, GeoTIFF-ul rămâne bun)
+            log(f"   [atenție] stilul QGIS (.qml) nu s-a putut scrie: {e}")
     return cale
 
 
@@ -2133,11 +2259,26 @@ def png_bare_zone(cale, etichete, valori, titlu, unitate, n_max=25, cmap="viridi
     return cale
 
 
+def ani_contigui(ani, valori):
+    """Completează anii lipsă din mijlocul seriei cu NaN (pe ultima axă a `valori`): graficele de tip imagine
+    (dungi, an × lună) au o coloană pe an, iar un an omis ar decala toate dungile de după el."""
+    x = np.asarray(ani, dtype=int)
+    v = np.asarray(valori, dtype=float)
+    if x.size == 0:
+        return x, v
+    toti = np.arange(x.min(), x.max() + 1)
+    if toti.size == x.size:
+        return x, v
+    plin = np.full(v.shape[:-1] + (toti.size,), np.nan)
+    plin[..., x - x.min()] = v
+    return toti, plin
+
+
 def png_dungi(cale, ani, valori, titlu, ref=(1971, 2000), cmap="RdBu_r", baza=None):
     """„Dungile încălzirii” (Ed Hawkins): o bandă colorată pe an, centrată pe media perioadei de referință."""
     plt = _plt()
     cale = _gata(cale)
-    x = np.asarray(ani); y = np.asarray(valori, float)
+    x, y = ani_contigui(ani, valori)
     m = (x >= ref[0]) & (x <= ref[1]) & np.isfinite(y)
     if baza is None:
         baza = float(np.mean(y[m])) if m.any() else np.nan
@@ -2194,8 +2335,7 @@ def _iesiri_harta(out, nume, h, g, zona, ind, titlu, subtitlu, iesiri, serie=Non
         benzi = [h] + ([_masca_zona(b, zona) for b, _ in benzi_extra] if benzi_extra else [])
         descr = [titlu] + ([d for _, d in benzi_extra] if benzi_extra else [])
         fisiere.append(scrie_cog(out / f"{nume}.tif", benzi, g, descr, ind.unitate, cmap=ind.cmap, divergent=divergent,
-                                 centru=centru,
-                                 clase=clase))
+                                 centru=centru, clase=clase, vmin=vmin, vmax=vmax))
     if iesiri.get("png"):
         png_harta(out / f"{nume}_harta.png", h, g, titlu, ind.unitate, ind.cmap, vmin, vmax, divergent, zona, subtitlu, hasura, clase)
     if iesiri.get("gpkg"):
@@ -2257,7 +2397,8 @@ def ruleaza_harta(indicatori, ani, sezon, zona: Zona, iesiri: dict, out, nume, c
         stiva = st[ind.cod]
         h = _masca_zona(np.nanmean(stiva, axis=0), zona); harti[ind.cod] = h
         serie = [medie_zona(s, zona) for s in stiva]
-        titlu = ind.titlu + (" · medie anuală" if len(lista) > 1 else "")
+        # media multianuală: valoarea fiecărui an (pe sezonul ales), apoi media anilor; titlul spune care ani
+        titlu = ind.titlu + (f" · media {lista[0]}–{lista[-1]} ({len(lista)} ani)" if len(lista) > 1 else f" · {lista[0]}")
         sub = f"{per} · sezon: {sezon} · {zona.descriere()}"
         n = nume if len(lista_ind) == 1 else f"{nume}_{ind.cod}"
         kw = dict(clase=clase, vmin=vmin, vmax=vmax)
@@ -2421,7 +2562,24 @@ def ruleaza_anomalie(ind: Indicator, ani_tinta, ani_referinta, sezon, zona: Zona
     return _masca_zona(h, zona), g
 
 
-def ruleaza_trend(ind: Indicator, ani, sezon, zona: Zona, iesiri: dict, out, nume, alfa=0.05, metoda="ols"):
+def fdr_bh(p):
+    """p-valorile ajustate Benjamini–Hochberg (1995), pe toți pixelii valizi ai hărții: controlează proporția de
+    descoperiri false (FDR) printre pixelii declarați semnificativi. NaN rămân NaN."""
+    p = np.asarray(p, dtype="float64")
+    rez = np.full(p.shape, np.nan)
+    ok = np.isfinite(p)
+    v = p[ok]; m = v.size
+    if m == 0:
+        return rez
+    o = np.argsort(v, kind="mergesort")
+    q = v[o] * m / np.arange(1, m + 1)
+    q = np.minimum.accumulate(q[::-1])[::-1]                 # monotonie: p ajustat nu scade cu rangul
+    adj = np.empty(m); adj[o] = np.minimum(q, 1.0)
+    rez[ok] = adj
+    return rez
+
+
+def ruleaza_trend(ind: Indicator, ani, sezon, zona: Zona, iesiri: dict, out, nume, alfa=0.05, metoda="ols", fdr=False):
     """Panta (unitate/deceniu) a indicatorului an de an, per pixel; hașurat = nesemnificativ (p ≥ alfa).
     metoda: „ols” (regresie liniară + test t) sau „sen” (Theil–Sen + Mann–Kendall, robustă la anii excepționali)."""
     out = Path(out)
@@ -2441,8 +2599,22 @@ def ruleaza_trend(ind: Indicator, ani, sezon, zona: Zona, iesiri: dict, out, num
             log(f"   Theil–Sen față de OLS: diferența medie {ro(float(np.nanmean(dif)), 3)}, la 95 % din pixeli sub "
                 f"{ro(float(np.nanpercentile(np.abs(dif), 95)), 3)} {ind.unitate}/deceniu")
     serie = [medie_zona(s, zona) for s in st[ind.cod]]
+    pz = _masca_zona(p, zona)
+    benzi_extra = [(p, "p-valoare")]
+    if fdr:
+        # mii de pixeli testați deodată: la α = 0,05, ~5 % din pixelii fără tendință ies „semnificativi” din întâmplare.
+        # FDR (Benjamini–Hochberg) ține sub α proporția celor falși printre pixelii declarați semnificativi.
+        pa = fdr_bh(pz)
+        n0, n1 = int(np.nansum(pz < alfa)), int(np.nansum(pa < alfa))
+        log(f"   FDR (Benjamini–Hochberg): pixeli semnificativi {n0} → {n1} din {int(np.isfinite(pz).sum())}")
+        hasura = pa >= alfa
+        benzi_extra.append((pa, "p ajustat FDR (Benjamini–Hochberg)"))
+        sub = sub.replace(f"hașurat: nesemnificativ (p ≥ {alfa})",
+                          f"hașurat: nesemnificativ după corecția FDR Benjamini–Hochberg (q ≥ {alfa})")
+    else:
+        hasura = pz >= alfa
     fis = _iesiri_harta(out, nume, b, g, zona, ind2, titlu, sub, iesiri, None, None, divergent=True,
-                        hasura=_masca_zona(p, zona) >= alfa, benzi_extra=[(p, "p-valoare")])
+                        hasura=hasura, benzi_extra=benzi_extra)
     if iesiri.get("grafic"):
         png_serie(out / f"{nume}_serie.png", lista, serie, f"{ind.titlu} · media zonei, pe ani", ind.unitate, subtitlu=zona.descriere())
     if iesiri.get("csv"):
@@ -2781,9 +2953,13 @@ def _panta(ani, y, metoda=None):
     if ok.sum() < 10:
         return np.nan, np.nan
     x, y = x[ok], y[ok]
-    b, a = np.polyfit(x, y, 1)
-    res = y - (a + b * x); sxx = ((x - x.mean()) ** 2).sum()
+    sxx = ((x - x.mean()) ** 2).sum()
+    b = float(((x - x.mean()) * (y - y.mean())).sum() / sxx)      # formula directă: exact 0 pe o serie constantă
+    a = float(y.mean() - b * x.mean())
+    res = y - (a + b * x)
     se = math.sqrt((res ** 2).sum() / (len(x) - 2) / sxx) if sxx > 0 else np.nan
+    if se == 0:                                   # constantă (p = 1) sau perfect liniară (p = 0)
+        return b * 10, (1.0 if abs(b) < 1e-12 else 0.0)
     p = float(p_student(b / se, len(x) - 2)) if se and np.isfinite(se) and se > 0 else np.nan
     return b * 10, p
 
@@ -3197,6 +3373,7 @@ def g_dungi_zone(cale, etichete, ani, A, var, referinta, total_idx, sortare, sta
     """„Dungile încălzirii” pentru toate zonele: rânduri = zone, coloane = ani, culoarea = anomalia față de referință."""
     plt = _plt()
     procent = _e_procent(var)
+    ani, A = ani_contigui(ani, A)
     baza = stat["baza"][:, None]
     an = 100 * (A / np.where(baza > 0, baza, np.nan) - 1) if procent else A - baza
     idx = [k for k in range(len(etichete)) if k != total_idx]
@@ -3303,7 +3480,7 @@ def g_dungi_detaliu(cale, eticheta, ani, y, var, referinta, baza=None):
     plt = _plt()
     import matplotlib
     procent = _e_procent(var)
-    x = np.asarray(ani); ref = (x >= referinta[0]) & (x <= referinta[1])
+    x, y = ani_contigui(ani, y); ref = (x >= referinta[0]) & (x <= referinta[1])
     if baza is None:
         baza = float(np.nanmean(y[ref])) if ref.any() else np.nan
     if not np.isfinite(baza) or (procent and baza <= 0):
@@ -3340,7 +3517,8 @@ def g_anomalii_lunare(cale, eticheta, k, serii, var, ani, referinta, frontiera):
     toti = [a for a in range(ani[0], ani[1] + 1) if a in serii]
     if not toti:
         return None
-    M = np.stack([_lunare(serii, var, a, frontiera)[k] for a in toti])
+    toti = list(range(toti[0], toti[-1] + 1))                # un an lipsă devine un rând gol, nu se sare
+    M = np.stack([_lunare(serii, var, a, frontiera)[k] if a in serii else np.full(12, np.nan) for a in toti])
     ref = [a for a in sorted(serii) if referinta[0] <= a <= referinta[1]]
     if not ref:
         log(f"   [atenție] {eticheta}: referință lunară indisponibilă")
@@ -3601,12 +3779,24 @@ def _ruleaza_serii(var, ani, referinta, recent, zona, grafice, iesiri, out, nume
 CHEI_CALE = ("OUT", "DATE_VECTOR")
 
 
+_EXT_VECTOR = (".gpkg", ".shp", ".geojson", ".json", ".fgb", ".kml", ".gml")
+
+
 def _cale(v, radacina):
-    """Calea relativă se socotește față de folderul programului (portabil între calculatoare)."""
+    """Calea relativă se socotește față de folderul programului (portabil între calculatoare).
+    Un fișier vectorial cu cale absolută de pe ALT calculator (ex. o fișă de reproducere primită de la profesor:
+    C:\\Users\\prof\\…\\judete.gpkg) se caută și în folderul date/ al programului, după nume."""
     if v in (None, ""):
         return None
     p = Path(str(v)).expanduser()
-    return p if p.is_absolute() else (Path(radacina) / p).resolve()
+    p = p if p.is_absolute() else (Path(radacina) / p).resolve()
+    if not p.exists() and str(v).lower().endswith(_EXT_VECTOR):
+        nume = re.split(r"[\\/]", str(v))[-1]
+        alt = (Path(radacina) / "date" / nume).resolve()
+        if alt.exists():
+            log(f"   {nume}: calea din fișă ({v}) nu există aici; folosesc date/{nume}")
+            return alt
+    return p
 
 
 def zona_din_dict(d, radacina="."):

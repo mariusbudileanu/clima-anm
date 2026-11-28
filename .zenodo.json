@@ -12,7 +12,7 @@
   "license": "MIT",
   "language": "ron",
   "keywords": ["climate", "climatology", "Romania", "ANM", "Zarr", "data cube", "EOCube", "ETCCDI", "SPI", "SPEI", "GIS", "teaching"],
-  "version": "1.0.1",
+  "version": "1.1.0",
   "related_identifiers": [
     {"identifier": "https://github.com/mariusbudileanu/clima-anm", "relation": "isSupplementTo", "scheme": "url"},
     {"identifier": "https://eocube.ro", "relation": "references", "scheme": "url"}

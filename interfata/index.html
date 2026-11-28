@@ -30,6 +30,10 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:6px
 header h1{font:600 21px/1 var(--titluri);margin:0;letter-spacing:.01em;color:#fff}
 header .sub{color:#9fb1bf;font-size:12.5px;margin-top:3px}
 header .sub code{color:#c9d6df;font-family:var(--mono);font-size:12px}
+header > div:first-child{flex:none}
+header .sub{white-space:nowrap}
+@media (max-width:1560px){header .sub{display:none}}          /* șase taburi: subtitlul cedează locul */
+@media (max-width:1250px){header .pastila:not(#p-date):not(.verif){display:none}}
 header .dreapta{margin-left:auto;display:flex;gap:8px;align-items:center}
 header .pastila{background:rgba(255,255,255,.08);color:#c9d6df;border:1px solid rgba(255,255,255,.12)}
 header .pastila.ok{background:rgba(46,125,79,.22);color:#a6e3bd;border-color:rgba(166,227,189,.25)}
@@ -223,6 +227,23 @@ main.harta{grid-template-columns:270px minmax(400px,1fr) 300px}
 .h-legflot,.h-ajprez{display:none}
 .h-scena:fullscreen{background:#fff}
 .h-scena:fullscreen .h-titlu{font-size:clamp(20px,2.2vw,34px);padding:18px 28px;border:0}
+/* tutorialul */
+main.tutorial{display:block;overflow:auto;padding:0 0 48px}
+.t-cap{max-width:860px;margin:0 auto;padding:34px 32px 8px}
+.t-cap h1{font:600 clamp(24px,2.4vw,32px)/1.15 var(--titluri);margin:0 0 8px}
+.t-cap p{margin:0;color:var(--slab);max-width:62ch}
+.t-pasi{max-width:860px;margin:0 auto;padding:12px 32px 0 32px;list-style:none;counter-reset:pas}
+.t-pas{counter-increment:pas;position:relative;padding:18px 0 20px 58px;border-top:1px solid var(--linie)}
+.t-pas::before{content:counter(pas);position:absolute;left:0;top:18px;width:38px;height:38px;border-radius:50%;
+  background:var(--antet);color:#fff;font:600 17px/38px var(--titluri);text-align:center}
+.t-pas h2{font:600 18px var(--titluri);margin:6px 0 8px}
+.t-pas ul{margin:0;padding-left:18px;line-height:1.55;max-width:70ch}
+.t-pas li{margin:4px 0}
+.t-pas code{font-size:.92em;background:var(--accent2);padding:0 4px;border-radius:3px}
+.t-butoane{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.t-mergi{font:500 13px var(--corp);border:1px solid var(--accent);background:#fff;color:var(--accent-inchis);border-radius:6px;padding:5px 12px;cursor:pointer}
+.t-mergi:hover{background:var(--accent);color:#fff}
+.t-subsol{max-width:860px;margin:18px auto 0;padding:14px 32px 0;border-top:1px solid var(--linie);color:var(--slab);font-size:13px}
 /* pagina de start */
 main.start{display:block;overflow:auto;padding:0 0 40px}
 .s-cap{display:grid;grid-template-columns:minmax(280px,1.1fr) 2fr;gap:28px;align-items:end;max-width:1320px;margin:0 auto;padding:34px 32px 26px}
@@ -257,10 +278,12 @@ main.start{display:block;overflow:auto;padding:0 0 40px}
 .s-b:hover{border-color:var(--accent)}
 .s-b.prim{background:var(--accent);border-color:var(--accent);color:#fff}
 .s-b.prim:hover{background:var(--accent-inchis)}
+.s-legaturi{display:flex;gap:18px}
 .s-b.slab{color:var(--slab);margin-left:auto}
 .s-gol{background:var(--panou);border:1px dashed var(--linie);border-radius:var(--raza);padding:28px;text-align:center;color:var(--slab)}
 @media (max-width:980px){.s-cap{grid-template-columns:1fr}.s-actiuni{grid-template-columns:1fr}}
 @media (prefers-reduced-motion: reduce){.s-act{transition:none}.s-act:hover{transform:none}}
+.h-ticks-clase{display:grid !important;grid-auto-flow:column;grid-auto-columns:1fr;text-align:center}
 .h-anim{display:inline-block;margin-left:6px;font:600 10.5px var(--titluri);color:var(--accent-inchis);background:var(--accent2);border-radius:4px;padding:0 5px;vertical-align:1px}
 .h-scena:fullscreen .h-stare{display:none}
 .h-scena:fullscreen .h-canvas{background:#fff}
@@ -344,7 +367,7 @@ iframe.simulator{width:100%;height:78vh;min-height:560px;border:1px solid var(--
     <h1>Clima ANM</h1>
     <div class="sub">analize climatice pe cubul Zarr <code>anm-daily-grids</code> (EOCube.ro)</div>
   </div>
-  <nav class="vederi"><button data-v="start" class="activ" onclick="arataVedere('start')">Start</button><button data-v="analize" onclick="arataVedere('analize')">Analize</button><button data-v="harta" onclick="arataVedere('harta')">Hartă</button><button data-v="indicatori" onclick="arataVedere('indicatori')">Indicatori</button><button data-v="zarr" onclick="arataVedere('zarr')">Zarr info</button></nav>
+  <nav class="vederi"><button data-v="start" class="activ" onclick="arataVedere('start')">Start</button><button data-v="analize" onclick="arataVedere('analize')">Analize</button><button data-v="harta" onclick="arataVedere('harta')">Hartă</button><button data-v="indicatori" onclick="arataVedere('indicatori')">Indicatori</button><button data-v="zarr" onclick="arataVedere('zarr')">Zarr info</button><button data-v="tutorial" onclick="arataVedere('tutorial')">Tutorial</button></nav>
   <div class="dreapta">
     <span class="pastila" id="p-date" title="">date: …</span>
     <button class="pastila verif" id="b-verif" title="Verifică datele cubului: chunk-uri lipsă și blocuri nescrise (valori exact 0)">verifică datele</button>
@@ -355,6 +378,7 @@ iframe.simulator{width:100%;height:78vh;min-height:560px;border:1px solid var(--
 </header>
 
 <main id="v-start" class="start"></main>
+<main id="v-tutorial" class="tutorial" style="display:none"></main>
 <main id="v-analize" style="display:none">
   <nav class="panou" id="nav"></nav>
 
@@ -416,8 +440,13 @@ const W = {
     return {el:i, get:()=>i.value.split(/[;\s]+/).map(num).filter(v=>v!==null && !isNaN(v)),
             set:v=>i.value = (v||[]).join("; ")}; },
   interval_ani(){ const a = el("input",{type:"number",min:1961,max:2100}), b = el("input",{type:"number",min:1961,max:2100});
-    return {el:el("div",{class:"rand"},a,el("span",{text:"–"}),b), get:()=>[num(a.value),num(b.value)],
-            set:v=>{a.value=v?.[0]??""; b.value=v?.[1]??"";}}; },
+    // „ultimul_an” / „ultima_vara” / „ultima_iarna” în rețetă = ultima perioadă încheiată (calculat aici sau de ruleaza.py)
+    const rez = x => anReper(x), pune = (i, x) => { const r = REPERE_AN[x]; i.dataset.rel = r ? x : "";
+      i.value = r ? (rez(x) ?? "") : (x ?? ""); if (r && !FRONT) i.placeholder = r.text; };
+    const ia = i => i.value === "" && i.dataset.rel ? i.dataset.rel : num(i.value);
+    a.oninput = () => a.dataset.rel = ""; b.oninput = () => b.dataset.rel = "";
+    return {el:el("div",{class:"rand"},a,el("span",{text:"–"}),b), get:()=>[ia(a), ia(b)],
+            set:v=>{ pune(a, v?.[0]); pune(b, v?.[1]); }}; },
   perioada(){ const a = el("input",{type:"date"}), b = el("input",{type:"date"});
     // „-30” în rețetă = ultimele 30 de zile până la frontiera datelor (calculat aici sau de ruleaza.py)
     return {el:el("div",{class:"rand"},a,el("span",{text:"→"}),b), get:()=>[a.value||a.dataset.rel||null, b.value||null],
@@ -694,7 +723,7 @@ function deseneazaNav(){
       a.tip==="script" ? el("span",{class:"motor",text:"script"}) : null)));
   }
   if (focus){ const c=$("#cauta"); c.focus(); c.setSelectionRange(c.value.length,c.value.length); }
-  if (CAT.erori.length) nav.append(el("div",{class:"ajutor",style:"color:var(--eroare);padding:8px"},"Scripturi cu FORMULAR greșit: "+CAT.erori.join("; ")));
+  if (CAT.erori.length) nav.append(el("div",{class:"ajutor",style:"color:var(--eroare);padding:8px"},"Rețete sau motoare cu probleme: "+CAT.erori.join("; ")));
   nav.append(el("h3",{text:"Istoric"}), el("div",{id:"istoric"}));
   deseneazaIstoric();
 }
@@ -730,7 +759,7 @@ function alege(id, valori){
   const bO = el("button",{class:"b rosu",id:"b-opreste",text:"■ Oprește",disabled:"",onclick:opreste});
   const bI = el("button",{class:"b",text:"Valorile implicite",onclick:()=>{
     try { localStorage.removeItem("clima:param:" + ACTIV.id); } catch(e){}
-    CAMPURI.forEach(({c,w})=>w.set(c.implicit)); mesaj("Valorile implicite ale analizei au fost restaurate.");
+    CAMPURI.forEach(({c,w})=>w.set(c.implicit)); vizibilitate(); mesaj("Valorile implicite ale analizei au fost restaurate.");
   }});
   const extra = ACTIV.tip==="reteta" ? [
     el("button",{class:"b",text:"Exportă Python",title:"scriptul Python echivalent formularului, gata de rulat fără interfață",onclick:exportaPython}),
@@ -868,9 +897,35 @@ function arataRezultate(fisiere, mod, folder){
 async function reia(j){
   const v = await api("/api/job_vechi?id="+encodeURIComponent(j.id));
   if (v.eroare){ mesaj(v.eroare); return; }
-  const a = CAT.analize.find(x => v.reteta ? x.id===v.reteta : x.script===v.script); if (!a){ mesaj("Analiza nu mai există."); return; }
-  const p = {...v.parametri}; Object.assign(p, p._setari||{}); delete p._setari; delete p._zone;
-  alege(a.id, p); mesaj(`Parametrii rulării din ${v.pornit}.`);
+  deschideParametri(v, `Parametrii rulării din ${v.pornit}.`);
+}
+
+// o rulare veche în formular: din folderul ei (reproducere.json) sau dintr-un fișier primit (ex. de la profesor)
+function deschideParametri(v, text){
+  if (!CAT) return;
+  const a = CAT.analize.find(x => v.reteta ? x.id === v.reteta : x.script === v.script);
+  if (!a){ mesaj(`Analiza „${v.reteta || v.script || "?"}” nu există în acest program (o rețetă proprie, ștearsă sau de pe alt calculator?).`); return false; }
+  const p = {...(v.parametri || {})}; Object.assign(p, p._setari || {}); delete p._setari; delete p._zone;
+  delete p.OUT; delete p.NUME;                         // rularea nouă primește folderul ei
+  arataVedere("analize"); alege(a.id, p);
+  mesaj(text || "Parametrii rulării au fost încărcați. Modificați ce doriți, apoi „▶ Rulează”.");
+  return true;
+}
+async function refaRulare(folder){
+  const v = await api("/api/rulare?folder=" + encodeURIComponent(folder));
+  if (v.eroare){ mesaj(v.eroare); return; }
+  deschideParametri(v, `Parametrii rulării „${v.titlu || folder}” (${(v.pornit || "").replace("T", " ").slice(0, 16)}). ` +
+                       "Anii, zona și setările sunt cei folosiți atunci; modificați ce doriți, apoi „▶ Rulează”.");
+}
+function incarcaFisaReproducere(){                    // un reproducere.json de pe disc (trimis de profesor, de pe alt calculator)
+  const i = el("input",{type:"file", accept:".json,application/json"});
+  i.onchange = async () => {
+    const f = i.files[0]; if (!f) return;
+    let v; try { v = JSON.parse(await f.text()); } catch(e){ mesaj(`${f.name} nu e un fișier JSON valid.`); return; }
+    if (!v || !(v.reteta || v.script) || typeof v.parametri !== "object"){ mesaj(`${f.name} nu e o fișă de reproducere Clima ANM (lipsesc „reteta” și „parametri”).`); return; }
+    deschideParametri(v, `Parametrii din ${f.name}` + (v.titlu ? ` („${v.titlu}”)` : "") + ". Fișierele vectoriale cu căi de pe alt calculator se caută în folderul date/ după nume.");
+  };
+  i.click();
 }
 
 // ------------------------------------------------------------------ progresul și costul
@@ -947,6 +1002,15 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 });
 
+// reperele de an din rețetele rapide (aceleași reguli ca REPERE_AN din ruleaza.py)
+const REPERE_AN = {ultimul_an:{l:12, z:31, text:"ultimul an încheiat"}, ultima_vara:{l:8, z:31, text:"ultima vară"},
+                   ultima_iarna:{l:2, z:28, text:"ultima iarnă"}};
+function anReper(x){
+  const r = REPERE_AN[x]; if (!r || !FRONT) return null;
+  const an = +FRONT.slice(0, 4), md = `${String(r.l).padStart(2,"0")}-${String(r.z).padStart(2,"0")}`;
+  return FRONT.slice(5) >= md ? an : an - 1;
+}
+
 // ------------------------------------------------------------------ pagina de start: acțiunile și ultimele rezultate
 async function paginaStart(){
   const v = $("#v-start"), [g] = await Promise.all([api("/api/galerie"), CAT ? null : new Promise(r => setTimeout(r, 300))]);
@@ -966,10 +1030,12 @@ async function paginaStart(){
         actiune("Hartă", "rasterele din rezultate, animații pe ani, comparații", "", () => arataVedere("harta")))),
     el("section",{class:"s-rez"},
       el("div",{class:"s-rez-cap"}, el("h2",{text:"Rezultatele recente"}),
-        rulari.length ? el("a",{class:"leg",text:"folderul rezultatelor",onclick:()=>api("/api/deschide_folder",{})}) : null),
+        el("span",{class:"s-legaturi"},
+        el("a",{class:"leg",text:"deschide o fișă de reproducere…",title:"reproducere.json primit de la altcineva: analiza se deschide în formular, cu aceiași parametri",onclick:incarcaFisaReproducere}),
+        rulari.length ? el("a",{class:"leg",text:"folderul rezultatelor",onclick:()=>api("/api/deschide_folder",{})}) : null)),
       rulari.length ? el("div",{class:"s-grila"}, rulari.map(carte)) :
         el("div",{class:"s-gol"}, el("p",{text:"Încă nu există rezultate. O analiză rapidă e un început bun: descarcă sub 1 GB și calculează în jur de un minut."}),
-          el("button",{class:"b primar",text:"Alege o analiză rapidă",onclick:()=>{ arataVedere("analize"); FILTRU = "⚡ Analize rapide"; deseneazaNav(); }}))));
+          el("button",{class:"b prim",text:"Alege o analiză rapidă",onclick:()=>{ arataVedere("analize"); FILTRU = "⚡ Analize rapide"; deseneazaNav(); }}))));
 }
 function carte(r){
   const url = c => "/rezultate/" + c.split("/").map(encodeURIComponent).join("/");
@@ -987,16 +1053,88 @@ function carte(r){
         r.fisa ? el("a",{class:"s-b",text:"Fișa",href:url(r.folder + "/index.html"),target:"_blank"}) : null,
         r.tif ? el("button",{class:"s-b",text:"Pe hartă",onclick:pePlan}) : null,
         r.animatie ? el("button",{class:"s-b prim",text:"Prezintă",title:"ecran complet, cu animația pornită",onclick:prezinta}) : null,
+        r.refacere ? el("button",{class:"s-b",text:"Refă",title:"aceiași parametri în formular, ca să o refaceți sau să schimbați ceva",onclick:()=>refaRulare(r.folder)}) : null,
         el("button",{class:"s-b slab",text:"Folder",onclick:()=>api("/api/deschide_folder",{folder:r.folder})}))));
+}
+
+// ------------------------------------------------------------------ tutorialul: cum se folosește programul, în 7 pași
+function paginaTutorial(){
+  const v = $("#v-tutorial"); if (v.dataset.gata) return; v.dataset.gata = "1";
+  const mergi = (text, f) => el("button",{class:"t-mergi",text:text + " →",onclick:f});
+  const deschideAnaliza = id => () => { arataVedere("analize"); if (CAT && CAT.analize.some(a => a.id === id)) alege(id); };
+  const rapide = () => { arataVedere("analize"); FILTRU = "⚡ Analize rapide"; deseneazaNav(); };
+  const pasi = [
+    ["Prima analiză, în cinci minute",
+     ["În <b>Analize</b>, apăsați <b>⚡ Analize rapide</b> și alegeți <b>Medii: temperatura și precipitațiile</b>.",
+      "Alegeți anii, sezonul (an, anotimp, luni alese) și zona. Implicit: ultimul an încheiat, toată țara.",
+      "Apăsați <b>Verifică parametrii</b>: programul spune câți GB va descărca, câtă memorie folosește și cât durează. Nimic nu se descarcă încă.",
+      "Apăsați <b>▶ Rulează</b>. Jurnalul și bara de progres arată ce se întâmplă; o analiză se poate opri oricând cu <b>■ Oprește</b>.",
+      "Datele descărcate rămân în cache: a doua rulare pe aceeași zonă și aceiași ani e mult mai rapidă."],
+     [mergi("Deschide analiza „Medii”", deschideAnaliza("r6_medii")), mergi("Toate analizele rapide", rapide)]],
+    ["Unde sunt rezultatele și ce faceți cu ele",
+     ["Fiecare rulare are folderul ei în <code>rezultate/</code>, cu data în față (ex. <code>2026-11-27_1510_r6_medii…</code>).",
+      "<b>index.html</b> e fișa vizuală: imaginea principală, cifrele-cheie, galeria, parametrii și paragraful <b>Date și metode</b> (RO + EN, cu bibliografia), gata de copiat în lucrare.",
+      "<b>GeoTIFF</b> (<code>.tif</code>) pentru QGIS: lângă fiecare e un <code>.qml</code> cu aceleași culori ca harta PNG, pe care QGIS îl încarcă singur.",
+      "<b>PNG</b> pentru prezentări, <b>CSV</b> pentru Excel, <b>GeoPackage</b> (<code>.gpkg</code>) pentru zone.",
+      "Pagina <b>Start</b> arată ultimele rulări, cu butoanele <i>Fișa</i>, <i>Pe hartă</i>, <i>Prezintă</i> și <i>Refă</i>."],
+     [mergi("Rezultatele recente", () => arataVedere("start"))]],
+    ["Harta interactivă",
+     ["În <b>Hartă</b>, rasterele sunt grupate pe rulări; clic pe un nume îl deschide. Mouse-ul peste hartă arată valoarea pixelului.",
+      "Rasterele marcate <b>▶ pe ani</b> au un player: anii unul după altul, cu aceeași scară de culori; <b>⬇ video</b> salvează animația.",
+      "<b>A|B</b> (tasta C) pune două hărți față în față, cu o cortină; la o serie pe ani, primul an lângă ultimul.",
+      "<b>⛰</b> (tasta R) adaugă relieful sub hartă; <b>⛶</b> (tasta P) trece în modul prezentare: ← → anii, spațiu pornește animația, ↑ ↓ alt raster din aceeași rulare.",
+      "<b>Salvează harta ca PNG</b> (panoul din dreapta) exportă exact ce vedeți, cu titlu, legendă și atribuire."],
+     [mergi("Deschide Harta", () => arataVedere("harta"))]],
+    ["Zonele: punct, dreptunghi, județe, poligoane proprii",
+     ["<b>Punct</b>: longitudinea întâi, apoi latitudinea (București: 26,10 și 44,43). Coordonatele inversate sunt recunoscute și refuzate cu un mesaj.",
+      "<b>Dreptunghi</b>: limitele în grade; util pentru o regiune fără fișier de poligoane.",
+      "<b>Județe</b>: fișierul <code>date/ro_judete_poligon.gpkg</code> se adaugă o singură dată (vezi README, „Fișierele vectoriale”). Conturul țării de pe hărți vine din <code>date/ro_frontiera_poligon.gpkg</code>.",
+      "<b>Poligoane proprii</b> (bazine, UAT-uri, zone de studiu): orice GPKG, SHP sau GeoJSON pus în <code>date/</code>; alegeți coloana cu numele și, dacă vreți, doar unele zone.",
+      "Costul crește cu zona și cu anii: o analiză pe un județ și 30 de ani e mult mai mică decât una pe toată țara."],
+     []],
+    ["Refacerea unei analize și lucrul cu studenții",
+     ["<b>Refă</b> (pe pagina Start sau în fișa vizuală) pune în formular exact parametrii unei rulări: schimbați un an sau zona și rulați din nou.",
+      "Fiecare rulare are <code>reproducere.json</code>. Trimiteți-l studenților: în <b>Start → deschide o fișă de reproducere…</b> analiza se deschide identic, iar fișierele de poligoane se caută în <code>date/</code> după nume.",
+      "<b>Salvează ca rețetă</b> păstrează setările ca analiză proprie, în <code>retete/utilizator/</code>; <b>Exportă Python</b> dă scriptul echivalent, de rulat fără interfață.",
+      "Anii relativi („vara trecută”, „ultimele 30 de zile”) se fixează la rulare: fișa păstrează datele exacte, deci refacerea dă aceleași rezultate."],
+     [mergi("Pagina Start", () => arataVedere("start"))]],
+    ["Datele și limitele lor",
+     ["Datele sunt grila zilnică ANM de 1 km (1961 – prezent), interpolată din stații: netezește extremele locale, iar anii vechi depind de rețeaua de stații de atunci.",
+      "<b>Verifică datele</b> (în antet) caută golurile din cub; analizele le tratează oricum ca date lipsă, nu ca 0 °C, și le semnalează în jurnal și în fișă.",
+      "Un an sau un sezon intră în calcul doar cu cel puțin 90 % zile cu date; sumele se corectează pentru zilele lipsă. Detaliile: fișa <b>Date lipsă și validitate</b>.",
+      "Indicatorii pe percentile, SPI și SPEI folosesc implicit perioada de bază 1991–2020 (normala OMM actuală).",
+      "Tabul <b>Indicatori</b> are, pentru fiecare indicator și metodă, definiția, formula, pașii de calcul, limitele, o întrebare de seminar și codul exact."],
+     [mergi("Deschide Indicatori", () => arataVedere("indicatori")), mergi("Verifică datele", () => $("#b-verif")?.click())]],
+    ["Când ceva nu merge",
+     ["<b>„fișierul nu există: …/date/ro_judete_poligon.gpkg”</b>: lipsesc poligoanele județelor (pasul 4).",
+      "<b>„Punctul … e în afara grilei”</b>: coordonatele sunt inversate sau în afara României.",
+      "<b>„exclus — perioadă incompletă”</b>: anul sau sezonul nu s-a încheiat încă; alegeți ani compleți.",
+      "<b>Memorie insuficientă</b> (avertisment la „Verifică parametrii”): micșorați zona sau numărul de ani.",
+      "<b>Rețeaua</b>: programul reîncearcă singur; după o întrerupere, rulați din nou: ce s-a descărcat rămâne în cache.",
+      "Erorile de pornire apar în fereastra neagră a lui <code>porneste.bat</code>; ca ultimă soluție, <code>porneste.bat -Reinstaleaza</code> reface mediul."],
+     []]];
+  v.innerHTML = "";
+  v.append(el("section",{class:"t-cap"},
+    el("h1",{text:"Cum se folosește Clima ANM"}),
+    el("p",{text:"Șapte pași, de la prima analiză la lucrul cu studenții. Fiecare pas se poate citi separat; butoanele deschid locul din program despre care vorbește."})));
+  const lista = el("ol",{class:"t-pasi"});
+  pasi.forEach(([titlu, puncte, butoane]) => {
+    const ul = el("ul"); puncte.forEach(t => { const li = el("li"); li.innerHTML = t; ul.append(li); });
+    lista.append(el("li",{class:"t-pas"}, el("h2",{text:titlu}), ul, butoane.length ? el("div",{class:"t-butoane"}, ...butoane) : null));
+  });
+  v.append(lista,
+    el("p",{class:"t-subsol"}, "Manualul complet: ", el("code",{text:"CITESTE_MA.md"}), " din folderul programului · citarea: ",
+       el("a",{href:"https://doi.org/10.5281/zenodo.24564871",target:"_blank",text:"doi:10.5281/zenodo.24564871"})));
 }
 
 // ------------------------------------------------------------------ vederile (taburile din antet)
 const VEDERI_FACUTE = {};
 function arataVedere(v){
-  for (const x of ["start","analize","harta","indicatori","zarr"]) $("#v-"+x).style.display = x === v ? "" : "none";
+  for (const x of ["start","analize","harta","indicatori","zarr","tutorial"]) $("#v-"+x).style.display = x === v ? "" : "none";
   document.querySelectorAll(".vederi button").forEach(b => b.classList.toggle("activ", b.dataset.v === v));
   if (v === "harta") Harta.activeaza();
   if (v === "start") paginaStart();
+  if (v === "tutorial") paginaTutorial();
   if (v === "indicatori" && !VEDERI_FACUTE.indicatori){ Indicatori.construieste(); VEDERI_FACUTE.indicatori = true; }
   if (v === "zarr" && !VEDERI_FACUTE.zarr){ ZarrInfo.construieste(); VEDERI_FACUTE.zarr = true; }
 }
@@ -1049,11 +1187,13 @@ async function stergeReteta(){
   $("#p-python").title = CAT.python; $("#p-python").textContent = "Python ✓";
   $("#b-folder").onclick = () => api("/api/deschide_folder", {});
   frontiere(false);
-  if (!CAT.analize.length){ $("#formular").innerHTML = '<div class="gol">Nu am găsit scripturi cu FORMULAR în folderul clima/.</div>'; deseneazaNav(); return; }
+  if (!CAT.analize.length){ $("#formular").innerHTML = '<div class="gol">Nu am găsit nicio analiză: verificați folderul retete/ și jurnalul ferestrei de pornire.</div>'; deseneazaNav(); return; }
   const ultima = citeste("ultima");
   alege(CAT.analize.some(a=>a.id===ultima) ? ultima : CAT.analize[0].id);
   urmareste();   // dacă o analiză rula deja (pagina reîncărcată), reia urmărirea
-  paginaStart();
+  const refa = new URLSearchParams(location.search).get("refa");
+  if (refa){ history.replaceState(null, "", location.pathname); refaRulare(refa); }
+  else paginaStart();
 })();
 </script>
 <script src="/harta.js"></script>

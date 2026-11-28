@@ -51,15 +51,25 @@ licența și atribuirea fiecărui set).
   pixel sau pe zone.
 * **Rezultate reproductibile**: un folder pe rulare cu GeoTIFF (COG), PNG, GeoPackage, CSV, o fișă vizuală
   `index.html` și parametrii necesari refacerii. Fiecare metodă are o fișă teoretică în tabul *Indicatori*.
+* **Climatograma Walter–Lieth**: un punct sau o zonă, normalele 1961–1990 și 1991–2020 una lângă alta.
 * **Harta interactivă**: comparație A | B cu cortină, relief, animația pe ani cu export video, modul prezentare.
+* **Pentru lucrări**: lângă fiecare GeoTIFF, un stil QGIS (`.qml`) cu culorile hărții; pe fiecare rulare, un paragraf
+  „Date și metode” (RO + EN) cu bibliografia, gata de copiat.
+* **Refacerea analizelor**: „Refă” încarcă parametrii unei rulări în formular; o fișă de reproducere trimisă altcuiva
+  reface exact aceeași analiză.
 * **Verifică datele**: chunk-urile lipsă și blocurile nescrise din cub sunt găsite și tratate ca date lipsă, nu ca 0.
+* **Tutorial** în program: șapte pași, de la prima analiză la lucrul cu studenții.
 
 ## Teste
 
+Din folderul programului, după prima pornire (care descarcă `pixi` în `instrumente`):
+
 ```
-pixi run --locked python instrumente/teste_cunoscute.py     # răspunsuri cunoscute, câteva secunde
-pixi run --locked python instrumente/testeaza_retete.py     # toate rețetele, pe un cub sintetic (~4 min)
+instrumente\pixi.exe run --locked python instrumente/teste_cunoscute.py     # răspunsuri cunoscute, câteva secunde
+instrumente\pixi.exe run --locked python instrumente/testeaza_retete.py     # toate rețetele, pe un cub sintetic (~4 min)
 ```
+
+Pe Linux / macOS: `instrumente/pixi run --locked python …`.
 
 Rulează automat pe GitHub la fiecare modificare.
 

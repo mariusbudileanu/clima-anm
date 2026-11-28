@@ -1,0 +1,35 @@
+{
+  "titlu": "Climatograma Walter–Lieth: 1961–1990 față de 1991–2020",
+  "grup": "Temperatură",
+  "motor": "climatograma",
+  "descriere": "Diagrama climatică Walter–Lieth pentru un oraș sau o zonă: temperatura medie și precipitațiile lunare, perioadele aride (P < 2T) și umede, lunile cu îngheț. Implicit, cele două normale climatice OMM una lângă alta (1961–1990 și 1991–2020), plus un grafic cu diferențele lunare de temperatură și precipitații.",
+  "cost": "60 de ani pentru un punct: câțiva GB la prima rulare (costul exact apare la „Verifică parametrii”); apoi seriile vin din cache, iar rulările următoare durează secunde",
+  "etichete": [
+    "climatogramă",
+    "Walter–Lieth",
+    "diagramă climatică",
+    "regim termic",
+    "regim pluviometric",
+    "normale climatice",
+    "1961–1990",
+    "1991–2020",
+    "ariditate"
+  ],
+  "parametri": {
+    "ZONA": {
+      "tip": "punct",
+      "lon": 26.1025,
+      "lat": 44.4268,
+      "nume": "București"
+    },
+    "PERIOADA_A": [
+      1961,
+      1990
+    ],
+    "COMPARA": true,
+    "PERIOADA_B": [
+      1991,
+      2020
+    ]
+  }
+}

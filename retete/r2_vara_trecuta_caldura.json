@@ -33,10 +33,7 @@
         "prag": 35.0
       }
     ],
-    "ANI": [
-      2026,
-      2026
-    ],
+    "ANI": ["ultima_vara", "ultima_vara"],
     "SEZON": "JJA",
     "ZONA": {
       "tip": "tara"

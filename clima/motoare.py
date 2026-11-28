@@ -251,7 +251,7 @@ def _exporta_trend(job, p, setari):
     l += ["", f"INDICATOR = {_py_indicator(p['INDICATORI'][0])}",
           f"ZONA = {_py_zona(p['ZONA'])}",
           f"zc.ruleaza_trend(INDICATOR, {_py(p['ANI'])}, {_py(p['SEZON'])}, ZONA, {_py(p['IESIRI'])},",
-          f"                 {_py_cale(p['OUT'])}, {p['NUME']!r}, alfa={p['ALFA']!r}, metoda={p.get('METODA_TREND', 'ols')!r})"]
+          f"                 {_py_cale(p['OUT'])}, {p['NUME']!r}, alfa={p['ALFA']!r}, metoda={p.get('METODA_TREND', 'ols')!r}, fdr={bool(p.get('FDR'))!r})"]
     return "\n".join(l) + "\n"
 
 
@@ -264,11 +264,15 @@ def _exporta_trend(job, p, setari):
         CAMP_METODA_TREND,
         {"nume": "ALFA", "tip": "numar", "eticheta": "Pragul de semnificație (α)", "implicit": 0.05,
          "min": 0.001, "max": 0.5, "pas": 0.01},
+        {"nume": "FDR", "tip": "bifa", "eticheta": "Corecția pentru testele multiple (FDR, Benjamini–Hochberg)",
+         "implicit": False, "sectiune": "avansat",
+         "ajutor": "pe o hartă se testează mii de pixeli deodată; corecția ține sub α proporția pixelilor declarați "
+                   "semnificativi din întâmplare (vezi fișa din Indicatori → Metode)"},
         camp_zona(), camp_iesiri()],
        _exporta_trend, nume=_nume_ani)
 def _trend(p):
     return zc.ruleaza_trend(_indicatori(p, unul=True), p["ANI"], p["SEZON"], p["ZONA"], p["IESIRI"], p["OUT"], p["NUME"],
-                            alfa=float(p.get("ALFA", 0.05)), metoda=p.get("METODA_TREND", "ols"))
+                            alfa=float(p.get("ALFA", 0.05)), metoda=p.get("METODA_TREND", "ols"), fdr=bool(p.get("FDR")))
 
 
 # =====================================================================================
@@ -432,6 +436,44 @@ def _exporta_dungi(job, p, setari):
 def _dungi(p):
     return zc.ruleaza_dungi(_ind_serie(p), p["ANI"], p["ZONA"], p["IESIRI"], p["OUT"], p["NUME"], ref=p["REFERINTA"],
                             sezon=p.get("SEZON", "anual"))
+
+
+# =====================================================================================
+# CLIMATOGRAMA WALTER–LIETH
+# =====================================================================================
+def _exporta_climatograma(job, p, setari):
+    l = _antet_py(job, setari)
+    l += ["import zarr_climatograma as zcg  # noqa: E402", "", f"ZONA = {_py_zona(p['ZONA'])}",
+          f"zcg.ruleaza_climatograma(ZONA, {_py(p['PERIOADA_A'])}, {_py(p['PERIOADA_B'] if p.get('COMPARA') else None)}, "
+          f"{_py(p['IESIRI'])}, {_py_cale(p['OUT'])}, {p['NUME']!r})"]
+    return "\n".join(l) + "\n"
+
+
+def _titlu_climatograma(p):
+    per = f"{p['PERIOADA_A'][0]}–{p['PERIOADA_A'][1]}"
+    if p.get("COMPARA") and p.get("PERIOADA_B"):
+        per += f" și {p['PERIOADA_B'][0]}–{p['PERIOADA_B'][1]}"
+    return f"Climatograma {nume_zona_scurt(p.get('ZONA'))}, {per}"
+
+
+@motor("climatograma", "Climatograma Walter–Lieth",
+       "Regimul anual al temperaturii și al precipitațiilor (diagrama Walter–Lieth) pentru un punct sau o zonă, pe una "
+       "sau două perioade alăturate (implicit normalele 1961–1990 și 1991–2020), cu perioadele aride și umede, "
+       "lunile de îngheț și diferențele lunare dintre perioade.",
+       [camp_zona(forme=("punct", "poligoane", "dreptunghi"), implicit={"tip": "punct", "lon": 26.1025, "lat": 44.4268, "nume": "București"}),
+        {"nume": "PERIOADA_A", "tip": "interval_ani", "eticheta": "Perioada", "implicit": [1961, 1990],
+         "ajutor": "normala climatică veche (OMM): 1961–1990"},
+        {"nume": "COMPARA", "tip": "bifa", "eticheta": "Compară cu a doua perioadă", "implicit": True},
+        {"nume": "PERIOADA_B", "tip": "interval_ani", "eticheta": "A doua perioadă", "implicit": [1991, 2020],
+         "ajutor": "normala climatică actuală (OMM): 1991–2020", "doar_daca": {"camp": "COMPARA", "valori": [True]}},
+        {"nume": "IESIRI", "tip": "bife", "eticheta": "Rezultate",
+         "optiuni": {"png": "climatograma și diferențele (PNG)", "csv": "tabelul lunar (CSV)"},
+         "implicit": {"png": True, "csv": True}}],
+       _exporta_climatograma, setari=[], titlu_rulare=_titlu_climatograma)
+def _climatograma(p):
+    import zarr_climatograma as zcg
+    return zcg.ruleaza_climatograma(p["ZONA"], p["PERIOADA_A"], p["PERIOADA_B"] if p.get("COMPARA") else None,
+                                    p["IESIRI"], p["OUT"], p["NUME"])
 
 
 # =====================================================================================

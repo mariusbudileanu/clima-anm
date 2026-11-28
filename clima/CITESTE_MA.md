@@ -1,5 +1,11 @@
 # Scripturi de analiză climatică pe cubul Zarr `anm-daily-grids`
 
+> **Document istoric (scripturile din linia de comandă, de dinaintea interfeței).** Programul se folosește prin
+> `porneste.bat`, iar manualul lui este `CITESTE_MA.md` din folderul principal. Instalarea cu OSGeo4W descrisă mai
+> jos nu mai e necesară: scripturile numerotate se pot rula în mediul programului, de ex.
+> `instrumente\pixi.exe run --locked python clima\05_trend_incalzire.py` (din folderul principal). Unele detalii de
+> aici (căile vechi ale cache-ului, aproximarea normală a testului t) descriu versiuni anterioare.
+
 Toate scripturile folosesc același nucleu (`zarr_clima.py`). Fiecare script conține **doar parametrii**,
 marcați cu `# <-- MODIFICABIL`. Rezultatele se scriu în `rezultate/`.
 

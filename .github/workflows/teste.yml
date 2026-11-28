@@ -23,6 +23,14 @@ jobs:
         with:
           locked: true
           cache: true
+      - name: Sintaxa scriptului de pornire (Windows PowerShell 5.1)
+        if: matrix.os == 'windows-latest'
+        shell: powershell
+        run: |
+          $erori = $null
+          [System.Management.Automation.Language.Parser]::ParseFile("$PWD\instrumente\porneste.ps1", [ref]$null, [ref]$erori) | Out-Null
+          if ($erori.Count) { $erori | ForEach-Object { Write-Error $_.ToString() }; exit 1 }
+          Write-Host "porneste.ps1: sintaxă corectă"
       - name: Testele cu răspuns cunoscut
         run: pixi run --locked python instrumente/teste_cunoscute.py
       - name: Toate rețetele, pe cubul sintetic

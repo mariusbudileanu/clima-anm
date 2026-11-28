@@ -52,6 +52,7 @@ PE_RETETA = {
     "23_": {"INDICATORI": [dict(cod="pct_zile", indice="tx90p", **_B), dict(cod="pct_zile", indice="tn10p", **_B),
                            dict(cod="wsdi", durata=3, **_B), dict(cod="csdi", durata=3, **_B),
                            dict(cod="rnnptot", percentila="95", **_B)]},
+    "c1_": {"PERIOADA_A": [2014, 2025], "COMPARA": False},   # cubul de test începe în 2014 (minimum 10 ani)
     "r1_": {"PERIOADA": ["-30", None]},                   # perioadă relativă la frontiera datelor
     "r4_": {"PERIOADA": ["-30", None]},
     "s4_": {"ZONA": DR},                                    # hărțile pe pixel: zona mică de test

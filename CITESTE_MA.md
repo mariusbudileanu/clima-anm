@@ -36,6 +36,14 @@ Mediul este izolat: nu folosește și nu modifică QGIS, OSGeo4W sau pachetele i
 * **Verifică datele**: chunk-urile lipsă și blocurile nescrise din cub; analizele tratează automat golurile ca date
   lipsă, nu ca 0.
 
+* **Climatograma Walter–Lieth** (grupul Temperatură): un punct sau o zonă, una sau două perioade (implicit normalele
+  1961–1990 și 1991–2020), cu perioadele aride și umede, lunile de îngheț și diferențele lunare.
+* **Pentru lucrări:** lângă fiecare GeoTIFF colorat, un stil QGIS (`.qml`, încărcat automat de QGIS) cu culorile hărții
+  PNG; pe fiecare rulare, paragraful „Date și metode” (RO + EN) cu bibliografia, în fișa vizuală și în `metode.md`.
+* **Refacerea:** „Refă” (pagina Start, fișa vizuală) încarcă parametrii unei rulări în formular; „deschide o fișă de
+  reproducere…” (pagina Start) încarcă un `reproducere.json` primit de la altcineva.
+* **Tabul Tutorial:** pașii de folosire, pentru cine deschide programul prima dată.
+
 Istoricul versiunilor: `CHANGELOG.md`. Licențe: `LICENSE` (cod, MIT), `LICENSE-DOCS.md` (documentație, CC BY 4.0).
 
 ## Relieful (DEM pe grila Zarr)

@@ -15,7 +15,8 @@ from pathlib import Path
 LUNI = ["ianuarie", "februarie", "martie", "aprilie", "mai", "iunie", "iulie", "august", "septembrie", "octombrie",
         "noiembrie", "decembrie"]
 TIPURI = {".tif": "GeoTIFF (QGIS)", ".csv": "tabel CSV (Excel)", ".gpkg": "GeoPackage (QGIS)", ".nc": "NetCDF",
-          ".gif": "animație GIF", ".json": "JSON", ".py": "script Python", ".txt": "text"}
+          ".gif": "animație GIF", ".json": "JSON", ".py": "script Python", ".txt": "text",
+          ".qml": "stil QGIS (culorile hărții)", ".md": "text Markdown (Date și metode)"}
 # dungile antetului: aceleași culori ca banda din interfață (de la rece la cald)
 DUNGI = ["#08306b", "#08519c", "#2171b5", "#4292c6", "#6baed6", "#9ecae1", "#c6dbef", "#deebf7", "#fee0d2", "#fcbba1",
          "#fc9272", "#fb6a4a", "#ef3b2c", "#cb181d", "#a50f15", "#67000d"]
@@ -98,6 +99,32 @@ def _zona(p):
     return z.get("nume") or z.get("tip", "")
 
 
+def _metode(fisa):
+    """Secțiunea „Date și metode”: paragraful RO / EN gata de copiat în lucrare, plus bibliografia (metode_text.py)."""
+    m = fisa.get("metode")
+    if not m:
+        return ('<p class="cita">Date: Administrația Națională de Meteorologie (ANM / MeteoRomania), grilele zilnice '
+                '<code>anm-daily-grids</code>, procesare UVT – EOCube.Ro, licența CC-BY-4.0. Analiza: programul Clima ANM.</p>')
+    bloc = lambda i, et, t: (f'<div class="met"><div class="met-cap"><b>{et}</b>'
+                             f'<button type="button" onclick="copiaza(\'m{i}\', this)">copiază</button></div>'
+                             f'<p id="m{i}">{_e(t)}</p></div>')
+    ref = "".join(f"<li>{_e(r)}</li>" for r in m.get("referinte", []))
+    return (f"""<h2>Date și metode</h2>
+<p class="ajutor">Paragraf descriptiv, gata de inclus în capitolul de date și metode al unei lucrări (completați
+interpretarea). Același text, cu bibliografia, e în <a href="metode.md">metode.md</a>. Fiecare GeoTIFF are lângă el un
+stil QGIS (<code>.qml</code>) cu culorile hărții: QGIS îl încarcă automat.</p>
+{bloc(1, "Română", m.get("ro", ""))}{bloc(2, "English", m.get("en", ""))}
+<div class="met"><div class="met-cap"><b>Bibliografie / References</b>
+<button type="button" onclick="copiaza('m3', this)">copiază</button></div><ol id="m3" class="ref">{ref}</ol></div>
+<script>
+function copiaza(id, b){{
+  const t = document.getElementById(id).innerText;
+  const gata = () => {{ const v = b.textContent; b.textContent = "copiat ✓"; setTimeout(() => b.textContent = v, 1500); }};
+  if (navigator.clipboard) navigator.clipboard.writeText(t).then(gata, () => alert(t)); else alert(t);
+}}
+</script>""")
+
+
 def scrie_fisa(out: Path, fisa: dict) -> Path | None:
     """Scrie out/index.html. `fisa` = conținutul reproducere.json (finalizat)."""
     out = Path(out)
@@ -163,6 +190,14 @@ td,th{{padding:7px 12px;border-bottom:1px solid var(--linie);text-align:left;ver
 th{{color:var(--slab);font-weight:600;width:30%}}
 td a{{color:var(--petrol-i)}} code,pre{{font-family:Consolas,"Cascadia Mono",monospace;font-size:13px}}
 pre{{background:#1d2733;color:#e4ebf0;padding:14px 16px;border-radius:8px;overflow:auto}}
+.met{{background:var(--hartie);border-left:4px solid var(--petrol);border-radius:0 8px 8px 0;padding:10px 16px 12px;margin:0 0 12px}}
+.met-cap{{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:13px}}
+.met-cap button{{font:inherit;font-size:12px;border:1px solid #c9d3dc;background:#fff;border-radius:6px;padding:2px 10px;cursor:pointer}}
+.met p{{margin:0;font-size:14.5px;line-height:1.55}}
+.ref{{margin:0;padding-left:20px;font-size:13px;line-height:1.5}}
+.ref li{{margin:3px 0}}
+.ajutor{{color:#5b6875;font-size:13px}}
+.buton-refa{{display:inline-block;background:var(--petrol);color:#fff;text-decoration:none;border-radius:6px;padding:5px 12px;font-weight:600}}
 .cita{{background:var(--hartie);border-left:4px solid var(--petrol);padding:12px 16px;border-radius:0 8px 8px 0;font-size:14px}}
 .eroare{{background:#fbe9e7;border:1px solid #f0b8ae;color:#8a2a1c;padding:12px 16px;border-radius:8px}}
 footer{{color:var(--slab);font-size:12.5px;text-align:center;padding:24px}}
@@ -213,10 +248,13 @@ r.oninput=m;sa.onchange=()=>a.src=sa.value;sb.onchange=()=>b.src=sb.value;m();}}
 <tr><th>sursa datelor</th><td>{_e(fisa.get('sursa_datelor', ''))}</td></tr>
 <tr><th>durata</th><td>{_e(str(fisa.get('durata_s', '–')).replace('.', ','))} s</td></tr></table>
 <h2>Refacerea și citarea</h2>
-<p>Analiza se reface, într-un folder nou, din fișa de reproducere (<a href="reproducere.json">reproducere.json</a>):</p>
+<p id="refa-app" style="display:none"><a class="buton-refa" href="/?refa={_e(out.name)}">↻ Refă sau modifică analiza în Clima ANM</a>
+(parametrii acestei rulări se încarcă în formular)</p>
+<script>if (location.protocol.startsWith("http")) document.getElementById("refa-app").style.display = "";</script>
+<p>Analiza se reface, într-un folder nou, din fișa de reproducere (<a href="reproducere.json">reproducere.json</a>).
+În Clima ANM: pagina Start → „deschide o fișă de reproducere…”. Din linia de comandă:</p>
 <pre>{_e(fisa.get('refacere', 'instrumente/pixi run python clima/ruleaza.py reproducere.json'))}</pre>
-<p class="cita">Date: Administrația Națională de Meteorologie (ANM / MeteoRomania), grilele zilnice <code>anm-daily-grids</code>,
-procesare UVT – EOCube.Ro, licența CC-BY-4.0. Analiza: programul Clima ANM ({_e(fisa.get('motor', ''))}).</p>
+{_metode(fisa)}
 </main><footer>Clima ANM · {_e(_data_ro(fisa.get('pornit', '')))} · <a href="jurnal.txt">jurnalul rulării</a></footer>
 </body></html>""")
     f = out / "index.html"

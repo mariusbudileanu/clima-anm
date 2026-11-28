@@ -234,6 +234,7 @@ async function alegeBanda(L, nr, resetScala=true){
     scalaAuto(L);
   }
   coloreaza(L);
+  if (!L.date.some(v => v === v)) mesaj(`„${b.descriere}”: banda nu are niciun pixel cu date.`);
 }
 
 function scalaAuto(L, tot=false){
@@ -244,7 +245,7 @@ function scalaAuto(L, tot=false){
       L.min = Math.min(...B.map(x => tot ? x.min : x.p02)); L.max = Math.max(...B.map(x => tot ? x.max : x.p98));
       if (L.divergent){ const m = Math.max(Math.abs(L.min - L.centru), Math.abs(L.max - L.centru)); L.min = L.centru - m; L.max = L.centru + m; }
     }
-    if (L.min === L.max){ L.min -= 0.5; L.max += 0.5; }
+    scalaSigura(L);
     return;
   }
   const b = L.info.benzi[L.banda-1];
@@ -252,7 +253,16 @@ function scalaAuto(L, tot=false){
     const m = tot ? Math.max(Math.abs(b.max - L.centru), Math.abs(b.min - L.centru)) : (b.p98abs || 1);
     L.min = L.centru - m; L.max = L.centru + m;
   } else { L.min = tot ? b.min : b.p02; L.max = tot ? b.max : b.p98; }
+  scalaSigura(L);
+}
+function scalaSigura(L){                                 // bandă fără pixeli valizi: min / max sosesc null
+  L.gol = !(Number.isFinite(L.min) && Number.isFinite(L.max));
+  if (L.gol){ L.min = 0; L.max = 1; }
   if (L.min === L.max){ L.min -= 0.5; L.max += 0.5; }
+}
+function etichetaClase(cl){                              // [10, 20, 24] → „<10”, „10–20”, „20–24”, „≥24”
+  const f = v => String(v).replace(".", ",");
+  return ["<" + f(cl[0]), ...cl.slice(1).map((v, i) => `${f(cl[i])}–${f(v)}`), "≥" + f(cl[cl.length-1])];
 }
 
 function coloreaza(L){
@@ -395,7 +405,7 @@ function legenda(L){
   if (L.clase){
     const n = L.clase.length + 1;
     for (let j = 0; j < n; j++){ const k = Math.round((j+0.5)/n*255); ctx.fillStyle = `rgb(${T[k*3]},${T[k*3+1]},${T[k*3+2]})`; ctx.fillRect(j*240/n, 0, 240/n + 1, 14); }
-    return el("div",{}, c, el("div",{class:"h-ticks"}, ...["<"+L.clase[0], ...L.clase.slice(1).map(String), "≥"+L.clase[L.clase.length-1]].map(t=>el("span",{text:t}))));
+    return el("div",{}, c, el("div",{class:"h-ticks h-ticks-clase"}, ...etichetaClase(L.clase).map(t=>el("span",{text:t}))));
   }
   for (let x = 0; x < 240; x++){ const k = Math.round(x/239*255); ctx.fillStyle = `rgb(${T[k*3]},${T[k*3+1]},${T[k*3+2]})`; ctx.fillRect(x, 0, 1, 14); }
   const u = L.info.benzi[L.banda-1].unitate, d = zec(Math.max(Math.abs(L.min), Math.abs(L.max)));
@@ -467,7 +477,7 @@ function compune(c, W){                                 // harta + titlu + legen
     const T = lut(Lx.cmap), d = zec(Math.max(Math.abs(Lx.min), Math.abs(Lx.max))), u = Lx.info.benzi[Lx.banda-1].unitate;
     if (Lx.clase){                                        // clase discrete (ex. De Martonne): aceleași casete ca pe ecran
       const n = Lx.clase.length + 1, w = 360 / n;
-      const et = ["<" + Lx.clase[0], ...Lx.clase.slice(1).map(String), "≥" + Lx.clase[Lx.clase.length-1]];
+      const et = etichetaClase(Lx.clase);
       for (let j = 0; j < n; j++){ const k = Math.round((j+0.5)/n*255); ctx.fillStyle = `rgb(${T[k*3]},${T[k*3+1]},${T[k*3+2]})`; ctx.fillRect(x0 + j*w, y, w + 0.5, 16); }
       ctx.fillStyle = "#1d2430"; ctx.font = "13px system-ui"; ctx.textAlign = "center";
       et.forEach((t, j) => ctx.fillText(t, x0 + (j + 0.5)*w, y + 34));

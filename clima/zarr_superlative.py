@@ -352,7 +352,7 @@ def _pe_zone(var, sens, unitate, ani, zona, iesiri, out, nume, n, luna, sezon, i
                               round(val - media, 2) if media is not None else ""])
         rec = lista[0]
         doi = lista[1] if len(lista) > 1 else None
-        info = {"zona": et, "record": round(rec[1], 2), "eticheta": eticheta(rec[2], rec[3], unitate, sezon), "an": an_candidat(rec[2], rec[3], unitate, restrange),
+        info = {"k": k, "zona": et, "record": round(rec[1], 2), "eticheta": eticheta(rec[2], rec[3], unitate, sezon), "an": an_candidat(rec[2], rec[3], unitate, restrange),
                 "al_doilea": round(doi[1], 2) if doi else None, "eticheta_al_doilea": eticheta(doi[2], doi[3], unitate, sezon) if doi else None,
                 "media": round(media, 2) if media is not None else None, "candidati": int(np.isfinite(v).sum())}
         if an_ev:
@@ -360,7 +360,9 @@ def _pe_zone(var, sens, unitate, ani, zona, iesiri, out, nume, n, luna, sezon, i
             if m.any() and np.isfinite(v[m]).any():
                 best = np.nanmax(v[m]) if sens == "max" else np.nanmin(v[m])
                 i_best = np.flatnonzero(m)[np.nanargmax(v[m]) if sens == "max" else np.nanargmin(v[m])]
-                comp = v if unul_pe_an or unitate == "zi" else _cele_mai_bune_pe_an(v, an_cand, sens)
+                # rangul se face mereu între ANI (cel mai bun candidat al fiecărui an), și la unitatea „zi”:
+                # „locul 3 din 65” înseamnă al treilea an, nu a treia zi din toate cele ~23 700
+                comp = v if unul_pe_an else _cele_mai_bune_pe_an(v, an_cand, sens)
                 info.update(an_evidentiat=int(an_ev), valoare_an=round(float(best), 2),
                             eticheta_an=eticheta(ivs[i_best][0], ivs[i_best][1], unitate, sezon),
                             loc_an=_rang(comp, best, sens), din=int(np.isfinite(comp).sum()))
@@ -370,12 +372,12 @@ def _pe_zone(var, sens, unitate, ani, zona, iesiri, out, nume, n, luna, sezon, i
         zc.log(f"   {et}: {titlu[0].lower() + titlu[1:]} = {zc.ro(rec[1], 1)} {um}, {info['eticheta']}"
                + (f" (al doilea: {zc.ro(doi[1], 1)} {um}, {info['eticheta_al_doilea']})" if doi else "")
                + (f" · media: {zc.ro(media, 1)} {um}" if media is not None else "")
-               + (f" · {an_ev}: locul {info['loc_an']} din {info['din']}" if info.get("loc_an") else ""))
+               + (f" · {an_ev}: locul {info['loc_an']} din {info['din']} ani" if info.get("loc_an") else ""))
         if iesiri.get("png") and (len(etichete) <= 9 or et == etichete[-1]):
             sl = _slug(et) if len(etichete) > 1 else ""
             f = png_clasament(out / f"{nume}{'_' + sl if sl else ''}_clasament.png", lista, titlu, et, um, unitate,
-                              int(an_ev) if an_ev else None, media, sens, sezon,
-                              nota_an=(f"{an_ev}: locul {info['loc_an']} din {info['din']}" if info.get("loc_an") else
+                              int(an_ev) if an_ev else None, media, sens, sezon, restrange=restrange,
+                              nota_an=(f"{an_ev}: locul {info['loc_an']} din {info['din']} ani" if info.get("loc_an") else
                                        (f"{an_ev}: fără date complete" if an_ev else None)))
             fis.append(f)
             if unul_pe_an:
@@ -395,11 +397,13 @@ def _pe_zone(var, sens, unitate, ani, zona, iesiri, out, nume, n, luna, sezon, i
     if len(etichete) > 1 and iesiri.get("png"):
         fis.append(png_recorduri_zone(out / f"{nume}_recorduri_zone.png", rezumat["zone"], titlu, um, sens))
     if iesiri.get("gpkg") and zona.poligoane:
-        z_pol = rezumat["zone"][:len(zona.poligoane)]
-        if len(z_pol) == len(zona.poligoane):
-            fis.append(zc.scrie_gpkg_zone(out / f"{nume}_recorduri.gpkg", zona, {
-                "record": [z["record"] for z in z_pol], "an_record": [z["an"] for z in z_pol],
-                "data_record": [z["eticheta"] for z in z_pol]}))
+        # după indicele poligonului, nu după poziția în listă: o zonă fără candidați e sărită în rezumat și ar
+        # decala toate valorile pe poligonul vecin (audit 1.1, 2.4)
+        dupa_k = {z["k"]: z for z in rezumat["zone"]}
+        z_pol = [dupa_k.get(k) for k in range(len(zona.poligoane))]
+        fis.append(zc.scrie_gpkg_zone(out / f"{nume}_recorduri.gpkg", zona, {
+            "record": [z["record"] if z else None for z in z_pol], "an_record": [z["an"] if z else None for z in z_pol],
+            "data_record": [z["eticheta"] if z else None for z in z_pol]}))
     (out / f"{nume}_rezumat.json").write_text(json.dumps(rezumat, ensure_ascii=False, indent=1), encoding="utf-8")
     zc.log(f"== gata: {nume}")
     return fis
@@ -581,7 +585,7 @@ def _iesiri_doar(iesiri):
 GRI, ACCENT, EVIDENT = "#b8c2cc", "#c2611f", "#0f6b8c"
 
 
-def png_clasament(cale, lista, titlu, zona_et, um, unitate, an_ev, media, sens, sezon=None, nota_an=None):
+def png_clasament(cale, lista, titlu, zona_et, um, unitate, an_ev, media, sens, sezon=None, nota_an=None, restrange=None):
     """Bare orizontale: locul 1 sus (accent), anul evidențiat (alt accent), restul gri; valorile pe bare."""
     plt = zc._plt()
     cale = zc._gata(cale)
@@ -589,7 +593,8 @@ def png_clasament(cale, lista, titlu, zona_et, um, unitate, an_ev, media, sens, 
     fig, ax = plt.subplots(figsize=(9.5, 0.42 * n + 1.6))
     y = np.arange(n)[::-1]
     vals = [v for _, v, _, _ in lista]
-    culori = [ACCENT if loc == 1 else (EVIDENT if an_ev and an_candidat(d0, d1, unitate) == an_ev else GRI) for loc, _, d0, d1 in lista]
+    culori = [ACCENT if loc == 1 else (EVIDENT if an_ev and an_candidat(d0, d1, unitate, restrange) == an_ev else GRI)
+              for loc, _, d0, d1 in lista]
     # barele pornesc de la o bază aleasă astfel încât recordul să aibă mereu bara cea mai lungă:
     # maxim → din stânga (0 la precipitații); minim de temperatură → din dreapta (cel mai rece = cea mai lungă)
     span = (max(vals) - min(vals)) or 1.0
